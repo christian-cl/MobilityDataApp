@@ -8,6 +8,8 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -29,6 +31,8 @@ public class MapsActivity extends FragmentActivity {
     private double LONGITUDE = -4.4797281;
     final private String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
+    String title = null;
+
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
     @Override
@@ -37,7 +41,18 @@ public class MapsActivity extends FragmentActivity {
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
 
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        // If your minSdkVersion is 11 or higher, instead use:
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 //        registrarEventos();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_map, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -82,16 +97,16 @@ public class MapsActivity extends FragmentActivity {
      */
     private void setUpMap() {
 //        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title("Marker"));
+//        mMap.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title("Marker"));
     }
 
     public void displayStopChoices(View view) {
-        final CharSequence[] items = {"Android OS", "iOS", "Windows Phone", "Meego"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Seleccione una opción");
         builder.setSingleChoiceItems(stopChoices, -1, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
+                title = (String) stopChoices[item];
                 Toast toast = Toast.makeText(getApplicationContext(), "Haz elegido la opcion: " + stopChoices[item] , Toast.LENGTH_SHORT);
                 toast.show();
             }
@@ -99,6 +114,9 @@ public class MapsActivity extends FragmentActivity {
         builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                if(title != null) {
+                    addMarker(title);
+                }
 //                NotificacionesActivity.this.finish();
             }
         });
@@ -112,4 +130,11 @@ public class MapsActivity extends FragmentActivity {
         alert.show();
     }
 
+    /**
+     * Simple method to add markers to the map
+     * @param title
+     */
+    private void addMarker(String title) {
+        mMap.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title(title));
+    }
 }
