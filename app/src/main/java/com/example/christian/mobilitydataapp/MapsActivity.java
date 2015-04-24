@@ -1,14 +1,33 @@
 package com.example.christian.mobilitydataapp;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.List;
+
+//public class MapsActivity extends Activity {
 public class MapsActivity extends FragmentActivity {
+
+    // TEST longitude and latitude from UMA
+    private double LATITUDE = 36.7150472;
+    private double LONGITUDE = -4.4797281;
+    final private String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -17,6 +36,8 @@ public class MapsActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
+
+//        registrarEventos();
     }
 
     @Override
@@ -60,6 +81,35 @@ public class MapsActivity extends FragmentActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+//        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        mMap.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title("Marker"));
     }
+
+    public void displayStopChoices(View view) {
+        final CharSequence[] items = {"Android OS", "iOS", "Windows Phone", "Meego"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Seleccione una opción");
+        builder.setSingleChoiceItems(stopChoices, -1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+                Toast toast = Toast.makeText(getApplicationContext(), "Haz elegido la opcion: " + stopChoices[item] , Toast.LENGTH_SHORT);
+                toast.show();
+            }
+        });
+        builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+//                NotificacionesActivity.this.finish();
+            }
+        });
+        builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
 }

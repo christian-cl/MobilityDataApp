@@ -2,4 +2,15 @@
     <string name="app_name">MobilityDataApp</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_main">Main</string>
+    <string name="title_activity_logs">Log</string>
+    <string name="button_send">Go Map</string>
+
+
+    <!--Test-->
+    <string-array name="stop_options">
+        <item>Atasco</item>
+        <item>Obras</item>
+        <item>Accidentes</item>
+        <item>Otros</item>
+    </string-array>
 </resources>
