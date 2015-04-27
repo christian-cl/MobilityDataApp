@@ -1,3 +1,7 @@
+/**
+ * Christian Cintrano on 27/04/15.
+ */
+
 package com.example.christian.mobilitydataapp;
 
 import android.app.ProgressDialog;
@@ -5,7 +9,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -17,11 +23,10 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
-/**
- * Created by christian on 27/04/15.
- */
 public class DebugActivity extends ActionBarActivity implements LocationListener {
     private final static long TIEMPO_MIN = 10 * 1000 ; // 10 segundos
     private final static long DISTANCIA_MIN = 5 ; // 5 metros
@@ -64,9 +69,12 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
         log("Mejor proveedor: " + proveedor + "\n");
         log("Comenzamos con la última localización conocida:");
 
-        Location localizacion = manejador.getLastKnownLocation(proveedor);
-        muestraLocaliz(localizacion);
+        Location localization = manejador.getLastKnownLocation(proveedor);
+        muestraLocaliz(localization);
 
+//        log("======================");
+//        geo(localization);
+//        log("======================");
 
 
         mHandler = new Handler();
@@ -99,6 +107,45 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     public void onLocationChanged(Location location) {
         log("Nueva localización: ");
         muestraLocaliz(location);
+        processInformation(location);
+    }
+
+    private void processInformation(Location location) {
+        // Get latitude and longitude
+        double lat = location.getLatitude();
+        double lon = location.getLongitude();
+//        float speed = location.getSpeed();
+
+        // Get address
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        List<Address> addresses = null;
+        try {
+            addresses = geocoder.getFromLocation(lat, lon, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Address address = addresses.get(0);
+        address.getAddressLine(0);
+    }
+
+    public void geo(Location localization) {
+        if(localization != null) {
+            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+//        List<Address> addresses = geocoder.getFromLocationName(myLocation, 1);
+            List<Address> addresses = null;
+            try {
+                addresses = geocoder.getFromLocation(localization.getLatitude(), localization.getLongitude(), 1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            log(addresses.toString());
+//        Address address = addresses.get(0);
+//        double longitude = address.getLongitude();
+//        double latitude = address.getLatitude();
+
+        } else {
+            log("LOCATION NULL");
+        }
     }
 
     public void onProviderDisabled(String proveedor) {
@@ -175,6 +222,7 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     public void reset(View view) {
         db.resetTablePoints();
     }
+
 
 
 
