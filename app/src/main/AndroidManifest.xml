@@ -29,7 +29,7 @@
         <!--android:name=".MapsActivity"-->
         <activity
             android:name=".MainActivity"
-            android:label="@string/title_activity_logs" >
+            android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -43,7 +43,15 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.christian.mobilitydataapp.MainActivity" />
-            </activity>
+        </activity>
+        <activity
+            android:name=".DebugActivity"
+            android:label="@string/title_activity_debug"
+            android:parentActivityName="com.example.christian.mobilitydataapp.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.christian.mobilitydataapp.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

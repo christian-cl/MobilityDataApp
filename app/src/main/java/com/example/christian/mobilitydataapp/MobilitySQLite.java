@@ -1,5 +1,7 @@
 /**
- * Created by Christian Cintrano on 27/04/15.
+ * Christian Cintrano on 27/04/15.
+ *
+ * DataBase controller
  */
 
 package com.example.christian.mobilitydataapp;
@@ -36,6 +38,15 @@ public class MobilitySQLite extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("INSERT INTO points VALUES ( null, "+
                 latitude+", "+longitude+")");
+        db.close();
+    }
+
+    public void resetTablePoints() {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("DROP TABLE IF EXISTS " + "points");
+        db.execSQL("CREATE TABLE points ("+
+                "_id INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                "latitude DOUBLE, longitude DOUBLE, date DATETIME DEFAULT CURRENT_TIMESTAMP)");
         db.close();
     }
 
