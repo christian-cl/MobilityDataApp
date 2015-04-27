@@ -20,9 +20,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapsActivity extends ActionBarActivity {
 
     // TEST longitude and latitude from UMA
-    private double LATITUDE = 36.7150472;
-    private double LONGITUDE = -4.4797281;
-    final private String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
+    private static final double LATITUDE = 36.7150472;
+    private static final double LONGITUDE = -4.4797281;
+    private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
     String title = null;
 

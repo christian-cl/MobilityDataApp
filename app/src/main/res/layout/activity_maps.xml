@@ -4,55 +4,6 @@
     android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!--TEST-->
-<!--    <android.support.v7.widget.Toolbar
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:elevation="2dp"
-        android:theme="@style/Base.ThemeOverlay.AppCompat.Dark"
-        android:background="@color/ColorPrimary"
-        xmlns:android="http://schemas.android.com/apk/res/android" />
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:id="@+id/frameLayout">
-
-        <TextView
-            android:id="@+id/TextAct1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_gravity="center"
-            android:text="This is the first Activity, Say Hi"
-            android:textSize="25dp" />
-
-        &lt;!&ndash;android:src="@drawable/ic_action"&ndash;&gt;
-        <ImageButton
-            android:layout_margin="15dp"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:background="@drawable/circle"
-            android:id="@+id/imageButton"
-            android:layout_gravity="right|bottom" />
-
-
-    </FrameLayout>-->
-    <!--FIN TEST-->
-<!--
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_send"
-        android:onClick="displayStopChoices"/>
--->
-
-
     <fragment
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -63,12 +14,13 @@
         tools:context=".MapsActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
-    <ImageButton style="@style/AppTheme"
+    <ImageButton
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:id="@+id/OkBt"
         android:src="@mipmap/ic_add_white"
         android:background="@drawable/circle"
         android:onClick="displayStopChoices"
-        android:layout_gravity="right|bottom" />
+        android:layout_gravity="end|bottom" />
 </FrameLayout>

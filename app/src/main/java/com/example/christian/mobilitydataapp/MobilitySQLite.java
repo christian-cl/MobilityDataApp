@@ -16,14 +16,14 @@ public class MobilitySQLite extends SQLiteOpenHelper {
 
     //Métodos de SQLiteOpenHelper
     public MobilitySQLite(Context context) {
-        super(context, "puntuaciones", null, 1);
+        super(context, "mobilityDB", null, 1);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE points ("+
                 "_id INTEGER PRIMARY KEY AUTOINCREMENT, "+
-                "latitude DOUBLE, longitude DOUBLE, date LONG)");
+                "latitude DOUBLE, longitude DOUBLE, date DATETIME DEFAULT CURRENT_TIMESTAMP)");
     }
 
     @Override
@@ -32,10 +32,10 @@ public class MobilitySQLite extends SQLiteOpenHelper {
     }
 
 
-    public void savePoints(double latitude, double longitude, long date) {
+    public void savePoints(double latitude, double longitude) {
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("INSERT INTO points VALUES ( null, "+
-                latitude+", '"+longitude+"', "+date+")");
+                latitude+", "+longitude+")");
         db.close();
     }
 
@@ -46,6 +46,20 @@ public class MobilitySQLite extends SQLiteOpenHelper {
                 "points ORDER BY latitude DESC LIMIT " +maxElem, null);
         while (cursor.moveToNext()){
             result.add(cursor.getInt(0)+" " +cursor.getString(1));
+        }
+        cursor.close();
+        db.close();
+        return result;
+    }
+
+    public Vector listAllPoints() {
+        Vector result = new Vector();
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " +
+                "points ORDER BY latitude DESC ", null);
+        result.add(cursor.getColumnNames());
+        while (cursor.moveToNext()){
+            result.add(cursor.getInt(0)+" " +cursor.getString(1)+" " +cursor.getString(2)+" " +cursor.getString(3));
         }
         cursor.close();
         db.close();
