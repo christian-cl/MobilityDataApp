@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,7 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 //public class MapsActivity extends Activity {
-public class MapsActivity extends FragmentActivity {
+//public class MapsActivity extends FragmentActivity {
+public class MapsActivity extends ActionBarActivity {
 
     // TEST longitude and latitude from UMA
     private double LATITUDE = 36.7150472;
@@ -41,9 +43,9 @@ public class MapsActivity extends FragmentActivity {
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
 
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         // If your minSdkVersion is 11 or higher, instead use:
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+//        getActionBar().setDisplayHomeAsUpEnabled(true);
 //        registrarEventos();
     }
 
