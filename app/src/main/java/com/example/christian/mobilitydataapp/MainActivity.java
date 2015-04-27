@@ -1,3 +1,7 @@
+/**
+ * Created by Christian Cintrano on 24/04/15.
+ */
+
 package com.example.christian.mobilitydataapp;
 
 import android.app.Activity;
@@ -13,9 +17,6 @@ import android.widget.TextView;
 
 import java.util.List;
 
-/**
- * Created by christian on 24/04/15.
- */
 public class MainActivity extends Activity implements LocationListener {
     private static final long TIEMPO_MIN = 10 * 1000 ; // 10 segundos
     private static final long DISTANCIA_MIN = 5 ; // 5 metros
@@ -44,6 +45,14 @@ public class MainActivity extends Activity implements LocationListener {
         proveedor = manejador.getBestProvider(criterio, true);
         log("Mejor proveedor: " + proveedor + "\n");
         log("Comenzamos con la última localización conocida:");
+
+        ///////////////
+        log("-----------");
+        MobilitySQLite db = new MobilitySQLite(this);
+        db.savePoints(10.5,-10.002514, new java.util.Date().getTime());
+        log(db.listPoints(1).toString());
+        log("-----------");
+        ///////////////
         Location localizacion = manejador.getLastKnownLocation(proveedor);
         muestraLocaliz(localizacion);
     }

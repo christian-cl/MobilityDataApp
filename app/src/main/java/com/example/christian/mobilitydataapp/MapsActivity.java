@@ -1,19 +1,12 @@
 package com.example.christian.mobilitydataapp;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -21,8 +14,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.ArrayList;
-import java.util.List;
 
 //public class MapsActivity extends Activity {
 //public class MapsActivity extends FragmentActivity {
@@ -134,7 +125,7 @@ public class MapsActivity extends ActionBarActivity {
 
     /**
      * Simple method to add markers to the map
-     * @param title
+     * @param title text of the marker
      */
     private void addMarker(String title) {
         mMap.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title(title));
