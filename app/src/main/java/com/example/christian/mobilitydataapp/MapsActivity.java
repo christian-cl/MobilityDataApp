@@ -120,7 +120,7 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
 
     public void displayStopChoices(View view) {
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // EditText by default hidden
         final EditText editText = new EditText(this);
@@ -131,7 +131,7 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
         builder.setTitle("Seleccione una opción");
         builder.setSingleChoiceItems(stopChoices, -1, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
-                if(stopChoices[item] == "Otros") {
+                if (stopChoices[item] == "Otros") {
 //                    editText.setFocusable(true);
                     editText.setEnabled(true);
 //                    editText.setCursorVisible(true);
@@ -143,7 +143,7 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
                 }
                 title = stopChoices[item];
                 String text = "Haz elegido la opcion: " + stopChoices[item];
-                Toast toast = Toast.makeText(getApplicationContext(), text , Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
                 toast.show();
             }
         });
