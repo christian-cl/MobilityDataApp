@@ -40,6 +40,7 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     private TextView salida;
     private ProgressDialog progress;
     MobilitySQLite db;
+    ProgressReceiver rcv;
 
     // Process to repeat
     private int INTERVAL = 5000; // 5 seconds by default, can be changed later
@@ -85,7 +86,7 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
         IntentFilter filter = new IntentFilter();
         filter.addAction(MiIntentService.ACTION_PROGRESO);
         filter.addAction(MiIntentService.ACTION_FIN);
-        ProgressReceiver rcv = new ProgressReceiver();
+        rcv = new ProgressReceiver();
         registerReceiver(rcv, filter);
     }
 
@@ -101,9 +102,8 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     protected void onPause() {
         super.onPause();
         manejador.removeUpdates(this);
+        unregisterReceiver(rcv);
     }
-
-
 
     // Métodos de la interfaz LocationListener
     public void onLocationChanged(Location location) {
