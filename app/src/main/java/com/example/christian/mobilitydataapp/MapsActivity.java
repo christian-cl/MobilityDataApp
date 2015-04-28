@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -119,15 +120,35 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
 
     public void displayStopChoices(View view) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // EditText by default hidden
+        final EditText editText = new EditText(this);
+//        editText.setFocusable(false);
+        editText.setEnabled(false);
+//        editText.setCursorVisible(false);
+
         builder.setTitle("Seleccione una opción");
         builder.setSingleChoiceItems(stopChoices, -1, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
+                if(stopChoices[item] == "Otros") {
+//                    editText.setFocusable(true);
+                    editText.setEnabled(true);
+//                    editText.setCursorVisible(true);
+                } else {
+//                    editText.setFocusable(false);
+                    editText.setEnabled(false);
+                    editText.getText().clear();
+//                    editText.setCursorVisible(false);
+                }
                 title = stopChoices[item];
-                Toast toast = Toast.makeText(getApplicationContext(), "Haz elegido la opcion: " + stopChoices[item] , Toast.LENGTH_SHORT);
+                String text = "Haz elegido la opcion: " + stopChoices[item];
+                Toast toast = Toast.makeText(getApplicationContext(), text , Toast.LENGTH_SHORT);
                 toast.show();
             }
         });
+
+        builder.setView(editText);
         builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
