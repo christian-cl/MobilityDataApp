@@ -103,6 +103,8 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
         manejador.removeUpdates(this);
     }
 
+
+
     // Métodos de la interfaz LocationListener
     public void onLocationChanged(Location location) {
         log("Nueva localización: ");
@@ -264,6 +266,8 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
 
     void updateStatus() {
         Location localizacion = manejador.getLastKnownLocation(proveedor);
+
+        db.savePoints(50,-9.674,"ET 742");
         muestraLocaliz(localizacion);
 //        log("RRLocalización desconocida\n");
     }

@@ -1,7 +1,11 @@
 package com.example.christian.mobilitydataapp;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -9,24 +13,26 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-
-//public class MapsActivity extends Activity {
-//public class MapsActivity extends FragmentActivity {
-public class MapsActivity extends ActionBarActivity {
+public class MapsActivity extends ActionBarActivity implements LocationListener {
 
     // TEST longitude and latitude from UMA
     private static final double LATITUDE = 36.7150472;
     private static final double LONGITUDE = -4.4797281;
+    private static final long MIN_TIME = 400;
+    private static final float MIN_DISTANCE = 1000;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
     String title = null;
 
-    private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private GoogleMap map; // Might be null if Google Play services APK is not available.
+    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +41,6 @@ public class MapsActivity extends ActionBarActivity {
         setUpMapIfNeeded();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        // If your minSdkVersion is 11 or higher, instead use:
-//        getActionBar().setDisplayHomeAsUpEnabled(true);
-//        registrarEventos();
     }
 
     @Override
@@ -57,7 +60,7 @@ public class MapsActivity extends ActionBarActivity {
     /**
      * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
      * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
+     * call {@link #setUpMap()} once when {@link #map} is not null.
      * <p/>
      * If it isn't installed {@link SupportMapFragment} (and
      * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
@@ -71,26 +74,47 @@ public class MapsActivity extends ActionBarActivity {
      */
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
-        if (mMap == null) {
+        if (map == null) {
             // Try to obtain the map from the SupportMapFragment.
-            mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+            map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                    MIN_TIME, MIN_DISTANCE, this);
+            //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
             // Check if we were successful in obtaining the map.
-            if (mMap != null) {
+            if (map != null) {
                 setUpMap();
             }
         }
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 10);
+        map.animateCamera(cameraUpdate);
+        locationManager.removeUpdates(this);
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) { }
+
+    @Override
+    public void onProviderEnabled(String provider) { }
+
+    @Override
+    public void onProviderDisabled(String provider) { }
+
     /**
      * This is where we can add markers or lines, add listeners or move the camera. In this case, we
      * just add a marker near Africa.
      * <p/>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
+     * This should only be called once and when we are sure that {@link #map} is not null.
      */
     private void setUpMap() {
-//        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-//        mMap.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title("Marker"));
+//        map.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+//        map.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title("Marker"));
     }
 
     public void displayStopChoices(View view) {
@@ -99,7 +123,7 @@ public class MapsActivity extends ActionBarActivity {
         builder.setTitle("Seleccione una opción");
         builder.setSingleChoiceItems(stopChoices, -1, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
-                title = (String) stopChoices[item];
+                title = stopChoices[item];
                 Toast toast = Toast.makeText(getApplicationContext(), "Haz elegido la opcion: " + stopChoices[item] , Toast.LENGTH_SHORT);
                 toast.show();
             }
@@ -128,6 +152,6 @@ public class MapsActivity extends ActionBarActivity {
      * @param title text of the marker
      */
     private void addMarker(String title) {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title(title));
+        map.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title(title));
     }
 }

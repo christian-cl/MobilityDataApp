@@ -1,14 +1,12 @@
+/**
+ * Christian Cintrano on 27/04/15.
+ */
+
 package com.example.christian.mobilitydataapp;
 
 import android.app.IntentService;
 import android.content.Intent;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-/**
- * Created by christian on 27/04/15.
- */
 public class MiIntentService extends IntentService {
 
     public static final String ACTION_PROGRESO =
@@ -30,7 +28,7 @@ public class MiIntentService extends IntentService {
             tareaLarga();
 
 
-            db.savePoints(11.5,-11.002514);
+            db.savePoints(11.5,-11.002514,"CALLE FALSA 123");
 
             //Comunicamos el progreso
             Intent bcIntent = new Intent();
@@ -48,6 +46,8 @@ public class MiIntentService extends IntentService {
     {
         try {
             Thread.sleep(1000);
-        } catch(InterruptedException e) {}
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

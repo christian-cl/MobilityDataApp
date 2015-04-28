@@ -11,7 +11,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.util.Objects;
 import java.util.Vector;
 
 //Métodos de SQLiteOpenHelper
@@ -28,10 +27,6 @@ public class MobilitySQLite extends SQLiteOpenHelper {
 
         private query(String s) {
             name = s;
-        }
-
-        public boolean equalsName(String otherName){
-            return (otherName == null)? false:name.equals(otherName);
         }
 
         public String toString(){
@@ -58,8 +53,8 @@ public class MobilitySQLite extends SQLiteOpenHelper {
 
     public void savePoints(double latitude, double longitude, String address) {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("INSERT INTO points VALUES ( null, "+
-                latitude+", "+longitude+", " + address + ")");
+        db.execSQL("INSERT INTO points (latitude, longitude, address) VALUES ("+
+                latitude+", "+longitude+", '" + address + "')");
         db.close();
     }
 
