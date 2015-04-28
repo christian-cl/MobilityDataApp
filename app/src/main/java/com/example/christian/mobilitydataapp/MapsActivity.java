@@ -1,12 +1,17 @@
 package com.example.christian.mobilitydataapp;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.location.Address;
+import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,11 +26,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 public class MapsActivity extends ActionBarActivity implements LocationListener {
 
-    // TEST longitude and latitude from UMA
-    private static final double LATITUDE = 36.7150472;
-    private static final double LONGITUDE = -4.4797281;
     private static final long MIN_TIME = 400;
     private static final float MIN_DISTANCE = 1000;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
@@ -34,6 +40,15 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     private LocationManager locationManager;
+    private String proveedor;
+    private ProgressDialog dialogWait;
+    private LocationManager manejador;
+    private MobilitySQLite db;
+
+    // Process to repeat
+    private static final int INTERVAL = 5000; // 5 seconds by default, can be changed later
+    private Handler mHandler;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +57,25 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
         setUpMapIfNeeded();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        dialogWait = new ProgressDialog(this);
+        dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialogWait.setMessage("Loading. Please wait...");
+        dialogWait.setIndeterminate(true);
+        dialogWait.setCanceledOnTouchOutside(false);
+        dialogWait.show();
+
+        db = new MobilitySQLite(this);
+
+        manejador = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        Criteria criterio = new Criteria();
+        criterio.setCostAllowed(false);
+        criterio.setAltitudeRequired(false);
+        criterio.setAccuracy(Criteria.ACCURACY_FINE);
+        proveedor = manejador.getBestProvider(criterio, true);
+
+        mHandler = new Handler();
     }
 
     @Override
@@ -58,21 +92,6 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
         setUpMapIfNeeded();
     }
 
-    /**
-     * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-     * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #map} is not null.
-     * <p/>
-     * If it isn't installed {@link SupportMapFragment} (and
-     * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-     * install/update the Google Play services APK on their device.
-     * <p/>
-     * A user can return to this FragmentActivity after following the prompt and correctly
-     * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
-     * have been completely destroyed during this process (it is likely that it would only be
-     * stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
-     * method in {@link #onResume()} to guarantee that it will be called.
-     */
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (map == null) {
@@ -85,8 +104,51 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
             //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
             // Check if we were successful in obtaining the map.
             if (map != null) {
-                setUpMap();
+                startRepeatingTask();
             }
+        }
+    }
+
+
+    // Repeat process for catch information
+    private Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            updateStatus(); //this function can change value of mInterval.
+            mHandler.postDelayed(mStatusChecker, INTERVAL);
+        }
+    };
+
+    private void startRepeatingTask() {
+        mStatusChecker.run();
+    }
+
+    private void stopRepeatingTask() {
+        mHandler.removeCallbacks(mStatusChecker);
+    }
+
+    private void updateStatus() {
+        Location loc = manejador.getLastKnownLocation(proveedor);
+        if (loc != null) {
+            dialogWait.hide();
+        }
+        db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
+    }
+
+    private String getStreet(Location localization) {
+        if(localization != null) {
+            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+            List<Address> addresses = null;
+            try {
+                addresses = geocoder.getFromLocation(localization.getLatitude(), localization.getLongitude(), 1);
+                // Only considered the first result
+                return addresses.get(0).getAddressLine(0);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            return null;
         }
     }
 
@@ -107,39 +169,22 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
     @Override
     public void onProviderDisabled(String provider) { }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
-     * <p/>
-     * This should only be called once and when we are sure that {@link #map} is not null.
-     */
-    private void setUpMap() {
-//        map.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-//        map.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title("Marker"));
-    }
-
     public void displayStopChoices(View view) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         // EditText by default hidden
         final EditText editText = new EditText(this);
-//        editText.setFocusable(false);
         editText.setEnabled(false);
-//        editText.setCursorVisible(false);
 
         builder.setTitle("Seleccione una opción");
         builder.setSingleChoiceItems(stopChoices, -1, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
-                if (stopChoices[item] == "Otros") {
-//                    editText.setFocusable(true);
+                if (stopChoices[item].equals("Otros")) {
                     editText.setEnabled(true);
-//                    editText.setCursorVisible(true);
                 } else {
-//                    editText.setFocusable(false);
                     editText.setEnabled(false);
                     editText.getText().clear();
-//                    editText.setCursorVisible(false);
                 }
                 title = stopChoices[item];
                 String text = "Haz elegido la opcion: " + stopChoices[item];
@@ -155,7 +200,6 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
                 if(title != null) {
                     addMarker(title);
                 }
-//                NotificacionesActivity.this.finish();
             }
         });
         builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
@@ -173,6 +217,11 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
      * @param title text of the marker
      */
     private void addMarker(String title) {
-        map.addMarker(new MarkerOptions().position(new LatLng(LATITUDE, LONGITUDE)).title(title));
+
+        Location loc = manejador.getLastKnownLocation(proveedor);
+
+//        db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
+        LatLng coordinates = new LatLng(loc.getLatitude(), loc.getLongitude());
+        map.addMarker(new MarkerOptions().position(coordinates).title(title));
     }
 }
