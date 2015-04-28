@@ -27,13 +27,20 @@
             android:layout_height="wrap_content"
             android:text="@string/button_show"
             android:onClick="show"/>
-        <Button
+         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/button_reset"
             android:onClick="reset"/>
 
-    </LinearLayout>
+        </LinearLayout>
+
+        <Button
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="@string/button_save"
+           android:onClick="saveFile"/>
+
         <ScrollView
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"

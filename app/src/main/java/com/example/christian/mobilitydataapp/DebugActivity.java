@@ -17,12 +17,15 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -226,6 +229,25 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     }
 
 
+    public void saveFile(View view) {
+        String root = Environment.getExternalStorageDirectory().toString();
+        File dir = new File(root + "/mdaFolder");
+        log(root + "/mdaFolder");
+        dir.mkdirs();
+        String text = "TEXTO DE PruEBA";
+        String fileName = "datos.txt";
+        File file = new File (dir, fileName);
+        if (file.exists())
+            file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
     public class ProgressReceiver extends BroadcastReceiver {
@@ -271,4 +293,28 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
         muestraLocaliz(localizacion);
 //        log("RRLocalización desconocida\n");
     }
+
+/*
+    private void saveImage(Bitmap finalBitmap) {
+
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root + "/saved_images");
+        myDir.mkdirs();
+        Random generator = new Random();
+        int n = 10000;
+        n = generator.nextInt(n);
+        String fname = "Image-"+ n +".jpg";
+        File file = new File (myDir, fname);
+        if (file.exists ()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }*/
+
 }
