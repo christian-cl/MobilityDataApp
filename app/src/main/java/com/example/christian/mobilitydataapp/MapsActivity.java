@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -27,6 +29,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.util.List;
 import java.util.Locale;
 
@@ -42,19 +45,18 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
     private LocationManager locationManager;
     private String proveedor;
     private ProgressDialog dialogWait;
-    private LocationManager manejador;
     private MobilitySQLite db;
 
     // Process to repeat
     private static final int INTERVAL = 5000; // 5 seconds by default, can be changed later
     private Handler mHandler;
+    private Location currentLocation;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        setUpMapIfNeeded();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -66,16 +68,51 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
         dialogWait.show();
 
         db = new MobilitySQLite(this);
-
-        manejador = (LocationManager) getSystemService(LOCATION_SERVICE);
+System.out.println("PRE MANEJADOR");
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            Toast.makeText(this, "GPS is Enabled in your devide", Toast.LENGTH_SHORT).show();
+        }else{
+            showGPSDisabledAlertToUser();
+        }
+        currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        System.out.println("currentlocation");
+        System.out.println(currentLocation);
+        System.out.println("POS MANEJADOR");
 
         Criteria criterio = new Criteria();
         criterio.setCostAllowed(false);
         criterio.setAltitudeRequired(false);
         criterio.setAccuracy(Criteria.ACCURACY_FINE);
-        proveedor = manejador.getBestProvider(criterio, true);
+        proveedor = locationManager.getBestProvider(criterio, true);
 
         mHandler = new Handler();
+
+
+        setUpMapIfNeeded();
+//        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+    }
+
+    private void showGPSDisabledAlertToUser(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage("GPS is disabled in your device. Would you like to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Goto Settings Page To Enable GPS",
+                        new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface dialog, int id){
+                                Intent callGPSSettingIntent = new Intent(
+                                        android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(callGPSSettingIntent);
+                            }
+                        });
+        alertDialogBuilder.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog, int id){
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
     }
 
     @Override
@@ -99,14 +136,21 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
             map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                     MIN_TIME, MIN_DISTANCE, this);
             //You can also use LocationManager.GPS_PROVIDER and LocationManager.PASSIVE_PROVIDER
             // Check if we were successful in obtaining the map.
             if (map != null) {
+                dialogWait.hide();
                 startRepeatingTask();
             }
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopRepeatingTask();
     }
 
 
@@ -128,11 +172,18 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
     }
 
     private void updateStatus() {
-        Location loc = manejador.getLastKnownLocation(proveedor);
+        System.out.println("MANEJ");
+        System.out.println(locationManager);
+        System.out.println(proveedor);
+        System.out.println(locationManager.getProviders(true).toString());
+        System.out.println(locationManager.getLastKnownLocation(proveedor));
+
+        Location loc = locationManager.getLastKnownLocation(proveedor);
+
+        System.out.println(loc);
         if (loc != null) {
-            dialogWait.hide();
+            db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
         }
-        db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
     }
 
     private String getStreet(Location localization) {
@@ -152,8 +203,13 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
         }
     }
 
+
+
+    // GPS
     @Override
     public void onLocationChanged(Location location) {
+        System.out.println("New location!");
+        currentLocation = location;
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 10);
         map.animateCamera(cameraUpdate);
@@ -168,6 +224,10 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
 
     @Override
     public void onProviderDisabled(String provider) { }
+
+
+
+
 
     public void displayStopChoices(View view) {
 
@@ -198,6 +258,13 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(title != null) {
+                    Location loc = locationManager.getLastKnownLocation(proveedor);
+                    String street = getStreet(loc);
+                    String text = null;
+                    if(title.equals("Otros")) {
+                        text = editText.getText().toString();
+                    }
+                    db.saveComment(loc.getLatitude(),loc.getLongitude(),street, title, text);
                     addMarker(title);
                 }
             }
@@ -218,10 +285,11 @@ public class MapsActivity extends ActionBarActivity implements LocationListener 
      */
     private void addMarker(String title) {
 
-        Location loc = manejador.getLastKnownLocation(proveedor);
+        Location loc = locationManager.getLastKnownLocation(proveedor);
 
 //        db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
         LatLng coordinates = new LatLng(loc.getLatitude(), loc.getLongitude());
         map.addMarker(new MarkerOptions().position(coordinates).title(title));
     }
+
 }

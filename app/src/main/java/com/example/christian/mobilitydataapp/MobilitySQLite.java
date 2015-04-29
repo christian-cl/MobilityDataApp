@@ -16,10 +16,20 @@ import java.util.Vector;
 //Métodos de SQLiteOpenHelper
 public class MobilitySQLite extends SQLiteOpenHelper {
 
+    private static final String DATABASE_NAME = "mobilityDB";
+
+    private static final int DATABASE_VERSION = 1;
+
+    //Consulta para crear la base de datos
+//    private static final String DATABASE_CREATE = "create table todo " +
+//            "(_id integer primary key autoincrement, "
+//            + "category text not null, summary text not null, description text not null);";
+
+
     public enum query {
         CREATE_TABLE_POINTS("CREATE TABLE points (_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                " latitude DOUBLE, longitude DOUBLE, address STRING, " +
-                "date DATETIME DEFAULT CURRENT_TIMESTAMP)"),
+                " latitude DOUBLE, longitude DOUBLE, address STRING, stoptype STRING, " +
+                "comment STRING, date DATETIME DEFAULT CURRENT_TIMESTAMP)"),
         DROP_TABLE_POINTS("DROP TABLE IF EXISTS points");
 //        INSERT_POINTS("INSERT INTO points VALUES ( null, %s, %s, %s)",latitude,longitude,address);
 
@@ -37,7 +47,7 @@ public class MobilitySQLite extends SQLiteOpenHelper {
 
     //Métodos de SQLiteOpenHelper
     public MobilitySQLite(Context context) {
-        super(context, "mobilityDB", null, 1);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
@@ -55,6 +65,14 @@ public class MobilitySQLite extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         db.execSQL("INSERT INTO points (latitude, longitude, address) VALUES ("+
                 latitude+", "+longitude+", '" + address + "')");
+        db.close();
+    }
+
+    public void saveComment(double latitude, double longitude, String address,
+                            String type, String text) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("INSERT INTO points (latitude, longitude, address) VALUES ("+
+                latitude+", "+longitude+", '" + address + "', '" + type + "'" + text + "')");
         db.close();
     }
 
