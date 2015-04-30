@@ -52,7 +52,7 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     private boolean isGPSEnabled;
     private long MIN_TIME_BW_UPDATES_GPS = 2000;
     private long MIN_DISTANCE_CHANGE_FOR_UPDATES_GPS = 1;
-    private LocationListener gpslocationListener;
+    private LocationListener gpsLocationListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -89,7 +89,7 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
 
                 // Register GPSStatus listener for events
                 manejador.addGpsStatusListener(mGPSStatusListener);
-                gpslocationListener = new LocationListener()
+                gpsLocationListener = new LocationListener()
                 {
                     public void onLocationChanged(Location loc)
                     {
@@ -101,7 +101,7 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
 
                 manejador.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                         MIN_TIME_BW_UPDATES_GPS, MIN_DISTANCE_CHANGE_FOR_UPDATES_GPS,
-                        gpslocationListener);
+                        gpsLocationListener);
             }
         }
 //        log("======================");

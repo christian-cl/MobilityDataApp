@@ -35,7 +35,7 @@ import java.util.Locale;
 public class MapsActivity extends ActionBarActivity {
 
     private static final long MIN_TIME = 10 * 1000; // 10 sec
-    private static final float MIN_DISTANCE = 5; // 5 meters
+    private static final float MIN_DISTANCE = 1; // 5 meters
     private static final int ZOOM = 80;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
@@ -51,7 +51,7 @@ public class MapsActivity extends ActionBarActivity {
     private static final int INTERVAL = 5000; // 5 seconds by default, can be changed later
     private Handler mHandler;
     private Location currentLocation;
-    private LocationListener gpslocationListener;
+    private LocationListener gpsLocationListener;
     public GpsStatus.Listener mGPSStatusListener = new GpsStatus.Listener() {
         public void onGpsStatusChanged(int event) {
             switch (event) {
@@ -112,7 +112,7 @@ public class MapsActivity extends ActionBarActivity {
             if (locationManager != null) {
                 // Register GPSStatus listener for events
                 locationManager.addGpsStatusListener(mGPSStatusListener);
-                gpslocationListener = new LocationListener(){
+                gpsLocationListener = new LocationListener(){
                     @Override
                     public void onLocationChanged(Location location) {
                         log("New Location");
@@ -150,7 +150,7 @@ public class MapsActivity extends ActionBarActivity {
                     }
                 };
 
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, gpslocationListener);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, gpsLocationListener);
             }
         }
 //        log("======================");
@@ -161,14 +161,14 @@ public class MapsActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, gpslocationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, gpsLocationListener);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         stopRepeatingTask();
-        locationManager.removeUpdates(gpslocationListener);
+        locationManager.removeUpdates(gpsLocationListener);
     }
 
     private void configureDialogWait() {
