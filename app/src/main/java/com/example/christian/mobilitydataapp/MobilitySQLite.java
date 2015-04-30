@@ -70,9 +70,10 @@ public class MobilitySQLite extends SQLiteOpenHelper {
 
     public void saveComment(double latitude, double longitude, String address,
                             String type, String text) {
+        System.out.println("Inserting: " + latitude + " " + longitude + " " + address + " " + type + " " + text);
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("INSERT INTO points (latitude, longitude, address) VALUES ("+
-                latitude+", "+longitude+", '" + address + "', '" + type + "'" + text + "')");
+        db.execSQL("INSERT INTO points (latitude, longitude, address, stoptype, comment) VALUES ("+
+                latitude+", "+longitude+", '" + address + "', '" + type + "', '" + text + "')");
         db.close();
     }
 

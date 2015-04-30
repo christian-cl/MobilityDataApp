@@ -3,19 +3,16 @@ package com.example.christian.mobilitydataapp;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -23,7 +20,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -31,10 +32,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-public class MapsActivity extends Activity {
+public class MapsActivity extends ActionBarActivity {
 
     private static final long MIN_TIME = 400;
     private static final float MIN_DISTANCE = 10;
+    private static final int ZOOM = 80;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
     String title = null;
@@ -115,6 +117,12 @@ public class MapsActivity extends Activity {
                         int lng = (int) (location.getLongitude());
                         System.out.println("LAT " + String.valueOf(lat));
                         System.out.println("LON " + String.valueOf(lng));
+
+                        currentLocation = location;
+                        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, ZOOM);
+                        map.animateCamera(cameraUpdate);
+                        locationManager.removeUpdates(this);
                     }
 
                     @Override
@@ -139,6 +147,8 @@ public class MapsActivity extends Activity {
             }
         }
 //        log("======================");
+
+        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
     }
 
     @Override
@@ -215,13 +225,7 @@ public class MapsActivity extends Activity {
     }
 
     private void updateStatus() {
-        System.out.println("MANEJ");
-        System.out.println(locationManager);
-        System.out.println(provider);
-        System.out.println(locationManager.getProviders(true).toString());
-        System.out.println(locationManager.getLastKnownLocation(provider));
-
-        Location loc = locationManager.getLastKnownLocation(provider);
+        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
         System.out.println(loc);
         if (loc != null) {
@@ -274,7 +278,7 @@ public class MapsActivity extends Activity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(title != null) {
-                    Location loc = locationManager.getLastKnownLocation(provider);
+                    Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     String street = getStreet(loc);
                     String text = null;
                     if(title.equals("Otros")) {
@@ -300,7 +304,7 @@ public class MapsActivity extends Activity {
      * @param title text of the marker
      */
     private void addMarker(String title) {
-        Location loc = locationManager.getLastKnownLocation(provider);
+        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 //        db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
         LatLng coordinates = new LatLng(loc.getLatitude(), loc.getLongitude());
         map.addMarker(new MarkerOptions().position(coordinates).title(title));
