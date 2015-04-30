@@ -107,16 +107,16 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
 //        log("======================");
 
 
-        mHandler = new Handler();
-
-        progress = new ProgressDialog(this);
-
-        // For alternative thread task
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(MiIntentService.ACTION_PROGRESO);
-        filter.addAction(MiIntentService.ACTION_FIN);
-        rcv = new ProgressReceiver();
-        registerReceiver(rcv, filter);
+//        mHandler = new Handler();
+//
+//        progress = new ProgressDialog(this);
+//
+//        // For alternative thread task
+//        IntentFilter filter = new IntentFilter();
+//        filter.addAction(MiIntentService.ACTION_PROGRESO);
+//        filter.addAction(MiIntentService.ACTION_FIN);
+//        rcv = new ProgressReceiver();
+//        registerReceiver(rcv, filter);
     }
 
     // Métodos del ciclo de vida de la actividad

@@ -1,6 +1,5 @@
 package com.example.christian.mobilitydataapp;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -13,18 +12,19 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
+import android.text.Layout;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -34,8 +34,8 @@ import java.util.Locale;
 
 public class MapsActivity extends ActionBarActivity {
 
-    private static final long MIN_TIME = 400;
-    private static final float MIN_DISTANCE = 10;
+    private static final long MIN_TIME = 10 * 1000; // 10 sec
+    private static final float MIN_DISTANCE = 5; // 5 meters
     private static final int ZOOM = 80;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
@@ -43,31 +43,31 @@ public class MapsActivity extends ActionBarActivity {
 
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     private LocationManager locationManager;
-    private String provider;
     private ProgressDialog dialogWait;
     private MobilitySQLite db;
+    private TextView salida;
 
     // Process to repeat
     private static final int INTERVAL = 5000; // 5 seconds by default, can be changed later
     private Handler mHandler;
     private Location currentLocation;
-    private boolean isGPSEnabled;
     private LocationListener gpslocationListener;
-    private GoogleApiClient mGoogleApiClient;
     public GpsStatus.Listener mGPSStatusListener = new GpsStatus.Listener() {
         public void onGpsStatusChanged(int event) {
             switch (event) {
                 case GpsStatus.GPS_EVENT_STARTED:
                     dialogWait.show();
+                    log("GPS searching...");
                     Toast.makeText(MapsActivity.this, "GPS_SEARCHING", Toast.LENGTH_SHORT).show();
                     System.out.println("TAG - GPS searching: ");
                     break;
                 case GpsStatus.GPS_EVENT_STOPPED:
-                    dialogWait.show();
+                    log("GPS was stopped");
+//                    dialogWait.show();
                     System.out.println("TAG - GPS Stopped");
                     break;
                 case GpsStatus.GPS_EVENT_FIRST_FIX:
-
+                    log("GPS locked position");
                 /*
                  * GPS_EVENT_FIRST_FIX Event is called when GPS is locked
                  */
@@ -82,7 +82,7 @@ public class MapsActivity extends ActionBarActivity {
                     /*
                      * Removing the GPS status listener once GPS is locked
                      */
-                        locationManager.removeGpsStatusListener(mGPSStatusListener);
+//                        locationManager.removeGpsStatusListener(mGPSStatusListener);
                     }
 
                     break;
@@ -102,17 +102,21 @@ public class MapsActivity extends ActionBarActivity {
         configureDialogWait();
         db = new MobilitySQLite(this);
         mHandler = new Handler();
+        salida = (TextView) findViewById(R.id.salida);
+        salida.setMovementMethod(new ScrollingMovementMethod());
+        log("Create activity");
 
-        locationManager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
-        isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (isGPSEnabled) {
             if (locationManager != null) {
                 // Register GPSStatus listener for events
                 locationManager.addGpsStatusListener(mGPSStatusListener);
-                gpslocationListener = new LocationListener()
-                {
+                gpslocationListener = new LocationListener(){
                     @Override
                     public void onLocationChanged(Location location) {
+                        log("New Location");
+                        Toast.makeText(MapsActivity.this, "New Location", Toast.LENGTH_SHORT).show();
                         int lat = (int) (location.getLatitude());
                         int lng = (int) (location.getLongitude());
                         System.out.println("LAT " + String.valueOf(lat));
@@ -122,7 +126,10 @@ public class MapsActivity extends ActionBarActivity {
                         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, ZOOM);
                         map.animateCamera(cameraUpdate);
-                        locationManager.removeUpdates(this);
+
+                        LatLng coordinates = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                        map.addMarker(new MarkerOptions().position(coordinates).title("YO"));
+//                        locationManager.removeUpdates(this);
                     }
 
                     @Override
@@ -181,32 +188,6 @@ public class MapsActivity extends ActionBarActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-//    @Override
-//    public void onLocationChanged(Location location) {
-//        int lat = (int) (location.getLatitude());
-//        int lng = (int) (location.getLongitude());
-//        System.out.println("LAT " + String.valueOf(lat));
-//        System.out.println("LON " + String.valueOf(lng));
-//    }
-//
-//    @Override
-//    public void onStatusChanged(String provider, int status, Bundle extras) {
-//        // TODO Auto-generated method stub
-//        dialogWait.hide();
-//    }
-//
-//    @Override
-//    public void onProviderEnabled(String provider) {
-//        Toast.makeText(this, "Enabled new provider " + provider,
-//                Toast.LENGTH_SHORT).show();
-//    }
-//
-//    @Override
-//    public void onProviderDisabled(String provider) {
-//        Toast.makeText(this, "Disabled provider " + provider,
-//                Toast.LENGTH_SHORT).show();
-//    }
-
     // Repeat process for catch information
     private Runnable mStatusChecker = new Runnable() {
         @Override
@@ -216,9 +197,9 @@ public class MapsActivity extends ActionBarActivity {
         }
     };
 
-    private void startRepeatingTask() {
-        mStatusChecker.run();
-    }
+//    private void startRepeatingTask() {
+//        mStatusChecker.run();
+//    }
 
     private void stopRepeatingTask() {
         mHandler.removeCallbacks(mStatusChecker);
@@ -236,7 +217,7 @@ public class MapsActivity extends ActionBarActivity {
     private String getStreet(Location localization) {
         if(localization != null) {
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-            List<Address> addresses = null;
+            List<Address> addresses;
             try {
                 addresses = geocoder.getFromLocation(localization.getLatitude(), localization.getLongitude(), 1);
                 // Only considered the first result
@@ -307,7 +288,20 @@ public class MapsActivity extends ActionBarActivity {
         Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 //        db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
         LatLng coordinates = new LatLng(loc.getLatitude(), loc.getLongitude());
+        log("Adding marker to (" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
         map.addMarker(new MarkerOptions().position(coordinates).title(title));
     }
 
+    // Métodos para mostrar información
+    private void log(String cadena) {
+        salida.append(cadena + "\n");
+        // Scrolling down
+        final Layout layout = salida.getLayout();
+        if(layout != null){
+            int scrollDelta = layout.getLineBottom(salida.getLineCount() - 1)
+                    - salida.getScrollY() - salida.getHeight();
+            if(scrollDelta > 0)
+                salida.scrollBy(0, scrollDelta);
+        }
+    }
 }

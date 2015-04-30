@@ -14,13 +14,27 @@
         <!--android:id="@+id/map"-->
         <!--tools:context=".MapsActivity"-->
         <!--android:name="com.google.android.gms.maps.SupportMapFragment" />-->
-    <fragment
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/map"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:name="com.google.android.gms.maps.MapFragment"/>
+    <!--<RelativeLayout-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="fill_parent">-->
+        <fragment
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:name="com.google.android.gms.maps.MapFragment"/>
 
+        <!--<ScrollView-->
+            <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent">-->
+            <TextView
+                android:id="@+id/salida"
+                android:layout_width="379dp"
+                android:layout_height="74dp"
+                android:layout_gravity="right|top"/>
+        <!--</ScrollView>-->
+    <!--</RelativeLayout>-->
     <!--android:background="@drawable/circle"-->
     <ImageButton
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -30,4 +44,5 @@
         android:src="@mipmap/ic_add_white"
         android:onClick="displayStopChoices"
         android:layout_gravity="end|bottom" />
+
 </FrameLayout>
