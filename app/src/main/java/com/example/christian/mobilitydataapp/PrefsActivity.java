@@ -8,9 +8,13 @@ import android.preference.PreferenceActivity;
  */
 public class PrefsActivity extends PreferenceActivity {
 
+    private GlobalClass globalVariable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.layout.activity_preferences);
+
+        globalVariable = (GlobalClass) getApplicationContext();
     }
 }
