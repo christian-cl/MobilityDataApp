@@ -1,0 +1,20 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <!--android:icon="@drawable/search"-->
+    <header
+        android:fragment="com.example.christian.mobilitydataapp.SettingsFragment"
+        android:title="@string/setting_title" >
+        <extra
+            android:name="resource"
+            android:value="preferences" />
+    </header>
+    <!--<header-->
+        <!--android:fragment="com.miz.mizuu.Prefs"-->
+        <!--android:icon="@drawable/apptheme"-->
+        <!--android:title="@string/prefsUI" >-->
+        <!--<extra-->
+            <!--android:name="resource"-->
+            <!--android:value="preferences2" />-->
+    <!--</header>-->
+
+</preference-headers>

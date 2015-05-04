@@ -7,9 +7,7 @@
 package com.example.christian.mobilitydataapp;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -60,7 +58,7 @@ public class MainActivity extends ActionBarActivity {
     }
     /** Called when the user clicks the Send button */
     public void sendMessagePreferences() {
-        Intent intent = new Intent(this,PrefsActivity.class);
+        Intent intent = new Intent(this,SettingsActivity.class);
         startActivity(intent);
     }
 

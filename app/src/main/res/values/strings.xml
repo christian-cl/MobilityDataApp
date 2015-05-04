@@ -16,4 +16,10 @@
     <string name="button_show">Show</string>
     <string name="button_reset">Reset</string>
     <string name="button_save">Save</string>
+
+
+    <string name="setting_title">Data Information</string>
+    <string name="setting_interval_title">Interval time</string>
+    <string name="setting_interval_summary">Interval time summary</string>
+
 </resources>

@@ -3,6 +3,8 @@ package com.example.christian.mobilitydataapp;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.GpsStatus;
@@ -11,11 +13,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -37,9 +41,9 @@ public class MapsActivity extends ActionBarActivity {
     private static final int ZOOM = 80;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
-    private GlobalClass globalVariable = (GlobalClass) getApplicationContext();
+//    private GlobalClass globalVariable = (GlobalClass) getApplicationContext();
 
-    private long MIN_TIME; // 10 sec
+    private long MIN_TIME = 10 * 1000; // 10 sec
     private float MIN_DISTANCE = 1; // 5 meters
 
 
@@ -60,7 +64,7 @@ public class MapsActivity extends ActionBarActivity {
         public void onGpsStatusChanged(int event) {
             switch (event) {
                 case GpsStatus.GPS_EVENT_STARTED:
-                    dialogWait.show();
+//                    dialogWait.show();
                     log("GPS searching...");
                     Toast.makeText(MapsActivity.this, "GPS_SEARCHING", Toast.LENGTH_SHORT).show();
                     System.out.println("TAG - GPS searching: ");
@@ -92,15 +96,16 @@ public class MapsActivity extends ActionBarActivity {
         }
     };
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        globalVariable.setMilliSeconds(10 * 1000);
-        MIN_TIME = globalVariable.getMilliSeconds();
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String syncConnPref = sharedPrefs.getString("pref_key_interval_time", "0");
+        int intervalSetting = Integer.parseInt(syncConnPref);
+        MIN_TIME = intervalSetting * 1000;
 
         configureDialogWait();
         db = new MobilitySQLite(this);
@@ -188,6 +193,23 @@ public class MapsActivity extends ActionBarActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_map, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch(item.getItemId())
+        {
+            case R.id.action_settings:
+                sendSettings();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void sendSettings() {
+        startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
     }
 
     // Repeat process for catch information
