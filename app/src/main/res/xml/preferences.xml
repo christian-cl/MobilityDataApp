@@ -1,0 +1,12 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/setting_title"
+        android:key="general_settings">
+        <EditTextPreference
+            android:key="pref_key_interval_time"
+            android:summary="@string/setting_interval_summary"
+            android:title="@string/setting_interval_title"
+            android:defaultValue="1"
+            android:inputType="number"/>
+    </PreferenceCategory>
+</PreferenceScreen>
