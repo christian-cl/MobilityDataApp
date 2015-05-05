@@ -21,5 +21,7 @@
     <string name="setting_title">Data Information</string>
     <string name="setting_interval_title">Interval time</string>
     <string name="setting_interval_summary">Interval time summary</string>
+    <string name="setting_collect_time_title">Time to collect</string>
+    <string name="setting_collect_time_summary">Time to collect summary</string>
 
 </resources>

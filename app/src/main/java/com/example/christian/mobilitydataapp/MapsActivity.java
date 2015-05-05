@@ -25,6 +25,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.christian.mobilitydataapp.persistence.DataCapture;
+import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -52,7 +54,7 @@ public class MapsActivity extends ActionBarActivity {
     private GoogleMap map; // Might be null if Google Play services APK is not available.
     private LocationManager locationManager;
     private ProgressDialog dialogWait;
-    private MobilitySQLite db;
+    private DataCaptureDAO db;
     private TextView salida;
 
     // Process to repeat
@@ -80,14 +82,12 @@ public class MapsActivity extends ActionBarActivity {
                  * GPS_EVENT_FIRST_FIX Event is called when GPS is locked
                  */
                     Toast.makeText(MapsActivity.this, "GPS_LOCKED", Toast.LENGTH_SHORT).show();
-                    dialogWait.hide();
+                    dialogWait.dismiss();
                     Location gpslocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
                     if (gpslocation != null) {
                         String s = "GPS Info:" + gpslocation.getLatitude() + ":" + gpslocation.getLongitude();
                         System.out.println(s);
                     }
-
                     break;
                 case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
                     //                 System.out.println("TAG - GPS_EVENT_SATELLITE_STATUS");
@@ -100,7 +100,6 @@ public class MapsActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         String syncConnPref = sharedPrefs.getString("pref_key_interval_time", "0");
@@ -108,7 +107,8 @@ public class MapsActivity extends ActionBarActivity {
         MIN_TIME = intervalSetting * 1000;
 
         configureDialogWait();
-        db = new MobilitySQLite(this);
+        db = new DataCaptureDAO(this);
+        db.open();
         mHandler = new Handler();
         salida = (TextView) findViewById(R.id.salida);
         salida.setMovementMethod(new ScrollingMovementMethod());
@@ -146,6 +146,7 @@ public class MapsActivity extends ActionBarActivity {
         }
 
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+        startRepeatingTask();
     }
 
     private void myLocationChanged(Location location) {
@@ -168,12 +169,16 @@ public class MapsActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        db.open();
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, gpsLocationListener);
+        startRepeatingTask();
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        db.close();
         stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
     }
@@ -221,17 +226,28 @@ public class MapsActivity extends ActionBarActivity {
         }
     };
 
-//    private void startRepeatingTask() {
-//        mStatusChecker.run();
-//    }
+    private void startRepeatingTask() {
+        mStatusChecker.run();
+    }
 
     private void stopRepeatingTask() {
         mHandler.removeCallbacks(mStatusChecker);
     }
 
     private void updateStatus() {
-        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (loc != null) db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
+//        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        if(currentLocation != null) {
+            System.out.println("TESTT");
+            System.out.println(currentLocation.getLatitude() + " " + currentLocation.getLongitude());
+            Location loc = currentLocation;
+            if (loc != null) {
+                DataCapture dc = new DataCapture();
+                dc.setLatitude(loc.getLatitude());
+                dc.setLongitude(loc.getLongitude());
+                db.create(dc);
+//                db.savePoints(loc.getLatitude(), loc.getLongitude(), getStreet(loc));
+            }
+        }
     }
 
     private String getStreet(Location localization) {
@@ -240,6 +256,8 @@ public class MapsActivity extends ActionBarActivity {
             List<Address> addresses;
             try {
                 addresses = geocoder.getFromLocation(localization.getLatitude(), localization.getLongitude(), 1);
+                System.out.println("Address");
+                System.out.println(addresses);
                 // Only considered the first result
                 return addresses.get(0).getAddressLine(0);
             } catch (IOException e) {
@@ -280,12 +298,20 @@ public class MapsActivity extends ActionBarActivity {
             public void onClick(DialogInterface dialog, int which) {
                 if(title != null) {
                     Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    String street = getStreet(loc);
+                    String street = null;//getStreet(loc);
                     String text = null;
                     if(title.equals("Otros")) {
                         text = editText.getText().toString();
                     }
-                    db.saveComment(loc.getLatitude(),loc.getLongitude(),street, title, text);
+
+                    DataCapture dc = new DataCapture();
+                    dc.setLatitude(loc.getLatitude());
+                    dc.setLongitude(loc.getLongitude());
+                    dc.setAddress(street);
+                    dc.setStopType(title);
+                    dc.setComment(text);
+                    db.create(dc);
+
                     addMarker(title);
                 }
             }
@@ -293,7 +319,7 @@ public class MapsActivity extends ActionBarActivity {
         builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
+                dialog.dismiss();
             }
         });
         AlertDialog alert = builder.create();

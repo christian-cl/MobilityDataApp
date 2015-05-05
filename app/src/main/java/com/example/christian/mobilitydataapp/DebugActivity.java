@@ -25,6 +25,9 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.christian.mobilitydataapp.persistence.DataCapture;
+import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -43,8 +46,8 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     private String proveedor;
     private TextView salida;
     private ProgressDialog progress;
-    MobilitySQLite db;
-    ProgressReceiver rcv;
+    DataCaptureDAO db;
+//    ProgressReceiver rcv;
 
     // Process to repeat
     private int INTERVAL = 5000; // 5 seconds by default, can be changed later
@@ -61,7 +64,8 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         salida = (TextView) findViewById(R.id.salida);
-        db = new MobilitySQLite(this);
+        db = new DataCaptureDAO(this);
+        db.open();
         manejador = (LocationManager) getSystemService(LOCATION_SERVICE);
 
 
@@ -131,7 +135,7 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     protected void onPause() {
         super.onPause();
         manejador.removeUpdates(this);
-        unregisterReceiver(rcv);
+//        unregisterReceiver(rcv);
     }
 
     // Métodos de la interfaz LocationListener
@@ -269,9 +273,9 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     public void sendMessage(View view) {
 //        progress.create();
         progress.show();
-        Intent msgIntent = new Intent(DebugActivity.this, MiIntentService.class);
-        msgIntent.putExtra("iteraciones", 10);
-        startService(msgIntent);
+//        Intent msgIntent = new Intent(DebugActivity.this, MiIntentService.class);
+//        msgIntent.putExtra("iteraciones", 10);
+//        startService(msgIntent);
     }
 
     public void start(View view) {
@@ -283,11 +287,16 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     }
 
     public void show(View view) {
-        log(db.listAllPoints().toString());
+        List<DataCapture> list = db.getAll();
+        for(DataCapture dc : list) {
+            log(dc.getId() + " " + dc.getLatitude() + " " + dc.getLongitude() + " " +
+                    dc.getAddress() + " " + dc.getStopType() + " " + dc.getComment() +
+                    " " + dc.getDate());
+        }
     }
 
     public void reset(View view) {
-        db.resetTablePoints();
+//        db.resetTablePoints();
     }
 
 
@@ -312,21 +321,21 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     }
 
 
-    public class ProgressReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals(MiIntentService.ACTION_PROGRESO)) {
-                int prog = intent.getIntExtra("progreso", 0);
-                progress.setProgress(prog);
-            }
-            else if(intent.getAction().equals(MiIntentService.ACTION_FIN)) {
-                Toast.makeText(DebugActivity.this, "Tarea finalizada!", Toast.LENGTH_SHORT).show();
-                MobilitySQLite db = new MobilitySQLite(DebugActivity.this);
-                log(db.listAllPoints().toString());
-            }
-        }
-    }
+//    public class ProgressReceiver extends BroadcastReceiver {
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            if(intent.getAction().equals(MiIntentService.ACTION_PROGRESO)) {
+//                int prog = intent.getIntExtra("progreso", 0);
+//                progress.setProgress(prog);
+//            }
+//            else if(intent.getAction().equals(MiIntentService.ACTION_FIN)) {
+//                Toast.makeText(DebugActivity.this, "Tarea finalizada!", Toast.LENGTH_SHORT).show();
+////                MobilitySQLite db = new MobilitySQLite(DebugActivity.this);
+//                log(db.getAll().toString());
+//            }
+//        }
+//    }
 
 
 
@@ -351,7 +360,7 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
     void updateStatus() {
         Location localizacion = manejador.getLastKnownLocation(proveedor);
 
-        db.savePoints(50,-9.674,"ET 742");
+//        db.c(50,-9.674,"ET 742");
         muestraLocaliz(localizacion);
 //        log("RRLocalización desconocida\n");
     }

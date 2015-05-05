@@ -8,5 +8,11 @@
             android:title="@string/setting_interval_title"
             android:defaultValue="1"
             android:inputType="number"/>
+        <EditTextPreference
+            android:key="pref_key_interval_time"
+            android:summary="@string/setting_collect_time_summary"
+            android:title="@string/setting_collect_time_title"
+            android:defaultValue="1"
+            android:inputType="number"/>
     </PreferenceCategory>
 </PreferenceScreen>
