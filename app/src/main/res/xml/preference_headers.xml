@@ -8,13 +8,5 @@
             android:name="resource"
             android:value="preferences" />
     </header>
-    <!--<header-->
-        <!--android:fragment="com.miz.mizuu.Prefs"-->
-        <!--android:icon="@drawable/apptheme"-->
-        <!--android:title="@string/prefsUI" >-->
-        <!--<extra-->
-            <!--android:name="resource"-->
-            <!--android:value="preferences2" />-->
-    <!--</header>-->
 
 </preference-headers>

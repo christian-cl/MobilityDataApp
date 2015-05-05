@@ -1,6 +1,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:title="@string/setting_title"
+        android:title="@string/setting_GPS_title"
         android:key="general_settings">
         <EditTextPreference
             android:key="pref_key_interval_time"
@@ -9,10 +9,20 @@
             android:defaultValue="1"
             android:inputType="number"/>
         <EditTextPreference
-            android:key="pref_key_interval_time"
+            android:key="pref_key_min_distance"
+            android:summary="@string/setting_min_distance_summary"
+            android:title="@string/setting_min_distance_title"
+            android:defaultValue="5"
+            android:inputType="number"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/setting_capture_title"
+        android:key="general_settings">
+        <EditTextPreference
+            android:key="pref_key_interval_capture"
             android:summary="@string/setting_collect_time_summary"
             android:title="@string/setting_collect_time_title"
-            android:defaultValue="1"
+            android:defaultValue="15"
             android:inputType="number"/>
     </PreferenceCategory>
 </PreferenceScreen>

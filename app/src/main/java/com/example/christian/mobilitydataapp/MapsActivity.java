@@ -17,6 +17,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -43,11 +44,8 @@ public class MapsActivity extends ActionBarActivity {
     private static final int ZOOM = 80;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
-//    private GlobalClass globalVariable = (GlobalClass) getApplicationContext();
-
-    private long MIN_TIME = 10 * 1000; // 10 sec
-    private float MIN_DISTANCE = 1; // 5 meters
-
+    private long intervalTimeGPS; // milliseconds
+    private float minDistance; // meters
 
     String title = null;
 
@@ -57,8 +55,21 @@ public class MapsActivity extends ActionBarActivity {
     private DataCaptureDAO db;
     private TextView salida;
 
+    private SharedPreferences pref; // Settings listener
+    SharedPreferences.OnSharedPreferenceChangeListener prefListener =
+            new SharedPreferences.OnSharedPreferenceChangeListener() {
+                public void onSharedPreferenceChanged(SharedPreferences prefs,
+                                                      String key) {
+
+                    System.out.println("-----KEY");
+                    System.out.println(key);
+//                    if (key.equals("date")) {
+//                    }
+                }
+            };
+
     // Process to repeat
-    private static final int INTERVAL = 5000; // 5 seconds by default, can be changed later
+    private int intervalCapture;
     private Handler mHandler;
     private Location currentLocation;
     private LocationListener gpsLocationListener;
@@ -96,15 +107,15 @@ public class MapsActivity extends ActionBarActivity {
         }
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String syncConnPref = sharedPrefs.getString("pref_key_interval_time", "0");
-        int intervalSetting = Integer.parseInt(syncConnPref);
-        MIN_TIME = intervalSetting * 1000;
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        pref.registerOnSharedPreferenceChangeListener(prefListener);
+        loadSettings();
 
         configureDialogWait();
         db = new DataCaptureDAO(this);
@@ -141,12 +152,28 @@ public class MapsActivity extends ActionBarActivity {
                     }
                 };
 
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, gpsLocationListener);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
             }
         }
 
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         startRepeatingTask();
+    }
+
+    private void loadSettings() {
+        Log.i("MapActivity","Loading settings...");
+        String syncConnPref = pref.getString("pref_key_interval_time", "0");
+        int intervalTimeSetting = Integer.parseInt(syncConnPref);
+
+        syncConnPref = pref.getString("pref_key_interval_capture", "0");
+        int intervalCaptureSetting = Integer.parseInt(syncConnPref);
+
+        syncConnPref = pref.getString("pref_key_min_distance", "0");
+        int minDistanceSetting = Integer.parseInt(syncConnPref);
+
+        intervalTimeGPS = intervalTimeSetting * 1000;
+        intervalCapture = intervalCaptureSetting * 1000;
+        minDistance = minDistanceSetting;
     }
 
     private void myLocationChanged(Location location) {
@@ -170,17 +197,18 @@ public class MapsActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         db.open();
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, gpsLocationListener);
+        pref.registerOnSharedPreferenceChangeListener(prefListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
         startRepeatingTask();
-
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        db.close();
         stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
+        pref.unregisterOnSharedPreferenceChangeListener(prefListener);
+        db.close();
     }
 
     private void configureDialogWait() {
@@ -222,7 +250,7 @@ public class MapsActivity extends ActionBarActivity {
         @Override
         public void run() {
             updateStatus(); //this function can change value of mInterval.
-            mHandler.postDelayed(mStatusChecker, INTERVAL);
+            mHandler.postDelayed(mStatusChecker, intervalCapture);
         }
     };
 
@@ -235,7 +263,6 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     private void updateStatus() {
-//        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(currentLocation != null) {
             System.out.println("TESTT");
             System.out.println(currentLocation.getLatitude() + " " + currentLocation.getLongitude());
@@ -245,7 +272,6 @@ public class MapsActivity extends ActionBarActivity {
                 dc.setLatitude(loc.getLatitude());
                 dc.setLongitude(loc.getLongitude());
                 db.create(dc);
-//                db.savePoints(loc.getLatitude(), loc.getLongitude(), getStreet(loc));
             }
         }
     }
@@ -350,4 +376,11 @@ public class MapsActivity extends ActionBarActivity {
                 salida.scrollBy(0, scrollDelta);
         }
     }
+
+//    @Override
+//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+//        System.out.println("KEY");
+//        System.out.println(key);
+//        loadSettings();
+//    }
 }

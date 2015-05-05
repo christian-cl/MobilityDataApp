@@ -77,7 +77,7 @@ public class DataCaptureDAO {
         dataCapture.setAddress(cursor.getString(3));
         dataCapture.setStopType(cursor.getString(4));
         dataCapture.setComment(cursor.getString(5));
-        dataCapture.setDate(cursor.getLong(6));
+        dataCapture.setDate(cursor.getString(6));
         return dataCapture;
     }
 }

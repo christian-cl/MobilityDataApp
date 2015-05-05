@@ -12,7 +12,7 @@ public class DataCapture {
     private String address;
     private String stopType;
     private String comment;
-    private long date;
+    private String date;
 
     public DataCapture() {
     }
@@ -69,11 +69,11 @@ public class DataCapture {
         this.comment = comment;
     }
 
-    public long getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(long date) {
+    public void setDate(String date) {
         this.date = date;
     }
 }
