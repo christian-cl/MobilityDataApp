@@ -56,17 +56,8 @@ public class MapsActivity extends ActionBarActivity {
     private TextView salida;
 
     private SharedPreferences pref; // Settings listener
-    SharedPreferences.OnSharedPreferenceChangeListener prefListener =
-            new SharedPreferences.OnSharedPreferenceChangeListener() {
-                public void onSharedPreferenceChanged(SharedPreferences prefs,
-                                                      String key) {
-
-                    System.out.println("-----KEY");
-                    System.out.println(key);
-//                    if (key.equals("date")) {
-//                    }
-                }
-            };
+    // Preference change listener
+    private PreferenceChangeListener preferenceListener;
 
     // Process to repeat
     private int intervalCapture;
@@ -114,8 +105,9 @@ public class MapsActivity extends ActionBarActivity {
         setContentView(R.layout.activity_maps);
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
-        pref.registerOnSharedPreferenceChangeListener(prefListener);
         loadSettings();
+        preferenceListener = new PreferenceChangeListener();
+        pref.registerOnSharedPreferenceChangeListener(preferenceListener);
 
         configureDialogWait();
         db = new DataCaptureDAO(this);
@@ -197,7 +189,6 @@ public class MapsActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         db.open();
-        pref.registerOnSharedPreferenceChangeListener(prefListener);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
         startRepeatingTask();
     }
@@ -207,7 +198,6 @@ public class MapsActivity extends ActionBarActivity {
         super.onPause();
         stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
-        pref.unregisterOnSharedPreferenceChangeListener(prefListener);
         db.close();
     }
 
@@ -377,10 +367,16 @@ public class MapsActivity extends ActionBarActivity {
         }
     }
 
-//    @Override
-//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-//        System.out.println("KEY");
-//        System.out.println(key);
-//        loadSettings();
-//    }
+    /**
+     * Handle preferences changes
+     */
+    private class PreferenceChangeListener implements
+            SharedPreferences.OnSharedPreferenceChangeListener {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            Log.i("Settings", "Changed settings");
+            loadSettings();
+        }
+    }
+
 }
