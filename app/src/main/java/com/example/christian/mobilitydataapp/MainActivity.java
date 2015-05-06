@@ -20,9 +20,10 @@ public class MainActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher_inv);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         getSupportActionBar().setDisplayUseLogoEnabled(true);
-
+        getSupportActionBar().setLogo(R.mipmap.ic_launcher_inv);
     }
 
     @Override

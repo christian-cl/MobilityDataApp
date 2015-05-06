@@ -371,17 +371,6 @@ public class MapsActivity extends ActionBarActivity {
                 break;
             default: Log.e("MAP", "Marker type is not valid");
         }
-//        if(type.equals(Marker_Type.GPS)) {
-//            map.addMarker(new MarkerOptions().position(coordinates).title(title));
-//        } else if (type.equals(Marker_Type.STOP)) {
-//            map.addMarker(new MarkerOptions().position(coordinates)
-//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
-//        } else if (type.equals(Marker_Type.POSITION)) {
-//            map.addMarker(new MarkerOptions().position(coordinates)
-//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
-//        } else {
-//            Log.e("MAP", "Marker type is not valid");
-//        }
     }
 
     // Métodos para mostrar información
