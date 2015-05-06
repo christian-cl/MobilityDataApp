@@ -32,7 +32,9 @@ import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
@@ -41,8 +43,9 @@ import java.util.Locale;
 
 public class MapsActivity extends ActionBarActivity {
 
-    private static final int ZOOM = 80;
+    private static final int ZOOM = 20;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
+    private static enum Marker_Type {GPS, STOP, POSITION};
 
     private long intervalTimeGPS; // milliseconds
     private float minDistance; // meters
@@ -63,6 +66,7 @@ public class MapsActivity extends ActionBarActivity {
     private int intervalCapture;
     private Handler mHandler;
     private Location currentLocation;
+    private Marker currentMarker;
     private LocationListener gpsLocationListener;
     public GpsStatus.Listener mGPSStatusListener = new GpsStatus.Listener() {
         public void onGpsStatusChanged(int event) {
@@ -181,8 +185,7 @@ public class MapsActivity extends ActionBarActivity {
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, ZOOM);
         map.animateCamera(cameraUpdate);
 
-        LatLng coordinates = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        map.addMarker(new MarkerOptions().position(coordinates).title("YO"));
+        addMarker(Marker_Type.POSITION, null, currentLocation);
     }
 
     @Override
@@ -253,16 +256,15 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     private void updateStatus() {
-        if(currentLocation != null) {
-            System.out.println("TESTT");
-            System.out.println(currentLocation.getLatitude() + " " + currentLocation.getLongitude());
-            Location loc = currentLocation;
-            if (loc != null) {
-                DataCapture dc = new DataCapture();
-                dc.setLatitude(loc.getLatitude());
-                dc.setLongitude(loc.getLongitude());
-                db.create(dc);
-            }
+        if (currentLocation != null) {
+            Log.i("Collect data", "Collecting data in: " + currentLocation.getLatitude() + ", " + currentLocation.getLongitude());
+
+            DataCapture dc = new DataCapture();
+            dc.setLatitude(currentLocation.getLatitude());
+            dc.setLongitude(currentLocation.getLongitude());
+            db.create(dc);
+
+            addMarker(Marker_Type.GPS, null, currentLocation);
         }
     }
 
@@ -328,7 +330,8 @@ public class MapsActivity extends ActionBarActivity {
                     dc.setComment(text);
                     db.create(dc);
 
-                    addMarker(title);
+                    //Location loc = currentLocation;//locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    addMarker(Marker_Type.STOP, title, loc);
                 }
             }
         });
@@ -345,13 +348,40 @@ public class MapsActivity extends ActionBarActivity {
     /**
      * Simple method to add markers to the map
      * @param title text of the marker
+     * @param type If is GPS marker or Stop marker
      */
-    private void addMarker(String title) {
-        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    private void addMarker(Marker_Type type, String title, Location loc) {
+//        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 //        db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
         LatLng coordinates = new LatLng(loc.getLatitude(), loc.getLongitude());
-        log("Adding marker to (" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
-        map.addMarker(new MarkerOptions().position(coordinates).title(title));
+        Log.i("DB", "Adding marker to (" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
+
+        switch (type) {
+            case GPS: map.addMarker(new MarkerOptions().position(coordinates)
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
+                break;
+            case STOP: map.addMarker(new MarkerOptions().position(coordinates).title(title));
+                break;
+            case POSITION:
+                if (currentMarker != null) {
+                    currentMarker.remove();
+                }
+                currentMarker = map.addMarker(new MarkerOptions().position(coordinates)
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
+                break;
+            default: Log.e("MAP", "Marker type is not valid");
+        }
+//        if(type.equals(Marker_Type.GPS)) {
+//            map.addMarker(new MarkerOptions().position(coordinates).title(title));
+//        } else if (type.equals(Marker_Type.STOP)) {
+//            map.addMarker(new MarkerOptions().position(coordinates)
+//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
+//        } else if (type.equals(Marker_Type.POSITION)) {
+//            map.addMarker(new MarkerOptions().position(coordinates)
+//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
+//        } else {
+//            Log.e("MAP", "Marker type is not valid");
+//        }
     }
 
     // Métodos para mostrar información

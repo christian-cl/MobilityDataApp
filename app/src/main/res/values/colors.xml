@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ColorPrimary">#FF5722</color>
-    <color name="ColorPrimaryDark">#E64A19</color>
-    <color name="orange">#08000000</color>
+    <!--<color name="ColorPrimary">#FF5722</color>-->
+    <!--<color name="ColorPrimaryDark">#E64A19</color>-->
+    <!--<color name="orange">#08000000</color>-->
+
+    <color name="material_blue_500">#FF5722</color>
+    <color name="material_amber_A200">#FFD740</color>
+    <color name="material_deep_orange_700">#E64A19</color>
+    <color name="material_deep_orange_500">#FF5722</color>
+    <color name="material_grey_50">#FAFAFA</color>
 </resources>
