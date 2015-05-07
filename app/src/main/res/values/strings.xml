@@ -28,5 +28,7 @@
     <string name="setting_collect_time_summary">Time between data samples summary</string>
     <string name="setting_min_distance_title">Minimum distance to approximate position</string>
     <string name="setting_min_distance_summary">Minimum distance to approximate position summary</string>
+    <string name="setting_remove_database_title">Delete all captured data</string>
+    <string name="setting_remove_database_summary">Delete all captured data until now</string>
 
 </resources>

@@ -69,6 +69,10 @@ public class DataCaptureDAO {
         db.delete(TableDataCapture.TABLE_NAME, TableDataCapture.COLUMN_ID + " = " + id, null);
     }
 
+    public void deleteAll() {
+        db.delete(TableDataCapture.TABLE_NAME, null, null);
+    }
+
     private DataCapture cursorToDataCapture(Cursor cursor) {
         DataCapture dataCapture = new DataCapture();
         dataCapture.setId(cursor.getLong(0));

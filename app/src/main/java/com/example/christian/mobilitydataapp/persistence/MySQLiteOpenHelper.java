@@ -35,6 +35,8 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
             TableDataCapture.COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP" +
             ");";
 
+    private static final String DATABASE_DROP= "drop table if exists "+ TableDataCapture.TABLE_NAME;
+
     public MySQLiteOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         // TODO Auto-generated constructor stub
@@ -49,7 +51,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub
-        db.execSQL("drop table if exists " + TableDataCapture.TABLE_NAME);
+        db.execSQL(DATABASE_DROP);
         onCreate(db);
     }
 

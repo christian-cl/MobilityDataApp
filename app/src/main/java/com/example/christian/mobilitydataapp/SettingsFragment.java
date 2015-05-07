@@ -1,9 +1,17 @@
 package com.example.christian.mobilitydataapp;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.util.AttributeSet;
+import android.util.Log;
+
+import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
 
 /**
  * Created by Christian Cintrano on 29/04/15.
@@ -20,10 +28,14 @@ public class SettingsFragment extends PreferenceFragment
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
 
-        //globalVariable = (GlobalClass) getApplicationContext();
-//        int res=getActivity().getResources().getIdentifier(getArguments().getString("resource"), "xml", getActivity().getPackageName());
-//        addPreferencesFromResource(res);
-
+        Preference myPref = (Preference) findPreference("pref_key_remove_database");
+        myPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                System.out.println("22222222222222222");
+                displayConfirmationDialog();
+                return false;
+            }
+        });
     }
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
@@ -48,4 +60,64 @@ public class SettingsFragment extends PreferenceFragment
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
+
+
+
+
+
+    public class MyDialogPreference extends DialogPreference {
+
+        public MyDialogPreference(Context context, AttributeSet attrs) {
+            super(context, attrs);
+            // TODO Auto-generated constructor stub
+        }
+
+    }
+    public void displayConfirmationDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//        d.setIcon(android.R.drawable.ic_dialog_info);
+//        d.setView(textView);
+//        d.setTitle(getString(R.string.setting_remove_database_title));
+        builder.setTitle("Are you sure?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("DB", "Deleting all rows");
+                DataCaptureDAO dbLocalInstance = new DataCaptureDAO(getActivity());
+                dbLocalInstance.open();
+                dbLocalInstance.deleteAll();
+                dbLocalInstance.close();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//
+//        builder.setTitle("Are you sure?");
+//        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                Log.i("DB", "Deleting all rows");
+//                DataCaptureDAO dbLocalInstance = new DataCaptureDAO(SettingsActivity);
+//                dbLocalInstance.open();
+//                dbLocalInstance.deleteAll();
+//                dbLocalInstance.close();
+//            }
+//        });
+//        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                dialog.dismiss();
+//            }
+//        });
+//        AlertDialog alert = builder.create();
+//        alert.show();
+    }
+
 }
