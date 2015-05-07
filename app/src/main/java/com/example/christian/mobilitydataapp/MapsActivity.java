@@ -197,13 +197,13 @@ public class MapsActivity extends ActionBarActivity {
         super.onResume();
         db.open();
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
-        startRepeatingTask();
+//        startRepeatingTask();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        stopRepeatingTask();
+//        stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
         db.close();
     }
@@ -264,12 +264,17 @@ public class MapsActivity extends ActionBarActivity {
 
     private void updateStatus() {
         if (currentLocation != null) {
-            Log.i("Collect data", "Collecting data in: " + currentLocation.getLatitude() + ", " + currentLocation.getLongitude());
+            Log.i("Background", "Collecting data in: " + currentLocation.getLatitude() + ", " + currentLocation.getLongitude());
 
             DataCapture dc = new DataCapture();
             dc.setLatitude(currentLocation.getLatitude());
             dc.setLongitude(currentLocation.getLongitude());
-            db.create(dc);
+
+
+            DataCaptureDAO dbLocalInstance = new DataCaptureDAO(this);
+            dbLocalInstance.open();
+            dbLocalInstance.create(dc);
+            dbLocalInstance.close();
 
             addMarker(Marker_Type.GPS, null, currentLocation);
         }
