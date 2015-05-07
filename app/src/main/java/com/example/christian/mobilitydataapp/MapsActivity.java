@@ -2,6 +2,7 @@ package com.example.christian.mobilitydataapp;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
@@ -37,6 +39,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -229,6 +233,9 @@ public class MapsActivity extends ActionBarActivity {
             case R.id.action_settings:
                 sendSettings();
                 return true;
+            case R.id.action_save_file:
+                saveFile();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -398,4 +405,60 @@ public class MapsActivity extends ActionBarActivity {
         }
     }
 
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+    public void saveFile() {
+        Toast.makeText(MapsActivity.this, "Saving file...", Toast.LENGTH_SHORT).show();
+        Log.i("DB", "Saving file...");
+        FileOutputStream out = null;
+//        String text = "NEW TEXTO DE PruEBA";
+        List<DataCapture> data = db.getAll();
+        String fileName = "datos.txt";
+        String folderName = "/mdaFolder";
+        try {
+            if(isExternalStorageWritable()) {
+                String path = Environment.getExternalStorageDirectory().toString();
+                File dir = new File(path + folderName);
+                dir.mkdirs();
+                File file = new File (dir, fileName);
+                out = new FileOutputStream(file);
+            } else {
+                out = openFileOutput(fileName, Context.MODE_PRIVATE);
+            }
+            String head = "_id,latitude,longitude,street,stoptype,comment,date";
+            out.write(head.getBytes());
+//            byte[] contentInBytes = text.getBytes();
+            for(DataCapture dc : data) {
+                out.write((String.valueOf(dc.getId()) + ",").getBytes());
+                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + ",\"").getBytes());
+                out.write((dc.getAddress() + "\",\"").getBytes());
+                out.write((dc.getStopType() + "\",\"").getBytes());
+                out.write((dc.getComment() + "\",\"").getBytes());
+                out.write((dc.getDate() + "\"\n").getBytes());
+            }
+//            out.write(contentInBytes);
+            out.flush();
+            out.close();
+            Log.i("DB", "File saved");
+            Toast.makeText(MapsActivity.this, "File saved", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

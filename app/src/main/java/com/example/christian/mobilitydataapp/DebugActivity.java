@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -299,24 +300,46 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
 //        db.resetTablePoints();
     }
 
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
 
     public void saveFile(View view) {
-        String root = Environment.getExternalStorageDirectory().toString();
-        File dir = new File(root + "/mdaFolder");
-        log(root + "/mdaFolder");
-        dir.mkdirs();
-        String text = "TEXTO DE PruEBA";
+        Log.i("DB", "Saving file...");
+        FileOutputStream out = null;
+        String text = "NEW TEXTO DE PruEBA";
         String fileName = "datos.txt";
-        File file = new File (dir, fileName);
-        if (file.exists())
-            file.delete ();
+        String folderName = "/mdaFolder";
         try {
-            FileOutputStream out = new FileOutputStream(file);
+            if(isExternalStorageWritable()) {
+                String path = Environment.getExternalStorageDirectory().toString();
+                File dir = new File(path + folderName);
+                dir.mkdirs();
+                File file = new File (dir, fileName);
+                out = new FileOutputStream(file);
+            } else {
+                out = openFileOutput(fileName, Context.MODE_PRIVATE);
+            }
+            byte[] contentInBytes = text.getBytes();
+            out.write(contentInBytes);
             out.flush();
             out.close();
-
+            Log.i("DB", "File saved");
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
