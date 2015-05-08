@@ -24,7 +24,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,7 +50,7 @@ import java.util.Locale;
  *
  * Fragment by main tab: Map view
  */
-public class MapTabFragment extends Fragment {
+public class MapTabFragment extends Fragment implements View.OnClickListener {
 
     private static final int ZOOM = 20;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
@@ -81,16 +83,16 @@ public class MapTabFragment extends Fragment {
         public void onGpsStatusChanged(int event) {
             switch (event) {
                 case GpsStatus.GPS_EVENT_STARTED:
-                    log("GPS searching...");
+                    Log.i("GPS", "Searching...");
                     Toast.makeText(context, "GPS_SEARCHING", Toast.LENGTH_SHORT).show();
                     System.out.println("TAG - GPS searching: ");
                     break;
                 case GpsStatus.GPS_EVENT_STOPPED:
-                    log("GPS was stopped");
+                    Log.i("GPS", "STOPPED");
                     System.out.println("TAG - GPS Stopped");
                     break;
                 case GpsStatus.GPS_EVENT_FIRST_FIX:
-                    log("GPS locked position");
+                    Log.i("GPS", "Locked position");
                 /*
                  * GPS_EVENT_FIRST_FIX Event is called when GPS is locked
                  */
@@ -111,9 +113,10 @@ public class MapTabFragment extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState){
-        System.out.println(R.layout.activity_maps);
-        System.out.println(container);
         View view = inflater.inflate(R.layout.activity_maps, container, false);
+
+        ImageButton buttonSayHi = (ImageButton) view.findViewById(R.id.stop_button);
+        buttonSayHi.setOnClickListener(this);
 
         context = container.getContext();
 
@@ -126,9 +129,9 @@ public class MapTabFragment extends Fragment {
         db = new DataCaptureDAO(context);
         db.open();
         mHandler = new Handler();
-        salida = (TextView) view.findViewById(R.id.salida);
-        salida.setMovementMethod(new ScrollingMovementMethod());
-        log("Create activity");
+//        salida = (TextView) view.findViewById(R.id.salida);
+//        salida.setMovementMethod(new ScrollingMovementMethod());
+//        log("Create activity");
 
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -184,7 +187,7 @@ public class MapTabFragment extends Fragment {
     }
 
     private void myLocationChanged(Location location) {
-        log("New Location");
+//        log("New Location");
         Toast.makeText(context, "New Location", Toast.LENGTH_SHORT).show();
         int lat = (int) (location.getLatitude());
         int lng = (int) (location.getLongitude());
@@ -365,17 +368,17 @@ public class MapTabFragment extends Fragment {
     }
 
     // Métodos para mostrar información
-    private void log(String cadena) {
-        salida.append(cadena + "\n");
-        // Scrolling down
-        final Layout layout = salida.getLayout();
-        if(layout != null){
-            int scrollDelta = layout.getLineBottom(salida.getLineCount() - 1)
-                    - salida.getScrollY() - salida.getHeight();
-            if(scrollDelta > 0)
-                salida.scrollBy(0, scrollDelta);
-        }
-    }
+//    private void log(String cadena) {
+//        salida.append(cadena + "\n");
+//        // Scrolling down
+//        final Layout layout = salida.getLayout();
+//        if(layout != null){
+//            int scrollDelta = layout.getLineBottom(salida.getLineCount() - 1)
+//                    - salida.getScrollY() - salida.getHeight();
+//            if(scrollDelta > 0)
+//                salida.scrollBy(0, scrollDelta);
+//        }
+//    }
 
     /**
      * Handle preferences changes
@@ -386,6 +389,24 @@ public class MapTabFragment extends Fragment {
         public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
             Log.i("Settings", "Changed settings");
             loadSettings();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        //do what you want to do when button is clicked
+        switch(v.getId()){
+            case R.id.stop_button:
+                displayStopChoices(v);
+                /** Do things you need to..
+                 fragmentTwo = new FragmentTwo();
+
+                 fragmentTransaction.replace(R.id.frameLayoutFragmentContainer, fragmentTwo);
+                 fragmentTransaction.addToBackStack(null);
+
+                 fragmentTransaction.commit();
+                 */
+                break;
         }
     }
 
