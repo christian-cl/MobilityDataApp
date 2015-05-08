@@ -1,7 +1,5 @@
 package com.example.christian.mobilitydataapp;
 
-
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -18,16 +16,14 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
-import android.text.Layout;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
@@ -56,7 +52,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
     private Context context;
 
-    private static enum Marker_Type {GPS, STOP, POSITION};
+    private static enum Marker_Type {GPS, STOP, POSITION}
 
     private long intervalTimeGPS; // milliseconds
     private float minDistance; // meters
@@ -67,11 +63,9 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private LocationManager locationManager;
     private ProgressDialog dialogWait;
     private DataCaptureDAO db;
-    private TextView salida;
+//    private TextView salida;
 
     private SharedPreferences pref; // Settings listener
-    // Preference change listener
-    private PreferenceChangeListener preferenceListener;
 
     // Process to repeat
     private int intervalCapture;
@@ -122,7 +116,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
         pref = PreferenceManager.getDefaultSharedPreferences(context);
         loadSettings();
-        preferenceListener = new PreferenceChangeListener();
+        PreferenceChangeListener preferenceListener = new PreferenceChangeListener();
         pref.registerOnSharedPreferenceChangeListener(preferenceListener);
 
         configureDialogWait();
@@ -294,6 +288,9 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             public void onClick(DialogInterface dialog, int item) {
                 if (stopChoices[item].equals("Otros")) {
                     editText.setEnabled(true);
+                    editText.requestFocus();
+                    InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
                 } else {
                     editText.setEnabled(false);
                     editText.getText().clear();

@@ -1,25 +1,17 @@
 package com.example.christian.mobilitydataapp;
 
-import android.app.Fragment;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
@@ -36,12 +28,8 @@ import java.util.List;
  * Maps Activity with tabs
  */
 public class MapTabActivity extends ActionBarActivity implements ActionBar.TabListener {
-//    ActionBar.Tab tab1, tab2;
-//    Fragment mapTabFragment = new MapTabFragment();
-//    Fragment logTabFragment = new LogTabFragment();
 
     private ViewPager viewPager;
-    private TabsPagerAdapter mAdapter;
     private android.support.v7.app.ActionBar actionBar;
     // Tab titles
     private String[] tabs = { "Map", "Log"};
@@ -73,7 +61,7 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
         });
 
         actionBar = getSupportActionBar();
-        mAdapter = new TabsPagerAdapter(getSupportFragmentManager());
+        TabsPagerAdapter mAdapter = new TabsPagerAdapter(getSupportFragmentManager());
 
         viewPager.setAdapter(mAdapter);
         actionBar.setHomeButtonEnabled(true);

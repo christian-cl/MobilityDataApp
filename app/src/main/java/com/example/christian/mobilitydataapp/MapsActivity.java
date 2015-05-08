@@ -63,8 +63,6 @@ public class MapsActivity extends ActionBarActivity {
     private TextView salida;
 
     private SharedPreferences pref; // Settings listener
-    // Preference change listener
-    private PreferenceChangeListener preferenceListener;
 
     // Process to repeat
     private int intervalCapture;
@@ -94,7 +92,7 @@ public class MapsActivity extends ActionBarActivity {
                     Location gpslocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     if (gpslocation != null) {
                         String s = gpslocation.getLatitude() + ":" + gpslocation.getLongitude();
-                        Log.i("GPS Info",s);
+                        Log.i("GPS Info", s);
                     }
                     break;
                 case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
@@ -112,7 +110,7 @@ public class MapsActivity extends ActionBarActivity {
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
         loadSettings();
-        preferenceListener = new PreferenceChangeListener();
+        PreferenceChangeListener preferenceListener = new PreferenceChangeListener();
         pref.registerOnSharedPreferenceChangeListener(preferenceListener);
 
         configureDialogWait();
