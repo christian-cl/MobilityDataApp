@@ -1,10 +1,11 @@
 package com.example.christian.mobilitydataapp;
 
-import android.app.AlertDialog;
+
+
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
@@ -13,17 +14,16 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,16 +39,21 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-public class MapsActivity extends ActionBarActivity {
+/**
+ * Created by Christian Cintrano on 8/05/15.
+ *
+ * Fragment by main tab: Map view
+ */
+public class MapTabFragment extends Fragment {
 
     private static final int ZOOM = 20;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
+    private Context context;
+
     private static enum Marker_Type {GPS, STOP, POSITION};
 
     private long intervalTimeGPS; // milliseconds
@@ -77,7 +82,7 @@ public class MapsActivity extends ActionBarActivity {
             switch (event) {
                 case GpsStatus.GPS_EVENT_STARTED:
                     log("GPS searching...");
-                    Toast.makeText(MapsActivity.this, "GPS_SEARCHING", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "GPS_SEARCHING", Toast.LENGTH_SHORT).show();
                     System.out.println("TAG - GPS searching: ");
                     break;
                 case GpsStatus.GPS_EVENT_STOPPED:
@@ -89,12 +94,12 @@ public class MapsActivity extends ActionBarActivity {
                 /*
                  * GPS_EVENT_FIRST_FIX Event is called when GPS is locked
                  */
-                    Toast.makeText(MapsActivity.this, "GPS_LOCKED", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "GPS_LOCKED", Toast.LENGTH_SHORT).show();
                     dialogWait.dismiss();
                     Location gpslocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     if (gpslocation != null) {
                         String s = gpslocation.getLatitude() + ":" + gpslocation.getLongitude();
-                        Log.i("GPS Info",s);
+                        Log.i("GPS Info", s);
                     }
                     break;
                 case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
@@ -104,26 +109,28 @@ public class MapsActivity extends ActionBarActivity {
         }
     };
 
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState){
+        System.out.println(R.layout.activity_maps);
+        System.out.println(container);
+        View view = inflater.inflate(R.layout.activity_maps, container, false);
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        context = container.getContext();
 
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        pref = PreferenceManager.getDefaultSharedPreferences(context);
         loadSettings();
         preferenceListener = new PreferenceChangeListener();
         pref.registerOnSharedPreferenceChangeListener(preferenceListener);
 
         configureDialogWait();
-        db = new DataCaptureDAO(this);
+        db = new DataCaptureDAO(context);
         db.open();
         mHandler = new Handler();
-        salida = (TextView) findViewById(R.id.salida);
+        salida = (TextView) view.findViewById(R.id.salida);
         salida.setMovementMethod(new ScrollingMovementMethod());
         log("Create activity");
 
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (isGPSEnabled) {
             if (locationManager != null) {
@@ -140,12 +147,12 @@ public class MapsActivity extends ActionBarActivity {
                     }
                     @Override
                     public void onProviderEnabled(String provider) {
-                        Toast.makeText(MapsActivity.this, "Enabled new provider " + provider,
+                        Toast.makeText(context, "Enabled new provider " + provider,
                                 Toast.LENGTH_SHORT).show();
                     }
                     @Override
                     public void onProviderDisabled(String provider) {
-                        Toast.makeText(MapsActivity.this, "Disabled provider " + provider,
+                        Toast.makeText(context, "Disabled provider " + provider,
                                 Toast.LENGTH_SHORT).show();
                     }
                 };
@@ -154,9 +161,11 @@ public class MapsActivity extends ActionBarActivity {
             }
         }
 
-        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
+        map = ((MapFragment) ((Activity) context).getFragmentManager().findFragmentById(R.id.map)).getMap();
         startRepeatingTask();
+        return view;
     }
+
 
     private void loadSettings() {
         Log.i("MapActivity","Loading settings...");
@@ -176,7 +185,7 @@ public class MapsActivity extends ActionBarActivity {
 
     private void myLocationChanged(Location location) {
         log("New Location");
-        Toast.makeText(MapsActivity.this, "New Location", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "New Location", Toast.LENGTH_SHORT).show();
         int lat = (int) (location.getLatitude());
         int lng = (int) (location.getLongitude());
         System.out.println("LAT " + String.valueOf(lat));
@@ -191,7 +200,7 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         db.open();
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
@@ -199,7 +208,7 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
 //        stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
@@ -207,7 +216,7 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     private void configureDialogWait() {
-        dialogWait = new ProgressDialog(this);
+        dialogWait = new ProgressDialog(context);
         dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialogWait.setMessage("Loading. Please wait...");
         dialogWait.setIndeterminate(true);
@@ -215,33 +224,6 @@ public class MapsActivity extends ActionBarActivity {
         dialogWait.show();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_map, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch(item.getItemId())
-        {
-            case R.id.action_settings:
-                sendSettings();
-                return true;
-            case R.id.action_save_file:
-                saveFile();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    public void sendSettings() {
-        startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
-    }
 
     // Repeat process for catch information
     private Runnable mStatusChecker = new Runnable() {
@@ -268,8 +250,7 @@ public class MapsActivity extends ActionBarActivity {
             dc.setLatitude(currentLocation.getLatitude());
             dc.setLongitude(currentLocation.getLongitude());
 
-
-            DataCaptureDAO dbLocalInstance = new DataCaptureDAO(this);
+            DataCaptureDAO dbLocalInstance = new DataCaptureDAO(context);
             dbLocalInstance.open();
             dbLocalInstance.create(dc);
             dbLocalInstance.close();
@@ -280,7 +261,7 @@ public class MapsActivity extends ActionBarActivity {
 
     private String getStreet(Location localization) {
         if(localization != null) {
-            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+            Geocoder geocoder = new Geocoder(context, Locale.getDefault());
             List<Address> addresses;
             try {
                 addresses = geocoder.getFromLocation(localization.getLatitude(), localization.getLongitude(), 1);
@@ -299,10 +280,10 @@ public class MapsActivity extends ActionBarActivity {
 
     public void displayStopChoices(View view) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
         // EditText by default hidden
-        final EditText editText = new EditText(this);
+        final EditText editText = new EditText(context);
         editText.setEnabled(false);
 
         builder.setTitle("Seleccione una opción");
@@ -316,7 +297,7 @@ public class MapsActivity extends ActionBarActivity {
                 }
                 title = stopChoices[item];
                 String text = "Haz elegido la opcion: " + stopChoices[item];
-                Toast toast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
                 toast.show();
             }
         });
@@ -377,7 +358,7 @@ public class MapsActivity extends ActionBarActivity {
                     currentMarker.remove();
                 }
                 currentMarker = map.addMarker(new MarkerOptions().position(coordinates)
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
                 break;
             default: Log.e("MAP", "Marker type is not valid");
         }
@@ -408,60 +389,4 @@ public class MapsActivity extends ActionBarActivity {
         }
     }
 
-    /* Checks if external storage is available for read and write */
-    public boolean isExternalStorageWritable() {
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            return true;
-        }
-        return false;
-    }
-
-    public void saveFile() {
-        Toast.makeText(MapsActivity.this, "Saving file...", Toast.LENGTH_SHORT).show();
-        Log.i("DB", "Saving file...");
-        FileOutputStream out = null;
-//        String text = "NEW TEXTO DE PruEBA";
-        List<DataCapture> data = db.getAll();
-        String fileName = "datos.txt";
-        String folderName = "/mdaFolder";
-        try {
-            if(isExternalStorageWritable()) {
-                String path = Environment.getExternalStorageDirectory().toString();
-                File dir = new File(path + folderName);
-                dir.mkdirs();
-                File file = new File (dir, fileName);
-                out = new FileOutputStream(file);
-            } else {
-                out = openFileOutput(fileName, Context.MODE_PRIVATE);
-            }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date";
-            out.write(head.getBytes());
-//            byte[] contentInBytes = text.getBytes();
-            for(DataCapture dc : data) {
-                out.write((String.valueOf(dc.getId()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLongitude()) + ",\"").getBytes());
-                out.write((dc.getAddress() + "\",\"").getBytes());
-                out.write((dc.getStopType() + "\",\"").getBytes());
-                out.write((dc.getComment() + "\",\"").getBytes());
-                out.write((dc.getDate() + "\"\n").getBytes());
-            }
-//            out.write(contentInBytes);
-            out.flush();
-            out.close();
-            Log.i("DB", "File saved");
-            Toast.makeText(MapsActivity.this, "File saved", Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

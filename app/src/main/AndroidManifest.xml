@@ -44,6 +44,14 @@
                 android:value="com.example.christian.mobilitydataapp.MainActivity" />
         </activity>
         <activity
+            android:name=".MapTabActivity"
+            android:label="@string/title_activity_maps"
+            android:parentActivityName="com.example.christian.mobilitydataapp.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.christian.mobilitydataapp.MainActivity" />
+        </activity>
+        <activity
             android:name=".DebugActivity"
             android:label="@string/title_activity_debug"
             android:parentActivityName="com.example.christian.mobilitydataapp.MainActivity" >

@@ -1,41 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!--<fragment-->
-        <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
-        <!--xmlns:tools="http://schemas.android.com/tools"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_gravity="center"-->
-        <!--android:id="@+id/map"-->
-        <!--tools:context=".MapsActivity"-->
-        <!--android:name="com.google.android.gms.maps.SupportMapFragment" />-->
-    <!--<RelativeLayout-->
-        <!--android:layout_width="fill_parent"-->
-        <!--android:layout_height="fill_parent">-->
         <fragment
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:name="com.google.android.gms.maps.MapFragment"/>
-
-        <!--<ScrollView-->
-            <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent">-->
             <TextView
                 android:id="@+id/salida"
                 android:layout_width="379dp"
                 android:layout_height="74dp"
                 android:layout_gravity="right|top"/>
-        <!--</ScrollView>-->
-    <!--</RelativeLayout>-->
-    <!--android:background="@drawable/circle"-->
     <ImageButton
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="60dp"
@@ -45,4 +24,4 @@
         android:onClick="displayStopChoices"
         android:layout_gravity="end|bottom" />
 
-</FrameLayout>
+</RelativeLayout>

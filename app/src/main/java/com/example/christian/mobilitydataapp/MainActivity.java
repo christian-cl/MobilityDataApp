@@ -58,6 +58,14 @@ public class MainActivity extends ActionBarActivity {
         startActivity(intent);
     }
     /** Called when the user clicks the Send button */
+    public void sendMessageMapTab(View view) {
+        // Do something in response to button
+        // Activity is a subclass from context
+        Intent intent = new Intent(this, MapTabActivity.class);
+        // Init the activity
+        startActivity(intent);
+    }
+    /** Called when the user clicks the Send button */
     public void sendMessagePreferences() {
         Intent intent = new Intent(this,SettingsActivity.class);
         startActivity(intent);
