@@ -344,6 +344,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private void addMarker(Marker_Type type, String title, Location loc) {
 //        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 //        db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
+
         LatLng coordinates = new LatLng(loc.getLatitude(), loc.getLongitude());
         Log.i("DB", "Adding marker to (" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
 
