@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -48,6 +49,12 @@ import java.util.Locale;
  */
 public class MapTabFragment extends Fragment implements View.OnClickListener {
 
+    private static final String GPS_LOADING = "Iniciando conexión GPS. Por favor, espere.";
+    private static final String DATA_START = "Iniciando la recogida de los datos...";
+    private static final String DATA_END = "Recogida de datos terminada";
+    private static final String NEW_POSITION = "Guardando la siguiente posición: ";
+    private static final String NEW_GPS = "Nueva posición GPS: ";
+
     private static final int ZOOM = 20;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
     private Context context;
@@ -63,7 +70,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private LocationManager locationManager;
     private ProgressDialog dialogWait;
     private DataCaptureDAO db;
-//    private TextView salida;
 
     private SharedPreferences pref; // Settings listener
 
@@ -110,8 +116,12 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.activity_maps, container, false);
 
-        ImageButton buttonSayHi = (ImageButton) view.findViewById(R.id.stop_button);
-        buttonSayHi.setOnClickListener(this);
+        ImageButton bStop = (ImageButton) view.findViewById(R.id.stop_button);
+        Button bStart = (Button) view.findViewById(R.id.start_button);
+        Button bEnd = (Button) view.findViewById(R.id.end_button);
+        bStop.setOnClickListener(this);
+        bStart.setOnClickListener(this);
+        bEnd.setOnClickListener(this);
 
         context = container.getContext();
 
@@ -124,9 +134,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         db = new DataCaptureDAO(context);
         db.open();
         mHandler = new Handler();
-//        salida = (TextView) view.findViewById(R.id.salida);
-//        salida.setMovementMethod(new ScrollingMovementMethod());
-//        log("Create activity");
 
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -160,7 +167,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         }
 
         map = ((MapFragment) ((Activity) context).getFragmentManager().findFragmentById(R.id.map)).getMap();
-        startRepeatingTask();
+
         return view;
     }
 
@@ -182,7 +189,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     }
 
     private void myLocationChanged(Location location) {
-//        log("New Location");
         Toast.makeText(context, "New Location", Toast.LENGTH_SHORT).show();
         int lat = (int) (location.getLatitude());
         int lng = (int) (location.getLongitude());
@@ -209,6 +215,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     public void onPause() {
         super.onPause();
 //        stopRepeatingTask();
+//        ((LogTabFragment) getHiddenFragment()).appendLog(DATA_END);
         locationManager.removeUpdates(gpsLocationListener);
         db.close();
     }
@@ -216,7 +223,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private void configureDialogWait() {
         dialogWait = new ProgressDialog(context);
         dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialogWait.setMessage("Loading. Please wait...");
+        dialogWait.setMessage(GPS_LOADING);
         dialogWait.setIndeterminate(true);
         dialogWait.setCanceledOnTouchOutside(false);
         dialogWait.show();
@@ -343,23 +350,19 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
      * @param type If is GPS marker or Stop marker
      */
     private void addMarker(Marker_Type type, String title, Location loc) {
-//        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-//        db.savePoints(loc.getLatitude(),loc.getLongitude(),getStreet(loc));
 
         LatLng coordinates = new LatLng(loc.getLatitude(), loc.getLongitude());
+
+
         Log.i("DB", "Adding marker to (" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
 
         switch (type) {
             case GPS: map.addMarker(new MarkerOptions().position(coordinates)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
+                ((LogTabFragment) getHiddenFragment()).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             case STOP: map.addMarker(new MarkerOptions().position(coordinates).title(title));
-                //////////////////////////////
-
-//                LogTabFragment logFrag = (LogTabFragment)
-//                        getFragmentManager().findFragmentById(R.id.fragment_log);
-                ((LogTabFragment) getHiddenFragment()).appendLog("este texto es una prueba del fragmento");
-                /////////////////////////////
+                ((LogTabFragment) getHiddenFragment()).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             case POSITION:
                 if (currentMarker != null) {
@@ -367,6 +370,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 }
                 currentMarker = map.addMarker(new MarkerOptions().position(coordinates)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
+                ((LogTabFragment) getHiddenFragment()).appendLog(NEW_GPS + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             default: Log.e("MAP", "Marker type is not valid");
         }
@@ -375,25 +379,13 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     public Fragment getHiddenFragment(){
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
-        System.out.println(fragments);
+        System.out.println(fragments.size());
         for(Fragment fragment : fragments){
             if(fragment != null && (fragment instanceof LogTabFragment) )//!fragment.isVisible())
                 return fragment;
         }
         return null;
     }
-    // Métodos para mostrar información
-//    private void log(String cadena) {
-//        salida.append(cadena + "\n");
-//        // Scrolling down
-//        final Layout layout = salida.getLayout();
-//        if(layout != null){
-//            int scrollDelta = layout.getLineBottom(salida.getLineCount() - 1)
-//                    - salida.getScrollY() - salida.getHeight();
-//            if(scrollDelta > 0)
-//                salida.scrollBy(0, scrollDelta);
-//        }
-//    }
 
     /**
      * Handle preferences changes
@@ -413,39 +405,29 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         switch(v.getId()){
             case R.id.stop_button:
                 displayStopChoices(v);
-                /** Do things you need to..
-                 fragmentTwo = new FragmentTwo();
+                break;
 
-                 fragmentTransaction.replace(R.id.frameLayoutFragmentContainer, fragmentTwo);
-                 fragmentTransaction.addToBackStack(null);
+            case R.id.start_button:
+                startCollectingData(v);
+                break;
 
-                 fragmentTransaction.commit();
-                 */
+            case R.id.end_button:
+                stopCollectingData(v);
                 break;
         }
     }
 
 
+    public void stopCollectingData(View view) {
+        Log.i("BG","End repeating task");
+        stopRepeatingTask();
+        ((LogTabFragment) getHiddenFragment()).appendLog(DATA_END);
+    }
 
+    public void startCollectingData(View view) {
+        Log.i("BG","Start repeating task");
+        startRepeatingTask();
+        ((LogTabFragment) getHiddenFragment()).appendLog(DATA_START);
+    }
 
-//    OnHeadlineSelectedListener mCallback;
-//
-//    // La actividad contenedora debe implementar esta interfaz
-//    public interface OnHeadlineSelectedListener {
-//        public void onArticleSelected(int position);
-//    }
-//
-//    @Override
-//    public void onAttach(Activity activity) {
-//        super.onAttach(activity);
-//
-//        // Nos aseguramos de que la actividad contenedora haya implementado la
-//        // interfaz de retrollamada. Si no, lanzamos una excepción
-//        try {
-//            mCallback = (OnHeadlineSelectedListener) activity;
-//        } catch (ClassCastException e) {
-//            throw new ClassCastException(activity.toString()
-//                    + " debe implementar OnHeadlineSelectedListener");
-//        }
-//    }
 }

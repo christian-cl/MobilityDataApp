@@ -8,6 +8,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.TextView;
 
 /**
@@ -16,15 +17,20 @@ import android.widget.TextView;
  */
 public class LogTabFragment extends Fragment {
     private TextView out;
+    private ListView listView;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.activity_tab_fragment_log, container, false);
+//        listView = (ListView) view.findViewById(R.id.listView);
         out = (TextView) view.findViewById(R.id.tabtextview);
         out.setMovementMethod(new ScrollingMovementMethod());
+
         appendLog("Init: ");
         return view;
     }
+
+
 
     // Métodos para mostrar información
     public void appendLog(String text) {

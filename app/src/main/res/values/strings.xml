@@ -31,5 +31,7 @@
     <string name="setting_min_distance_summary">Minimum distance to approximate position summary</string>
     <string name="setting_remove_database_title">Delete all captured data</string>
     <string name="setting_remove_database_summary">Delete all captured data until now</string>
+    <string name="button_end_collecting">Terminar la recolección de datos</string>
+    <string name="button_start_collecting">Iniciar la recolección de datos</string>
 
 </resources>

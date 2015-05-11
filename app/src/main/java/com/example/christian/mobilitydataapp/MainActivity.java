@@ -71,21 +71,4 @@ public class MainActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
- /*   private void displaySharedPreferences() {
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(MainActivity.this);
-
-        String username = prefs.getString("username", "Default NickName");
-        String passw = prefs.getString("password", "Default Password");
-        boolean checkBox = prefs.getBoolean("checkBox", false);
-        String listPrefs = prefs.getString("listpref", "Default list prefs");
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("Username: " + username + "\n");
-        builder.append("Password: " + passw + "\n");
-        builder.append("Keep me logged in: " + String.valueOf(checkBox) + "\n");
-        builder.append("List preference: " + listPrefs);
-
-        textView.setText(builder.toString());
-    }*/
 }

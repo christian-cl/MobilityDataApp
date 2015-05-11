@@ -85,10 +85,8 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch(item.getItemId())
-        {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
             case R.id.action_settings:
                 sendSettings();
                 return true;
@@ -190,41 +188,5 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
 
     }
 
-/*
-    public void onArticleSelected(int position) {
-        // El usuario seleccionó el encabezado de un artículo del fragmento HeadlinesFragment
-        // Haz algo para mostrar ese artículo
 
-        Fragment articleFrag = (Fragment)
-                getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-
-        Log.i("----", "");
-//        if (articleFrag != null) {
-//            // Si el fragmento de artículos está disponible, estamos en una interfaz
-//            // con dos paneles...
-//
-//            // Llama a un método de ArticleFragment para actualizar su contenido
-//            articleFrag.updateArticleView(position);
-//        } else {
-//            // En caso contrario, estamos en una interfaz con un solo panel y tenemos
-//            // que intercambiar fragmentos...
-//
-//            // Crea un fragmento y le pasa como argumento el artículo seleccionado
-//            ArticleFragment newFragment = new ArticleFragment();
-//            Bundle args = new Bundle();
-//            args.putInt(ArticleFragment.ARG_POSITION, position);
-//            newFragment.setArguments(args);
-//
-//            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-//
-//            // Reemplazamos lo que haya en la vista fragment_container con este fragmento,
-//            // y añadimos la transacción a la pila de vuelta para que el usuario pueda volver
-//            transaction.replace(R.id.fragment_container, newFragment);
-//            transaction.addToBackStack(null);
-//
-//            // Aplica la transacción
-//            transaction.commit();
-//        }
-    }
-*/
 }
