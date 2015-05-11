@@ -11,7 +11,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 /**
- * Created by christian on 8/05/15.
+ * Created by Christian Cintrano on 8/05/15.
+ *
  */
 public class LogTabFragment extends Fragment {
     private TextView out;
@@ -21,11 +22,12 @@ public class LogTabFragment extends Fragment {
         View view = inflater.inflate(R.layout.activity_tab_fragment_log, container, false);
         out = (TextView) view.findViewById(R.id.tabtextview);
         out.setMovementMethod(new ScrollingMovementMethod());
+        appendLog("Init: ");
         return view;
     }
 
     // Métodos para mostrar información
-    private void appendLog(String text) {
+    public void appendLog(String text) {
         out.append(text + "\n");
         // Scrolling down
         final Layout layout = out.getLayout();

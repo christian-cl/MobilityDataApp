@@ -15,12 +15,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -104,6 +104,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             }
         }
     };
+
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState){
@@ -353,6 +354,12 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
                 break;
             case STOP: map.addMarker(new MarkerOptions().position(coordinates).title(title));
+                //////////////////////////////
+
+//                LogTabFragment logFrag = (LogTabFragment)
+//                        getFragmentManager().findFragmentById(R.id.fragment_log);
+                ((LogTabFragment) getHiddenFragment()).appendLog("este texto es una prueba del fragmento");
+                /////////////////////////////
                 break;
             case POSITION:
                 if (currentMarker != null) {
@@ -365,6 +372,16 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+    public Fragment getHiddenFragment(){
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        System.out.println(fragments);
+        for(Fragment fragment : fragments){
+            if(fragment != null && (fragment instanceof LogTabFragment) )//!fragment.isVisible())
+                return fragment;
+        }
+        return null;
+    }
     // Métodos para mostrar información
 //    private void log(String cadena) {
 //        salida.append(cadena + "\n");
@@ -408,4 +425,27 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         }
     }
 
+
+
+
+//    OnHeadlineSelectedListener mCallback;
+//
+//    // La actividad contenedora debe implementar esta interfaz
+//    public interface OnHeadlineSelectedListener {
+//        public void onArticleSelected(int position);
+//    }
+//
+//    @Override
+//    public void onAttach(Activity activity) {
+//        super.onAttach(activity);
+//
+//        // Nos aseguramos de que la actividad contenedora haya implementado la
+//        // interfaz de retrollamada. Si no, lanzamos una excepción
+//        try {
+//            mCallback = (OnHeadlineSelectedListener) activity;
+//        } catch (ClassCastException e) {
+//            throw new ClassCastException(activity.toString()
+//                    + " debe implementar OnHeadlineSelectedListener");
+//        }
+//    }
 }

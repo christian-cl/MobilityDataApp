@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -21,13 +22,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Christian Cintrano on 8/05/15.
  *
  * Maps Activity with tabs
  */
-public class MapTabActivity extends ActionBarActivity implements ActionBar.TabListener {
+public class MapTabActivity extends ActionBarActivity implements ActionBar.TabListener/*, MapTabFragment.OnHeadlineSelectedListener*/{
 
     private ViewPager viewPager;
     private android.support.v7.app.ActionBar actionBar;
@@ -132,11 +134,23 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
             for(DataCapture dc : data) {
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
                 out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLongitude()) + ",\"").getBytes());
-                out.write((dc.getAddress() + "\",\"").getBytes());
-                out.write((dc.getStopType() + "\",\"").getBytes());
-                out.write((dc.getComment() + "\",\"").getBytes());
-                out.write((dc.getDate() + "\"\n").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
+                if(dc.getAddress() != null) {
+                    out.write(("\"" + dc.getAddress() + "\",").getBytes());
+                } else {
+                    out.write(("null,").getBytes());
+                }
+                if(dc.getStopType() != null) {
+                    out.write(("\"" + dc.getStopType() + "\",").getBytes());
+                } else {
+                    out.write(("null,").getBytes());
+                }
+                if(dc.getComment() != null) {
+                    out.write(("\"" + dc.getComment() + "\",").getBytes());
+                } else {
+                    out.write(("null,").getBytes());
+                }
+                out.write(("\"" + dc.getDate() + "\"\n").getBytes());
             }
             out.flush();
             out.close();
@@ -176,4 +190,41 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
 
     }
 
+/*
+    public void onArticleSelected(int position) {
+        // El usuario seleccionó el encabezado de un artículo del fragmento HeadlinesFragment
+        // Haz algo para mostrar ese artículo
+
+        Fragment articleFrag = (Fragment)
+                getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+
+        Log.i("----", "");
+//        if (articleFrag != null) {
+//            // Si el fragmento de artículos está disponible, estamos en una interfaz
+//            // con dos paneles...
+//
+//            // Llama a un método de ArticleFragment para actualizar su contenido
+//            articleFrag.updateArticleView(position);
+//        } else {
+//            // En caso contrario, estamos en una interfaz con un solo panel y tenemos
+//            // que intercambiar fragmentos...
+//
+//            // Crea un fragmento y le pasa como argumento el artículo seleccionado
+//            ArticleFragment newFragment = new ArticleFragment();
+//            Bundle args = new Bundle();
+//            args.putInt(ArticleFragment.ARG_POSITION, position);
+//            newFragment.setArguments(args);
+//
+//            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+//
+//            // Reemplazamos lo que haya en la vista fragment_container con este fragmento,
+//            // y añadimos la transacción a la pila de vuelta para que el usuario pueda volver
+//            transaction.replace(R.id.fragment_container, newFragment);
+//            transaction.addToBackStack(null);
+//
+//            // Aplica la transacción
+//            transaction.commit();
+//        }
+    }
+*/
 }
