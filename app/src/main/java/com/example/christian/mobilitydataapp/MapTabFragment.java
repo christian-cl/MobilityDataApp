@@ -283,7 +283,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    public void displayStopChoices(View view) {
+    public void displayStopChoices() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
@@ -404,27 +404,27 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         //do what you want to do when button is clicked
         switch(v.getId()){
             case R.id.stop_button:
-                displayStopChoices(v);
+                displayStopChoices();
                 break;
 
             case R.id.start_button:
-                startCollectingData(v);
+                startCollectingData();
                 break;
 
             case R.id.end_button:
-                stopCollectingData(v);
+                stopCollectingData();
                 break;
         }
     }
 
 
-    public void stopCollectingData(View view) {
+    public void stopCollectingData() {
         Log.i("BG","End repeating task");
         stopRepeatingTask();
         ((LogTabFragment) getHiddenFragment()).appendLog(DATA_END);
     }
 
-    public void startCollectingData(View view) {
+    public void startCollectingData() {
         Log.i("BG","Start repeating task");
         startRepeatingTask();
         ((LogTabFragment) getHiddenFragment()).appendLog(DATA_START);

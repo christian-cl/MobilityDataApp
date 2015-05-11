@@ -33,5 +33,8 @@
     <string name="setting_remove_database_summary">Delete all captured data until now</string>
     <string name="button_end_collecting">Terminar la recolección de datos</string>
     <string name="button_start_collecting">Iniciar la recolección de datos</string>
+    <string name="b_cancel">Cancelar</string>
+    <string name="b_ok">Aceptar</string>
+    <string name="b_edit">Editar</string>
 
 </resources>
