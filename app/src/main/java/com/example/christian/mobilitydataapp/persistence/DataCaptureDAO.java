@@ -6,8 +6,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Christian Cintrano on 5/05/15.
@@ -16,6 +19,9 @@ import java.util.List;
  */
 
 public class DataCaptureDAO {
+
+    private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss",Locale.US);
+
     private SQLiteDatabase db;
     private MySQLiteOpenHelper dbHelper;
     private String[] columns = {TableDataCapture.COLUMN_ID,
@@ -49,10 +55,37 @@ public class DataCaptureDAO {
     }
 
     public List<DataCapture> getAll() {
-        List<DataCapture> listDataCapture = new ArrayList<DataCapture>();
+        List<DataCapture> listDataCapture = new ArrayList<>();
 
         Cursor cursor = db.query(TableDataCapture.TABLE_NAME, columns, null, null,
                 null, null, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            DataCapture dataCapture = cursorToDataCapture(cursor);
+            listDataCapture.add(dataCapture);
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        return listDataCapture;
+    }
+
+
+    /**
+     * List of elements between two dates
+     *
+     * @param dateStart initial date
+     * @param dateEnd finish date
+     * @return list of results
+     */
+    public List<DataCapture> get(Calendar dateStart, Calendar dateEnd) {
+        List<DataCapture> listDataCapture = new ArrayList<>();
+
+        String[] arg = new String[] { dateFormatter.format(dateStart.getTime()),
+                dateFormatter.format(dateEnd.getTime())};
+        String where = TableDataCapture.COLUMN_DATE + ">=? and " + TableDataCapture.COLUMN_DATE + "<=?";
+        Cursor cursor = db.query(TableDataCapture.TABLE_NAME, columns, where,arg, null, null, null, null);
+
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             DataCapture dataCapture = cursorToDataCapture(cursor);

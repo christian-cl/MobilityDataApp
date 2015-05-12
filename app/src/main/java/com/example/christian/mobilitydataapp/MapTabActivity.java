@@ -57,6 +57,8 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
     private EditText etDateEnd;
     private DatePickerDialog dateEndDialog;
     private EditText etNameSaveFile;
+    private Calendar newDateStart;
+    private Calendar newDateEnd;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -138,7 +140,10 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
         FileOutputStream out = null;
         DataCaptureDAO db = new DataCaptureDAO(this);
         db.open();
-        List<DataCapture> data = db.getAll();
+        List<DataCapture> data = db.get(newDateStart, newDateEnd);
+        System.out.println(newDateStart);
+        System.out.println(newDateEnd);
+        Log.i("DB","Find " + data.size() + " elements");
         String extension = ".csv";
         String folderName = "/mdaFolder";
         try {
@@ -151,7 +156,7 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
             } else {
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date";
+            String head = "_id,latitude,longitude,street,stoptype,comment,date\n";
             out.write(head.getBytes());
             for(DataCapture dc : data) {
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
@@ -215,6 +220,14 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
 
     public void displaySaveFile() {
         Calendar newCalendar = Calendar.getInstance();
+
+        newDateStart = Calendar.getInstance();
+        newDateStart.set(newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH),
+                newCalendar.get(Calendar.DAY_OF_MONTH),0,0,0);
+        newDateEnd = Calendar.getInstance();
+        newDateEnd.set(newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH),
+                newCalendar.get(Calendar.DAY_OF_MONTH),23,59,59);
+        newDateEnd.set(Calendar.HOUR,23);
         dateInitDialog = new DatePickerDialog(this,new OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
@@ -236,9 +249,9 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
             @Override
             public void onDateChanged(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
                 Log.i("Dialog", "Change datepicker");
-                Calendar newDate = Calendar.getInstance();
-                newDate.set(year, monthOfYear, dayOfMonth);
-                etDateStart.setText(dateFormatter.format(newDate.getTime()));
+                newDateStart = Calendar.getInstance();
+                newDateStart.set(year, monthOfYear, dayOfMonth,0,0,0);
+                etDateStart.setText(dateFormatter.format(newDateStart.getTime()));
             }
         });
 
@@ -263,9 +276,10 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
             @Override
             public void onDateChanged(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
                 Log.i("Dialog", "Change datepicker");
-                Calendar newDate = Calendar.getInstance();
-                newDate.set(year, monthOfYear, dayOfMonth);
-                etDateEnd.setText(dateFormatter.format(newDate.getTime()));
+                newDateEnd = Calendar.getInstance();
+                newDateEnd.set(year, monthOfYear, dayOfMonth,23,59,59);
+                newDateEnd.set(Calendar.HOUR,23);
+                etDateEnd.setText(dateFormatter.format(newDateEnd.getTime()));
             }
         });
 
