@@ -39,6 +39,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -231,7 +233,8 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
 
     // Repeat process for catch information
-    private Runnable mStatusChecker = new Runnable() {
+    public Runnable mStatusChecker = new Runnable() {
+
         @Override
         public void run() {
             updateStatus(); //this function can change value of mInterval.

@@ -36,5 +36,8 @@
     <string name="b_cancel">Cancelar</string>
     <string name="b_ok">Aceptar</string>
     <string name="b_edit">Editar</string>
+    <string name="name_file">Nombre del fichero</string>
+    <string name="date_start">Fecha de inicio</string>
+    <string name="date_end">Fecha de fin</string>
 
 </resources>

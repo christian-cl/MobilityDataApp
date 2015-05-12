@@ -1,12 +1,10 @@
 package com.example.christian.mobilitydataapp;
 
 import android.app.DatePickerDialog;
-import android.app.Dialog;
+import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.FragmentTransaction;
@@ -14,18 +12,14 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
-import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
@@ -44,7 +38,7 @@ import java.util.Locale;
  *
  * Maps Activity with tabs
  */
-public class MapTabActivity extends ActionBarActivity implements ActionBar.TabListener/*, MapTabFragment.OnHeadlineSelectedListener*/{
+public class MapTabActivity extends ActionBarActivity implements ActionBar.TabListener {
 
     private final static String DIALOG_SAVE_FILE_TITLE = "Guardar archivo";
     private final static String B_OK = "Aceptar";
@@ -55,13 +49,14 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
     // Tab titles
     private String[] tabs = { "Map", "Log"};
 
-    private AlertDialog.Builder saveFileDialog;
-//    private DatePickerDialog fromDatePickerDialog;
-    private DatePickerDialog toDatePickerDialog;
+    private AlertDialog saveFileDialog;
+    private DatePickerDialog dateInitDialog;
 
     private SimpleDateFormat dateFormatter;
-    private EditText fromDateEtxt;
-    private EditText toDateEtxt;
+    private EditText etDateStart;
+    private EditText etDateEnd;
+    private DatePickerDialog dateEndDialog;
+    private EditText etNameSaveFile;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,7 +139,6 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
         DataCaptureDAO db = new DataCaptureDAO(this);
         db.open();
         List<DataCapture> data = db.getAll();
-//        String fileName = "datos.txt";
         String extension = ".csv";
         String folderName = "/mdaFolder";
         try {
@@ -220,176 +214,106 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
 
 
     public void displaySaveFile() {
-        final DatePickerDialog subDialog = new DatePickerDialog(this,new DatePickerDialog.OnDateSetListener() {
+        Calendar newCalendar = Calendar.getInstance();
+        dateInitDialog = new DatePickerDialog(this,new OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                System.out.println("--------------");
-                System.out.println("--------------");
-                System.out.println("--------------");
-//                fromDateEtxt.append("TEXTTOOO");
+                Log.i("Dialog", "Change datepicker");
+                Calendar newDate = Calendar.getInstance();
+                newDate.set(year, monthOfYear, dayOfMonth);
+                etDateStart.setText(dateFormatter.format(newDate.getTime()));
             }
-        },2015,10,5);
-        subDialog.setMessage("New Dialog Opened");
-//                .setCancelable(true)
-        subDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, "Okay", new DialogInterface.OnClickListener() {
+        },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
+        dateInitDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, "Okay", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dlg2, int which) {
-                System.out.println("OUTTTTT");
-//                        fromDateEtxt.append("OUTTTTT");
-
                 dlg2.cancel();
                 saveFileDialog.show();
             }
         });
-
-//        final EditText editText = new EditText(saveFileDialog.getContext());
-        saveFileDialog = new AlertDialog.Builder(this)
-                .setCancelable(true)
-                .setMessage("First Dialog Opened")
-                .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        subDialog.show();
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                })
-        .setView(R.layout.dialog_save_file);
-//        fromDateEtxt = new EditText(getApplication());
-//        saveFileDialog.setView(fromDateEtxt);
-//        saveFileDialog.setView(editText);
-        saveFileDialog.show();
-        /*
-        fromDatePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-
-            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+        dateInitDialog.getDatePicker().init(newCalendar.get(Calendar.YEAR),
+                newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH), new DatePicker.OnDateChangedListener() {
+            @Override
+            public void onDateChanged(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                Log.i("Dialog", "Change datepicker");
                 Calendar newDate = Calendar.getInstance();
                 newDate.set(year, monthOfYear, dayOfMonth);
-                fromDateEtxt.setText(dateFormatter.format(newDate.getTime()));
-            }
-
-        }, 2015, 5, 11);
-//                .setMessage("New Dialog Opened")
-        fromDatePickerDialog.setCancelable(true);
-        fromDatePickerDialog.setButton(DatePickerDialog.BUTTON_POSITIVE,"Okay", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                        saveFileDialog.show();
-                    }
-                });
-
-
-        saveFileDialog = new AlertDialog.Builder(this);
-        saveFileDialog.setCancelable(true);
-
-        // EditText by default hidden
-        final EditText editText = new EditText(this);
-//        editText.setEnabled(false);
-        editText.append("TEXTO POR DEFECTO");
-
-        saveFileDialog.setTitle(DIALOG_SAVE_FILE_TITLE);
-
-        saveFileDialog.setView(editText).setMessage("Nombre del archivo");
-        fromDateEtxt = new EditText(this);
-        fromDateEtxt.setInputType(InputType.TYPE_NULL);
-        fromDateEtxt.requestFocus();
-        saveFileDialog.setView(fromDateEtxt);
-
-        saveFileDialog.setNeutralButton("Edit", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                fromDatePickerDialog.show();
+                etDateStart.setText(dateFormatter.format(newDate.getTime()));
             }
         });
-        saveFileDialog.setPositiveButton(B_OK, new DialogInterface.OnClickListener() {
+
+        dateEndDialog = new DatePickerDialog(this,new OnDateSetListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                saveFile(editText.getText().toString());
-            }
-        });
-        saveFileDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-        saveFileDialog.show();
-        */
-    }
-        /*
-
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        // EditText by default hidden
-        final EditText editText = new EditText(this);
-//        editText.setEnabled(false);
-        editText.append("TEXTO POR DEFECTO");
-
-        builder.setTitle(DIALOG_SAVE_FILE_TITLE);
-
-        builder.setView(editText).setMessage("Nombre del archivo");
-        fromDateEtxt = new EditText(this);
-        fromDateEtxt.setInputType(InputType.TYPE_NULL);
-        fromDateEtxt.requestFocus();
-        builder.setView(fromDateEtxt);
-
-        builder.setNeutralButton("Edit", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                setDateTimeField(builder.getContext());
-                fromDatePickerDialog.show();
-            }
-        });
-        builder.setPositiveButton(B_OK, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                saveFile(editText.getText().toString());
-            }
-        });
-        builder.setNegativeButton(B_CANCEL, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
-
-    private void setDateTimeField(Context context) {
-//        fromDateEtxt.setOnClickListener(this);
-//        toDateEtxt.setOnClickListener(this);
-
-        Calendar newCalendar = Calendar.getInstance();
-        fromDatePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
-
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                Log.i("Dialog", "Change datepicker");
                 Calendar newDate = Calendar.getInstance();
                 newDate.set(year, monthOfYear, dayOfMonth);
-                fromDateEtxt.setText(dateFormatter.format(newDate.getTime()));
+                etDateEnd.setText(dateFormatter.format(newDate.getTime()));
             }
-
         },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
-        fromDatePickerDialog.setButton(DatePickerDialog.BUTTON_NEUTRAL,"DONE",new DialogInterface.OnClickListener() {
+        dateEndDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, "Okay", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
+            public void onClick(DialogInterface dlg2, int which) {
+                dlg2.cancel();
+                saveFileDialog.show();
             }
         });
-//        toDatePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-//
-//            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-//                Calendar newDate = Calendar.getInstance();
-//                newDate.set(year, monthOfYear, dayOfMonth);
-//                toDateEtxt.setText(dateFormatter.format(newDate.getTime()));
-//            }
-//
-//        },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
+        dateEndDialog.getDatePicker().init(newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH),
+                newCalendar.get(Calendar.DAY_OF_MONTH), new DatePicker.OnDateChangedListener() {
+            @Override
+            public void onDateChanged(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                Log.i("Dialog", "Change datepicker");
+                Calendar newDate = Calendar.getInstance();
+                newDate.set(year, monthOfYear, dayOfMonth);
+                etDateEnd.setText(dateFormatter.format(newDate.getTime()));
+            }
+        });
+
+        AlertDialog.Builder saveFileDialogBuilder = new AlertDialog.Builder(this)
+                .setCancelable(true)
+                .setMessage(DIALOG_SAVE_FILE_TITLE)
+                .setPositiveButton(B_OK, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+//                        dateInitDialog.show();
+                        saveFile(etNameSaveFile.getText().toString());
+                    }
+                })
+                .setNegativeButton(B_CANCEL, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                })
+                .setView(R.layout.dialog_save_file);
+        saveFileDialog = saveFileDialogBuilder.create();
+
+        saveFileDialog.show();
+
+        etNameSaveFile = (EditText) saveFileDialog.findViewById(R.id.d_save_file_name);
+        etDateStart = (EditText) saveFileDialog.findViewById(R.id.d_save_file_date_start);
+        etDateEnd = (EditText) saveFileDialog.findViewById(R.id.d_save_file_date_end);
+        Button bStart = (Button) saveFileDialog.findViewById(R.id.db_save_file_date_start);
+        bStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dateInitDialog.show();
+            }
+        });
+        Button bEnd = (Button) saveFileDialog.findViewById(R.id.db_save_file_date_end);
+        bEnd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dateEndDialog.show();
+            }
+        });
+        etDateStart.setText(dateFormatter.format(newCalendar.getTime()));
+        etDateEnd.setText(dateFormatter.format(newCalendar.getTime()));
+        etNameSaveFile.setText(getNameSaveFile());
     }
-*/
+
+    private String getNameSaveFile() {
+        return "info_track" + "_" + etDateStart.getText() + "_" + etDateEnd.getText();
+    }
+
 }
