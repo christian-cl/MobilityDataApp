@@ -141,8 +141,6 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
         DataCaptureDAO db = new DataCaptureDAO(this);
         db.open();
         List<DataCapture> data = db.get(newDateStart, newDateEnd);
-        System.out.println(newDateStart);
-        System.out.println(newDateEnd);
         Log.i("DB","Find " + data.size() + " elements");
         String extension = ".csv";
         String folderName = "/mdaFolder";

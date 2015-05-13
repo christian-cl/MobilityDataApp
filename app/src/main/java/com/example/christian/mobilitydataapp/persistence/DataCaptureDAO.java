@@ -102,6 +102,16 @@ public class DataCaptureDAO {
         db.delete(TableDataCapture.TABLE_NAME, TableDataCapture.COLUMN_ID + " = " + id, null);
     }
 
+    /**
+     * Delete all rows between two dates
+     * @param dateStart initial date
+     * @param dateEnd finish date
+     */
+    public void delete(Calendar dateStart, Calendar dateEnd) {
+        db.delete(TableDataCapture.TABLE_NAME, TableDataCapture.COLUMN_DATE + " <= " + dateEnd +
+                " and " + TableDataCapture.COLUMN_DATE + " >= " + dateStart, null);
+    }
+
     public void deleteAll() {
         db.delete(TableDataCapture.TABLE_NAME, null, null);
     }

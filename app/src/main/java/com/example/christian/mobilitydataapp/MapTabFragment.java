@@ -39,8 +39,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -192,10 +190,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
     private void myLocationChanged(Location location) {
         Toast.makeText(context, "New Location", Toast.LENGTH_SHORT).show();
-        int lat = (int) (location.getLatitude());
-        int lng = (int) (location.getLongitude());
-        System.out.println("LAT " + String.valueOf(lat));
-        System.out.println("LON " + String.valueOf(lng));
 
         currentLocation = location;
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
@@ -257,6 +251,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             DataCapture dc = new DataCapture();
             dc.setLatitude(currentLocation.getLatitude());
             dc.setLongitude(currentLocation.getLongitude());
+            dc.setAddress(getStreet(currentLocation));
 
             DataCaptureDAO dbLocalInstance = new DataCaptureDAO(context);
             dbLocalInstance.open();
@@ -276,7 +271,12 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 System.out.println("Address");
                 System.out.println(addresses);
                 // Only considered the first result
-                return addresses.get(0).getAddressLine(0);
+                if(addresses != null) {
+                    return addresses.get(0).getAddressLine(0);
+                } else {
+                    return null;
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
                 return null;
@@ -318,7 +318,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             public void onClick(DialogInterface dialog, int which) {
                 if(title != null) {
                     Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    String street = null;//getStreet(loc);
+                    String street = getStreet(loc);
                     String text = null;
                     if(title.equals("Otros")) {
                         text = editText.getText().toString();
@@ -351,6 +351,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
      * Simple method to add markers to the map
      * @param title text of the marker
      * @param type If is GPS marker or Stop marker
+     * @param loc location of market
      */
     private void addMarker(Marker_Type type, String title, Location loc) {
 
