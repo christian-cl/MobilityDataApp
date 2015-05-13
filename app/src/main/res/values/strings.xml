@@ -23,6 +23,7 @@
     <string name="setting_title">Application Settings</string>
     <string name="setting_GPS_title">GPS Information</string>
     <string name="setting_capture_title">Capture Information</string>
+    <string name="setting_database_title">Storage data Information</string>
     <string name="setting_interval_title">Time interval to GPS relocate</string>
     <string name="setting_interval_summary">Interval time summary</string>
     <string name="setting_collect_time_title">Time between data samples</string>
@@ -31,6 +32,8 @@
     <string name="setting_min_distance_summary">Minimum distance to approximate position summary</string>
     <string name="setting_remove_database_title">Delete all captured data</string>
     <string name="setting_remove_database_summary">Delete all captured data until now</string>
+    <string name="setting_delay_backup_database_title">Days between backups</string>
+    <string name="setting_delay_backup_database_summary">Set a number of days between automatic data backups</string>
     <string name="button_end_collecting">Terminar la recolección automática de datos</string>
     <string name="button_start_collecting">Iniciar la recolección automática de datos</string>
     <string name="b_cancel">Cancelar</string>

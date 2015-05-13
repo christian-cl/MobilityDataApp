@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -34,7 +35,7 @@ public class MainActivity extends ActionBarActivity {
     private static final String BACKUP_DB_NAME = "Backup";
     private static final String PREFERENCES_FILE_NAME = "PREFERENCES";
     private static final String PREF_LAST_DATE_BACKUP = "backupLastDate";
-    private static final String PREF_DELAY_TO_BACKUP = "backupDelayDays";
+    private static final String PREF_DELAY_TO_BACKUP = "pref_key_delay_backup_database";
     private static final String FORMAT_DATE = "yyyy-MM-dd HH:mm:ss";
 
     SimpleDateFormat sdf;
@@ -63,9 +64,13 @@ public class MainActivity extends ActionBarActivity {
         Calendar endDate = null;
         if(checkBackupTime(startDate, endDate)) {
             Log.i("DB","Now is a valid date for save backup");
-            if(saveFileAndRemove(BACKUP_DB_NAME,startDate ,endDate)) {
+            String fileName = BACKUP_DB_NAME + "_" + startDate.toString() + "_" + endDate.toString();
+            if(saveFileAndRemove(fileName,startDate ,endDate)) {
+                Log.i("DB","Set a new date for save backup");
                 setNewDelayToBackup();
             }
+        } else {
+            Log.i("DB", "Now do not need save backup");
         }
     }
 
@@ -129,7 +134,8 @@ public class MainActivity extends ActionBarActivity {
 
     public boolean saveFileAndRemove(String fileName, Calendar dateStart, Calendar dateEnd) {
         if(saveFile(fileName, dateStart, dateEnd)) {
-            db.delete(dateStart, dateEnd);
+            Log.i("____","          DELETE");
+//            db.delete(dateStart, dateEnd);
             return true;
         } else {
             return false;
@@ -207,9 +213,13 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private boolean checkBackupTime(Calendar startDate, Calendar endDate) {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_FILE_NAME, MODE_PRIVATE);
+        Log.i("Preferences","Checking preferences");
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_FILE_NAME, MODE_PRIVATE);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+
         String lastDate = settings.getString(PREF_LAST_DATE_BACKUP,"");
-        int delay = settings.getInt(PREF_DELAY_TO_BACKUP, 0); // number of days
+        Log.i("___",lastDate);
+        int delay = Integer.parseInt(settings.getString(PREF_DELAY_TO_BACKUP, "0")); // number of days
 
         Calendar cMinDate = Calendar.getInstance();
         try {
@@ -221,15 +231,17 @@ public class MainActivity extends ActionBarActivity {
 
         Calendar now = Calendar.getInstance();
 
+        System.out.println(now);
+        System.out.println(cMinDate);
         return now.compareTo(cMinDate) >= 0;
     }
 
     private void setNewDelayToBackup() {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_FILE_NAME, MODE_PRIVATE);
-
+//        SharedPreferences settings = getSharedPreferences(PREFERENCES_FILE_NAME, MODE_PRIVATE);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         Calendar newDate = Calendar.getInstance();
 
-        String newLastDate = sdf.format(newDate);
+        String newLastDate = sdf.format(newDate.getTime());
 
         // Update date of last backup
         SharedPreferences.Editor editor = settings.edit();
