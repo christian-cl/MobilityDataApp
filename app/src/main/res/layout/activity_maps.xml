@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     android:id="@+id/mapfragment"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android">
@@ -16,25 +16,36 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:id="@+id/stop_button"
+        android:elevation="10dp"
+        android:background="@drawable/circle"
         android:src="@mipmap/ic_add_white"
         android:onClick="displayStopChoices"
-        android:layout_gravity="end|bottom" />
+        android:layout_gravity="end|bottom"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
         <Button
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/start_button"
             android:text="@string/button_start_collecting"
-            android:onClick="startCollectingData"/>
+            android:onClick="startCollectingData"
+            style="@android:style/Holo.Light.ButtonBar"
+            android:layout_marginRight="@dimen/abc_action_button_min_width_overflow_material"
+            android:layout_marginLeft="@dimen/abc_action_button_min_width_material"
+            android:background="#ff2aff83" />
         <Button
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/end_button"
             android:text="@string/button_end_collecting"
-            android:onClick="stopCollectingData"/>
+            android:onClick="stopCollectingData"
+            android:background="#ffff4646"
+            style="@android:style/ButtonBar" />
     </LinearLayout>
 </RelativeLayout>
