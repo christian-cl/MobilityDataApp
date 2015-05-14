@@ -29,6 +29,8 @@ import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
 import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
+import com.example.christian.mobilitydataapp.persistence.StreetTrack;
+import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -63,7 +65,14 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private SimpleDateFormat sdf;
     private boolean runningCaptureData;
 
+
+    private DataCapture startTrackPoint;
+    private float trackDistance;
+    private DataCapture currentTrackPoint;
+
+
     private static enum Marker_Type {GPS, STOP, POSITION}
+    private static enum Tab_Type {LogTabFragment, TrackFragment}
 
     private long intervalTimeGPS; // milliseconds
     private float minDistance; // meters
@@ -202,6 +211,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, ZOOM);
         map.animateCamera(cameraUpdate);
 
+        processTrackData(location); // Global process information
         addMarker(Marker_Type.POSITION, null, currentLocation);
     }
 
@@ -379,10 +389,10 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         switch (type) {
             case GPS: map.addMarker(new MarkerOptions().position(coordinates)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
-                ((LogTabFragment) getHiddenFragment()).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
+                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             case STOP: map.addMarker(new MarkerOptions().position(coordinates).title(title));
-                ((LogTabFragment) getHiddenFragment()).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
+                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             case POSITION:
                 if (currentMarker != null) {
@@ -390,19 +400,23 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 }
                 currentMarker = map.addMarker(new MarkerOptions().position(coordinates)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
-                ((LogTabFragment) getHiddenFragment()).appendLog(NEW_GPS + loc.getLatitude() + ", " + loc.getLongitude());
+                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_GPS + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             default: Log.e("MAP", "Marker type is not valid");
         }
     }
 
-    public Fragment getHiddenFragment(){
+    public Fragment getHiddenFragment(Tab_Type tabType){
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
         System.out.println(fragments.size());
         for(Fragment fragment : fragments){
-            if(fragment != null && (fragment instanceof LogTabFragment) )//!fragment.isVisible())
-                return fragment;
+            if(fragment != null)
+                if (tabType.equals(Tab_Type.TrackFragment) && fragment instanceof TrackFragment)//!fragment.isVisible())
+                    return fragment;
+                else if (tabType.equals(Tab_Type.LogTabFragment) && fragment instanceof LogTabFragment) {
+                    return fragment;
+                }
         }
         return null;
     }
@@ -441,13 +455,77 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     public void stopCollectingData() {
         Log.i("BG","End repeating task");
         stopRepeatingTask();
-        ((LogTabFragment) getHiddenFragment()).appendLog(DATA_END);
+        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_END);
     }
 
     public void startCollectingData() {
         Log.i("BG","Start repeating task");
         startRepeatingTask();
-        ((LogTabFragment) getHiddenFragment()).appendLog(DATA_START);
+        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_START);
+    }
+
+
+    public void processTrackData(Location location) {
+
+        if(startTrackPoint == null) {
+            startTrackPoint = new DataCapture();
+            startTrackPoint.setLatitude(location.getLatitude());
+            startTrackPoint.setLongitude(location.getLongitude());
+            startTrackPoint.setAddress(getStreet(location));
+            startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+            trackDistance = 0;
+        } else {
+            String street = getStreet(location);
+            if(street == null) {
+                Log.e("Geocoder", "Address is null");
+            } else {
+                if(startTrackPoint.getAddress().equals(street)) {
+                    Location start = new Location("");
+                    start.setLatitude(startTrackPoint.getLatitude());
+                    start.setLongitude(startTrackPoint.getLongitude());
+                    trackDistance += start.distanceTo(location);
+
+                    currentTrackPoint = new DataCapture();
+                    startTrackPoint.setLatitude(location.getLatitude());
+                    startTrackPoint.setLongitude(location.getLongitude());
+                    startTrackPoint.setAddress(getStreet(location));
+                    startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+                } else {
+                    // Save track data
+                    DataCaptureDAO dbLocalInstanceDC = new DataCaptureDAO(context);
+                    dbLocalInstanceDC.open();
+                    dbLocalInstanceDC.create(startTrackPoint);
+                    dbLocalInstanceDC.create(currentTrackPoint);
+                    dbLocalInstanceDC.close();
+
+                    StreetTrack st = new StreetTrack(startTrackPoint.getAddress(),
+                            startTrackPoint.getLatitude(), startTrackPoint.getLongitude(),
+                            currentTrackPoint.getLatitude(), currentTrackPoint.getLongitude(),
+                            startTrackPoint.getDate(), currentTrackPoint.getDate(),
+                            trackDistance);
+
+
+                    StreetTrackDAO dbLocalInstanceST = new StreetTrackDAO(context);
+                    dbLocalInstanceST.open();
+                    dbLocalInstanceST.create(st);
+                    dbLocalInstanceST.close();
+                    // Display Information
+                    String line = "Dirección: " + st.getAddress() + "\n"
+                            + "\t Distancia recorrida: " + st.getDistance() + " m.\n"
+                            + "\t Tiempo transcurrido: " + st.getDistance() + " s.";
+
+                    ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog(line);
+
+
+                    startTrackPoint = new DataCapture();
+                    startTrackPoint.setLatitude(location.getLatitude());
+                    startTrackPoint.setLongitude(location.getLongitude());
+                    startTrackPoint.setAddress(getStreet(location));
+                    startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+                    trackDistance = 0;
+                }
+            }
+        }
     }
 
 }

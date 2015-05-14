@@ -16,6 +16,22 @@ public class StreetTrack {
     private String endDateTime;
     private float distance; // in meters
 
+    public StreetTrack() {
+        super();
+    }
+
+    public StreetTrack(String address, double startLatitude, double startLongitude,
+                       double endLatitude, double endLongitude, String startDateTime,
+                       String endDateTime, float distance) {
+        this.address = address;
+        this.startLatitude = startLatitude;
+        this.startLongitude = startLongitude;
+        this.endLatitude = endLatitude;
+        this.endLongitude = endLongitude;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
+        this.distance = distance;
+    }
 
     public long getId() {
         return id;

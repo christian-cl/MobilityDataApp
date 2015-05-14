@@ -19,11 +19,11 @@ public class TabsPagerAdapter extends FragmentPagerAdapter {
 
         switch (index) {
             case 0:
-                // Top Rated fragment activity
                 return new MapTabFragment();
             case 1:
-                // Games fragment activity
                 return new LogTabFragment();
+            case 2:
+                return new TrackFragment();
         }
 
         return null;
@@ -32,7 +32,7 @@ public class TabsPagerAdapter extends FragmentPagerAdapter {
     @Override
     public int getCount() {
         // get item count - equal to number of tabs
-        return 2;
+        return 3;
     }
 
 }
