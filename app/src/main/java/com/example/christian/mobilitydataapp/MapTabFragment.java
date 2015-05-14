@@ -39,6 +39,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -58,6 +60,8 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private static final int ZOOM = 20;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
     private Context context;
+    private SimpleDateFormat sdf;
+    private boolean runningCaptureData;
 
     private static enum Marker_Type {GPS, STOP, POSITION}
 
@@ -124,6 +128,8 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         bEnd.setOnClickListener(this);
 
         context = container.getContext();
+
+        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
 
         pref = PreferenceManager.getDefaultSharedPreferences(context);
         loadSettings();
@@ -216,6 +222,12 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         db.close();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        locationManager.removeGpsStatusListener(mGPSStatusListener);
+    }
+
     private void configureDialogWait() {
         dialogWait = new ProgressDialog(context);
         dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -238,10 +250,12 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
     private void startRepeatingTask() {
         mStatusChecker.run();
+        runningCaptureData = true;
     }
 
     private void stopRepeatingTask() {
         mHandler.removeCallbacks(mStatusChecker);
+        runningCaptureData = false;
     }
 
     private void updateStatus() {
@@ -252,6 +266,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             dc.setLatitude(currentLocation.getLatitude());
             dc.setLongitude(currentLocation.getLongitude());
             dc.setAddress(getStreet(currentLocation));
+            dc.setDate(sdf.format(Calendar.getInstance().getTime()));
 
             DataCaptureDAO dbLocalInstance = new DataCaptureDAO(context);
             dbLocalInstance.open();
@@ -330,6 +345,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     dc.setAddress(street);
                     dc.setStopType(title);
                     dc.setComment(text);
+                    dc.setDate(sdf.format(Calendar.getInstance().getTime()));
                     db.create(dc);
 
                     //Location loc = currentLocation;//locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -412,7 +428,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 break;
 
             case R.id.start_button:
-                startCollectingData();
+                if(!runningCaptureData) startCollectingData();
                 break;
 
             case R.id.end_button:

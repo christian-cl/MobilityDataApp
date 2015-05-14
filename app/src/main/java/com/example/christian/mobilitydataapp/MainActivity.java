@@ -32,12 +32,12 @@ import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
 
-    private static final String BACKUP_DB_NAME = "Backup";
+    private static final String BACKUP_DB_NAME = "backup";
     private static final String PREF_LAST_DATE_BACKUP = "backupLastDate";
     private static final String PREF_DELAY_TO_BACKUP = "pref_key_delay_backup_database";
     private static final String FORMAT_DATE = "yyyy-MM-dd HH:mm:ss";
 
-    SimpleDateFormat sdf;
+    private SimpleDateFormat sdf;
 
     private DataCaptureDAO db;
 
@@ -62,6 +62,7 @@ public class MainActivity extends ActionBarActivity {
         if(checkBackupTime()) {
             Log.i("DB","Now is a valid date for save backup");
             Calendar startDate = getLastBackup();
+            Log.i("DB","Last backup was in : " + sdf.format(startDate.getTime()));
             Calendar endDate = Calendar.getInstance();
             String fileName = BACKUP_DB_NAME + "_" + sdf.format(startDate.getTime()) +
                     "_" + sdf.format(endDate.getTime());
@@ -70,7 +71,7 @@ public class MainActivity extends ActionBarActivity {
                 setNewDelayToBackup();
             }
         } else {
-            Log.i("DB", "Now do not need save backup");
+            Log.i("DB", "Now not need save backup");
         }
     }
 
@@ -135,7 +136,7 @@ public class MainActivity extends ActionBarActivity {
     public boolean saveFileAndRemove(String fileName, Calendar dateStart, Calendar dateEnd) {
         if(saveFile(fileName, dateStart, dateEnd)) {
             Log.i("____","          DELETE");
-//            db.delete(dateStart, dateEnd);
+            db.delete(dateStart, dateEnd);
             return true;
         } else {
             return false;
@@ -172,6 +173,7 @@ public class MainActivity extends ActionBarActivity {
             String head = "_id,latitude,longitude,street,stoptype,comment,date\n";
             out.write(head.getBytes());
             for(DataCapture dc : data) {
+                System.out.print(dc);
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
                 out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
                 out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
@@ -194,7 +196,7 @@ public class MainActivity extends ActionBarActivity {
             }
             out.flush();
             out.close();
-            Log.i("DB", "File saved");
+            Log.i("DB", "File saved with name: " + fileName);
             Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show();
             return true;
         } catch (Exception e) {

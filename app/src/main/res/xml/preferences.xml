@@ -32,7 +32,7 @@
             android:key="pref_key_delay_backup_database"
             android:summary="@string/setting_delay_backup_database_summary"
             android:title="@string/setting_delay_backup_database_title"
-            android:defaultValue="1"
+            android:defaultValue="7"
             android:inputType="number"/>
         <Preference
             android:key="pref_key_remove_database"

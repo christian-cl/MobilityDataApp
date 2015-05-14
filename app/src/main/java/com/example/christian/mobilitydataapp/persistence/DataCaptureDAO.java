@@ -51,6 +51,8 @@ public class DataCaptureDAO {
             values.put(TableDataCapture.COLUMN_STOP_TYPE, dataCapture.getStopType());
         if(dataCapture.getComment() != null)
             values.put(TableDataCapture.COLUMN_COMMENT, dataCapture.getComment());
+        if(dataCapture.getDate() != null)
+            values.put(TableDataCapture.COLUMN_DATE, dataCapture.getDate());
         db.insert(TableDataCapture.TABLE_NAME, null, values);
     }
 
@@ -107,9 +109,21 @@ public class DataCaptureDAO {
      * @param dateStart initial date
      * @param dateEnd finish date
      */
+    public void delete(String dateStart, String dateEnd) {
+        String where =  TableDataCapture.COLUMN_DATE + " <= \"" + dateEnd +
+                "\" and " + TableDataCapture.COLUMN_DATE + " >= \"" + dateStart + "\"";
+        db.delete(TableDataCapture.TABLE_NAME,where , null);
+    }
+
+    /**
+     * Delete all rows between two dates
+     * @param dateStart initial date
+     * @param dateEnd finish date
+     */
     public void delete(Calendar dateStart, Calendar dateEnd) {
-        db.delete(TableDataCapture.TABLE_NAME, TableDataCapture.COLUMN_DATE + " <= " + dateEnd +
-                " and " + TableDataCapture.COLUMN_DATE + " >= " + dateStart, null);
+        String FORMAT_DATE = "yyyy-MM-dd HH:mm:ss";
+        SimpleDateFormat sdf = new SimpleDateFormat(FORMAT_DATE);
+        delete(sdf.format(dateStart.getTime()),sdf.format(dateEnd.getTime()));
     }
 
     public void deleteAll() {
