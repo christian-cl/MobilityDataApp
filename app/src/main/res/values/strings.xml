@@ -1,15 +1,15 @@
 <resources>
     <string name="app_name">MobilityDataApp</string>
-    <string name="title_activity_maps">Map</string>
-    <string name="title_activity_log">Log</string>
-    <string name="title_activity_main">Main</string>
+    <string name="title_activity_maps">Mapa</string>
+    <string name="title_activity_log">Detalle</string>
+    <string name="title_activity_main">Principal</string>
     <string name="title_activity_debug">Debug</string>
 
     <string name="button_send_map">Go Map</string>
     <string name="button_send_debug">Go Debug</string>
 
-    <string name="action_settings">Settings</string>
-    <string name="action_save_file">Save File</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="action_save_file">Guardar archivo</string>
     <string name="help">Ayuda</string>
 
 
@@ -20,20 +20,20 @@
     <string name="button_save">Save</string>
 
 
-    <string name="setting_title">Application Settings</string>
-    <string name="setting_GPS_title">GPS Information</string>
-    <string name="setting_capture_title">Capture Information</string>
-    <string name="setting_database_title">Storage data Information</string>
-    <string name="setting_interval_title">Time interval to GPS relocate</string>
-    <string name="setting_interval_summary">Interval time summary</string>
-    <string name="setting_collect_time_title">Time between data samples</string>
-    <string name="setting_collect_time_summary">Time between data samples summary</string>
-    <string name="setting_min_distance_title">Minimum distance to approximate position</string>
-    <string name="setting_min_distance_summary">Minimum distance to approximate position summary</string>
-    <string name="setting_remove_database_title">Delete all captured data</string>
-    <string name="setting_remove_database_summary">Delete all captured data until now</string>
-    <string name="setting_delay_backup_database_title">Days between backups</string>
-    <string name="setting_delay_backup_database_summary">Set a number of days between automatic data backups</string>
+    <string name="setting_title">Ajustes de la aplicación</string>
+    <string name="setting_GPS_title">Información del GPS</string>
+    <string name="setting_capture_title">Recogida de información</string>
+    <string name="setting_database_title">Almacenaje de la Information</string>
+    <string name="setting_interval_title">Intervalo entre ubicaciones</string>
+    <string name="setting_interval_summary">Intervalo de tiempo para volver a ubicarse vía GPS</string>
+    <string name="setting_collect_time_title">Tiempo entre recogida de datos</string>
+    <string name="setting_collect_time_summary">Intervalo de tiempo en segundos entre las recogidas automáticas de posición</string>
+    <string name="setting_min_distance_title">Distancia mínima</string>
+    <string name="setting_min_distance_summary">Distancia mínima en metros para aproximar la posición</string>
+    <string name="setting_remove_database_title">Borrar toda la información almacenada</string>
+    <string name="setting_remove_database_summary">Borrar toda la información de puntos almacenada en anteriores recogidas</string>
+    <string name="setting_delay_backup_database_title">Número de días entre copias de seguridad</string>
+    <string name="setting_delay_backup_database_summary">Número de días entre copias de seguridad automáticas de la información almacenada</string>
     <string name="button_end_collecting">Terminar la recolección automática de datos</string>
     <string name="button_start_collecting">Iniciar la recolección automática de datos</string>
     <string name="b_cancel">Cancelar</string>
