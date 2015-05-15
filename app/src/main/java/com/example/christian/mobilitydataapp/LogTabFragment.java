@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,10 +18,23 @@ import android.widget.TextView;
  */
 public class LogTabFragment extends Fragment {
     private TextView out;
+    private View view;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState){
-        View view = inflater.inflate(R.layout.activity_tab_fragment_log, container, false);
+        if (view != null) {
+            ViewGroup parent = (ViewGroup) view.getParent();
+            if (parent != null)
+                parent.removeView(view);
+        }
+        try {
+            view = inflater.inflate(R.layout.activity_tab_fragment_log, container, false);
+        } catch (InflateException e) {
+        /* map is already there, just return view as it is */
+            Log.e("L", e.getMessage());
+            e.printStackTrace();
+        }
+//        View view = inflater.inflate(R.layout.activity_tab_fragment_log, container, false);
         out = (TextView) view.findViewById(R.id.tabtextview);
         out.setMovementMethod(new ScrollingMovementMethod());
 

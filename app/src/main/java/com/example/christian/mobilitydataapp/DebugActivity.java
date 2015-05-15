@@ -28,6 +28,8 @@ import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
 import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
+import com.example.christian.mobilitydataapp.persistence.StreetTrack;
+import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -256,18 +258,18 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
 
     private void muestraProveedor(String proveedor) {
         LocationProvider info = manejador.getProvider(proveedor);
-        log("LocationProvider[ "+"getName=" + info.getName()
+        log("LocationProvider[ " + "getName=" + info.getName()
                 + ", isProviderEnabled="
-                + manejador.isProviderEnabled(proveedor)+", getAccuracy="
-                + A[Math.max(0, info.getAccuracy())]+ ", getPowerRequirement="
+                + manejador.isProviderEnabled(proveedor) + ", getAccuracy="
+                + A[Math.max(0, info.getAccuracy())] + ", getPowerRequirement="
                 + P[Math.max(0, info.getPowerRequirement())]
-                +", hasMonetaryCost=" + info.hasMonetaryCost()
+                + ", hasMonetaryCost=" + info.hasMonetaryCost()
                 + ", requiresCell=" + info.requiresCell()
                 + ", requiresNetwork=" + info.requiresNetwork()
                 + ", requiresSatellite=" + info.requiresSatellite()
                 + ", supportsAltitude=" + info.supportsAltitude()
                 + ", supportsBearing=" + info.supportsBearing()
-                + ", supportsSpeed=" + info.supportsSpeed()+" ]\n");
+                + ", supportsSpeed=" + info.supportsSpeed() + " ]\n");
     }
 
     /** Called when the user clicks the Send button */
@@ -293,6 +295,18 @@ public class DebugActivity extends ActionBarActivity implements LocationListener
             log(dc.getId() + " " + dc.getLatitude() + " " + dc.getLongitude() + " " +
                     dc.getAddress() + " " + dc.getStopType() + " " + dc.getComment() +
                     " " + dc.getDate());
+        }
+    }
+    public void show2(View view) {
+        StreetTrackDAO db = new StreetTrackDAO(this);
+        db.open();
+        List<StreetTrack> list = db.getAll();
+        for(StreetTrack dc : list) {
+            log(dc.getId() + " " + dc.getAddress() + " "  +
+                    dc.getStartLatitude() + " " + dc.getStartLongitude() + " " +
+                    dc.getEndLatitude() + " " + dc.getEndLongitude() + " " +
+                    dc.getStartDateTime() + " " + dc.getEndDateTime() + " " +
+                    dc.getDistance());
         }
     }
 

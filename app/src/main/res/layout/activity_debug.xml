@@ -27,6 +27,11 @@
             android:layout_height="wrap_content"
             android:text="@string/button_show"
             android:onClick="show"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Show2"
+            android:onClick="show2"/>
          <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

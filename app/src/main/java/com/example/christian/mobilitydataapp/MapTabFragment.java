@@ -138,6 +138,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             view = inflater.inflate(R.layout.activity_maps, container, false);
         } catch (InflateException e) {
         /* map is already there, just return view as it is */
+            Log.e("M", e.getMessage());
             e.printStackTrace();
         }
 //        view = inflater.inflate(R.layout.activity_maps, container, false);
@@ -243,6 +244,12 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 //        ((LogTabFragment) getHiddenFragment()).appendLog(DATA_END);
         locationManager.removeUpdates(gpsLocationListener);
         db.close();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        locationManager.removeGpsStatusListener(mGPSStatusListener);
     }
 
     @Override
@@ -420,10 +427,11 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     }
 
     public Fragment getHiddenFragment(Tab_Type tabType){
-        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+        FragmentManager fragmentManager = ((MapTabActivity) context).getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
         System.out.println(fragments.size());
         for(Fragment fragment : fragments){
+            System.out.println(fragment.getClass().getName());
             if(fragment != null)
                 if (tabType.equals(Tab_Type.TrackFragment) && fragment instanceof TrackFragment)//!fragment.isVisible())
                     return fragment;
@@ -479,7 +487,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
 
     public void processTrackData(Location location) {
-
+//        ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog("Hollaaa");
         if(startTrackPoint == null) {
             startTrackPoint = new DataCapture();
             startTrackPoint.setLatitude(location.getLatitude());
