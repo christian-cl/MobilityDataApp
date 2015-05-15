@@ -4,11 +4,23 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import java.util.List;
+
 /**
  * Created by Christian on 8/05/15.
  *
  */
 public class TabsPagerAdapter extends FragmentPagerAdapter {
+
+    private List<Fragment> fragments;
+    /**
+     * @param fm
+     * @param fragments
+     */
+    public TabsPagerAdapter(FragmentManager fm, List<Fragment> fragments) {
+        super(fm);
+        this.fragments = fragments;
+    }
 
     public TabsPagerAdapter(FragmentManager fm) {
         super(fm);
