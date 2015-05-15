@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MobilityDataApp</string>
+    <string name="app_name">NEOTrack</string>
     <string name="title_activity_maps">Mapa</string>
     <string name="title_activity_log">Detalle</string>
     <string name="title_activity_main">Principal</string>

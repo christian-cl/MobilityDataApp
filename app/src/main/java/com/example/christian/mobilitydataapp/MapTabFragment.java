@@ -18,6 +18,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,6 +70,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private DataCapture startTrackPoint;
     private float trackDistance;
     private DataCapture currentTrackPoint;
+    private View view;
 
 
     private static enum Marker_Type {GPS, STOP, POSITION}
@@ -127,7 +129,18 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState){
-        View view = inflater.inflate(R.layout.activity_maps, container, false);
+        if (view != null) {
+            ViewGroup parent = (ViewGroup) view.getParent();
+            if (parent != null)
+                parent.removeView(view);
+        }
+        try {
+            view = inflater.inflate(R.layout.activity_maps, container, false);
+        } catch (InflateException e) {
+        /* map is already there, just return view as it is */
+            e.printStackTrace();
+        }
+//        view = inflater.inflate(R.layout.activity_maps, container, false);
 
         ImageButton bStop = (ImageButton) view.findViewById(R.id.stop_button);
         Button bStart = (Button) view.findViewById(R.id.start_button);

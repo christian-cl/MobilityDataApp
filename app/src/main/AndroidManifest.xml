@@ -28,7 +28,8 @@
         <!--android:name=".MapsActivity"-->
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:configChanges="orientation|screenSize">>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -38,7 +39,8 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps"
-            android:parentActivityName="com.example.christian.mobilitydataapp.MainActivity" >
+            android:parentActivityName="com.example.christian.mobilitydataapp.MainActivity"
+            android:configChanges="orientation|screenSize">>
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.christian.mobilitydataapp.MainActivity" />
@@ -46,7 +48,8 @@
         <activity
             android:name=".MapTabActivity"
             android:label="@string/title_activity_maps"
-            android:parentActivityName="com.example.christian.mobilitydataapp.MainActivity" >
+            android:parentActivityName="com.example.christian.mobilitydataapp.MainActivity"
+            android:configChanges="orientation|screenSize">>
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.christian.mobilitydataapp.MainActivity" />
@@ -54,14 +57,16 @@
         <activity
             android:name=".DebugActivity"
             android:label="@string/title_activity_debug"
-            android:parentActivityName="com.example.christian.mobilitydataapp.MainActivity" >
+            android:parentActivityName="com.example.christian.mobilitydataapp.MainActivity"
+            android:configChanges="orientation|screenSize">>
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.christian.mobilitydataapp.MainActivity" />
         </activity>
         <activity
             android:name=".SettingsActivity"
-            android:theme="@android:style/Theme.Light.NoTitleBar" >
+            android:theme="@android:style/Theme.Light.NoTitleBar"
+            android:configChanges="orientation|screenSize">>
         </activity>
     </application>
 

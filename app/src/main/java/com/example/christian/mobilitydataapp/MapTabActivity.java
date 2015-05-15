@@ -47,7 +47,7 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
     private ViewPager viewPager;
     private android.support.v7.app.ActionBar actionBar;
     // Tab titles
-    private String[] tabs = { "Map", "Log"};
+    private String[] tabs = { "Mapa", "Registro", "Información"};
 
     private AlertDialog saveFileDialog;
     private DatePickerDialog dateInitDialog;
@@ -87,9 +87,6 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
         });
 
         actionBar = getSupportActionBar();
-        TabsPagerAdapter mAdapter = new TabsPagerAdapter(getSupportFragmentManager());
-
-        viewPager.setAdapter(mAdapter);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
@@ -99,7 +96,11 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
                     .setTabListener(this));
         }
 
-        dateFormatter = new SimpleDateFormat("dd-MM-yyyy",Locale.US);
+        TabsPagerAdapter mAdapter = new TabsPagerAdapter(getSupportFragmentManager());
+
+        viewPager.setAdapter(mAdapter);
+
+        dateFormatter = new SimpleDateFormat("dd-MM-yyyy");
     }
 
     @Override
@@ -199,6 +200,7 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
 
     @Override
     public void onTabSelected(android.support.v7.app.ActionBar.Tab tab, FragmentTransaction ft) {
+        Log.i(" A                 ",String.valueOf(tab.getPosition()));
         // on tab selected
         // show respected fragment view
         viewPager.setCurrentItem(tab.getPosition());
@@ -207,11 +209,13 @@ public class MapTabActivity extends ActionBarActivity implements ActionBar.TabLi
 
     @Override
     public void onTabUnselected(android.support.v7.app.ActionBar.Tab tab, FragmentTransaction ft) {
+        Log.i(" B                 ",String.valueOf(tab.getPosition()));
 
     }
 
     @Override
     public void onTabReselected(android.support.v7.app.ActionBar.Tab tab, FragmentTransaction ft) {
+        Log.i(" C                 ",String.valueOf(tab.getPosition()));
 
     }
 

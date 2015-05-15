@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,6 +53,10 @@ public class MainActivity extends ActionBarActivity {
             getSupportActionBar().setDisplayUseLogoEnabled(true);
             getSupportActionBar().setLogo(R.mipmap.ic_launcher_inv);
         }
+
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.my_awesome_toolbar);
+//        if(toolbar != null)
+//            setSupportActionBar(toolbar);
 
         db = new DataCaptureDAO(this);
         db.open();

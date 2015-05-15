@@ -1,6 +1,5 @@
 package com.example.christian.mobilitydataapp;
 
-
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Layout;
