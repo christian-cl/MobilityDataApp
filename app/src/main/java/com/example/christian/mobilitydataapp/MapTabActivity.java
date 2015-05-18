@@ -120,6 +120,7 @@ public class MapTabActivity extends ActionBarActivity implements
         db = new DataCaptureDAO(this);
         db.open();
         mHandler = new Handler();
+        addressHandler = new Handler();
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -430,6 +431,7 @@ public class MapTabActivity extends ActionBarActivity implements
     // Process to repeat
     private int intervalCapture;
     public Handler mHandler;
+    public Handler addressHandler;
     private Location currentLocation;
     private LocationListener gpsLocationListener;
     public GpsStatus.Listener mGPSStatusListener = new GpsStatus.Listener() {
@@ -513,8 +515,10 @@ setHiddenFragment();
 //            dc.setAddress(getStreet(currentLocation));
             dc.setDate(sdf.format(Calendar.getInstance().getTime()));
 
-            AddressResultReceiver receiver = new AddressResultReceiver(mHandler);
+            AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
             receiver.setDataCapture(dc);
+            Log.e("TEST", "2");
+            receiver.setIsInserted(true);
             startIntentService(receiver);
 //            db.create(dc);
             ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.GPS, null, currentLocation);
@@ -549,64 +553,35 @@ setHiddenFragment();
 
     public void processTrackData(Location location) {
 //        ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog("Hollaaa");
-        if(startTrackPoint == null) {
+//        Log.e("TRACK",startTrackPoint.toString());
+        if((startTrackPoint != null) && (startTrackPoint.getAddress() != null)) {
+            System.out.println("!= null");
+            System.out.println(startTrackPoint);
+            DataCapture dc = new DataCapture();
+            dc.setLatitude(location.getLatitude());
+            dc.setLongitude(location.getLongitude());
+            dc.setDate(sdf.format(Calendar.getInstance().getTime()));
+
+            AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
+            receiver.setDataCapture(dc);
+            Log.e("TEST","3");
+            receiver.setIsInserted(false);
+            startIntentService(receiver);
+        } else {
+            System.out.println("== null");
+            System.out.println(startTrackPoint);
             startTrackPoint = new DataCapture();
             startTrackPoint.setLatitude(location.getLatitude());
             startTrackPoint.setLongitude(location.getLongitude());
 //            startTrackPoint.setAddress(getStreet(location));
             startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+            AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
+            receiver.setDataCapture(startTrackPoint);
+            receiver.setIsInserted(true);
+            startIntentService(receiver);
+            currentTrackPoint = startTrackPoint;
+            Log.i("Track","Set start track point in " +startTrackPoint.getLatitude() + " " + startTrackPoint.getLongitude());
             trackDistance = 0;
-        } else {
-            String street = null;//getStreet(location);
-            if(street == null) {
-                Log.e("Geocoder", "Address is null");
-            } else {
-                if(startTrackPoint.getAddress().equals(street)) {
-                    Location start = new Location("");
-                    start.setLatitude(startTrackPoint.getLatitude());
-                    start.setLongitude(startTrackPoint.getLongitude());
-                    trackDistance += start.distanceTo(location);
-
-                    currentTrackPoint = new DataCapture();
-                    startTrackPoint.setLatitude(location.getLatitude());
-                    startTrackPoint.setLongitude(location.getLongitude());
-//                    startTrackPoint.setAddress(getStreet(location));
-                    startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
-                } else {
-                    // Save track data
-                    DataCaptureDAO dbLocalInstanceDC = new DataCaptureDAO(this);
-                    dbLocalInstanceDC.open();
-                    dbLocalInstanceDC.create(startTrackPoint);
-                    dbLocalInstanceDC.create(currentTrackPoint);
-                    dbLocalInstanceDC.close();
-
-                    StreetTrack st = new StreetTrack(startTrackPoint.getAddress(),
-                            startTrackPoint.getLatitude(), startTrackPoint.getLongitude(),
-                            currentTrackPoint.getLatitude(), currentTrackPoint.getLongitude(),
-                            startTrackPoint.getDate(), currentTrackPoint.getDate(),
-                            trackDistance);
-
-
-                    StreetTrackDAO dbLocalInstanceST = new StreetTrackDAO(this);
-                    dbLocalInstanceST.open();
-                    dbLocalInstanceST.create(st);
-                    dbLocalInstanceST.close();
-                    // Display Information
-                    String line = "Dirección: " + st.getAddress() + "\n"
-                            + "\t Distancia recorrida: " + st.getDistance() + " m.\n"
-                            + "\t Tiempo transcurrido: " + st.getDistance() + " s.";
-
-//                    ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog(line);
-
-
-                    startTrackPoint = new DataCapture();
-                    startTrackPoint.setLatitude(location.getLatitude());
-                    startTrackPoint.setLongitude(location.getLongitude());
-//                    startTrackPoint.setAddress(getStreet(location));
-                    startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
-                    trackDistance = 0;
-                }
-            }
         }
     }
 
@@ -660,6 +635,7 @@ setHiddenFragment();
     public class AddressResultReceiver extends ResultReceiver {
         private String mAddressOutput;
         private DataCapture dataCapture;
+        private boolean isInserted;
 
         public AddressResultReceiver(Handler handler) {
             super(handler);
@@ -669,10 +645,70 @@ setHiddenFragment();
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
             dataCapture.setAddress(mAddressOutput);
-            db.create(dataCapture);
+            if(isInserted) {
+                db.create(dataCapture);
+            } else {
+                callbackTrack(dataCapture);
+            }
         }
+
+        public DataCapture getDataCapture() {
+            return dataCapture;
+        }
+
         public void setDataCapture(DataCapture dataCapture) {
             this.dataCapture = dataCapture;
+        }
+
+        public void setIsInserted(boolean isInserted) {
+            Log.e("TEST"," " + isInserted + " " + this.isInserted);
+            this.isInserted = isInserted;
+            Log.e("TEST"," " + isInserted + " " + this.isInserted);
+        }
+    }
+
+    private void callbackTrack(DataCapture dataCapture) {
+        if(dataCapture.getAddress() == null) {
+            Log.e("Geocoder", "Address is null");
+        } else {
+            if(startTrackPoint.getAddress().equals(dataCapture.getAddress())) {
+                Location start = new Location("");
+                start.setLatitude(currentTrackPoint.getLatitude());
+                start.setLongitude(currentTrackPoint.getLongitude());
+                Location end = new Location("");
+                start.setLatitude(dataCapture.getLatitude());
+                start.setLongitude(dataCapture.getLongitude());
+                trackDistance += start.distanceTo(end);
+
+                // set new current
+                currentTrackPoint = dataCapture;
+            } else {
+                // Save track data
+                db.create(dataCapture);
+
+                StreetTrack st = new StreetTrack(startTrackPoint.getAddress(),
+                        startTrackPoint.getLatitude(), startTrackPoint.getLongitude(),
+                        currentTrackPoint.getLatitude(), currentTrackPoint.getLongitude(),
+                        startTrackPoint.getDate(), currentTrackPoint.getDate(),
+                        trackDistance);
+
+
+                StreetTrackDAO dbLocalInstanceST = new StreetTrackDAO(this);
+                dbLocalInstanceST.open();
+                dbLocalInstanceST.create(st);
+                dbLocalInstanceST.close();
+                // Display Information
+                String line = "Dirección: " + st.getAddress() + "\n"
+                        + "\t Distancia recorrida: " + st.getDistance() + " m.\n"
+                        + "\t Tiempo transcurrido: " + st.getDistance() + " s.";
+
+//                    ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog(line);
+
+
+                startTrackPoint = dataCapture;
+                currentTrackPoint = dataCapture;
+                trackDistance = 0;
+            }
         }
     }
 
@@ -686,8 +722,10 @@ setHiddenFragment();
 
 
     public void saveData(DataCapture dc) {
-        AddressResultReceiver receiver = new AddressResultReceiver(mHandler);
+        AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
         receiver.setDataCapture(dc);
+        Log.e("TEST","1");
+        receiver.setIsInserted(true);
         startIntentService(receiver);
     }
 
