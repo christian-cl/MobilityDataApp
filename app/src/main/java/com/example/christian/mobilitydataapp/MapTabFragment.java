@@ -198,7 +198,10 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     dc.setStopType(title);
                     dc.setComment(text);
                     dc.setDate(sdf.format(Calendar.getInstance().getTime()));
-                    ((MapTabActivity) context).db.create(dc);
+
+                    ((MapTabActivity) context).saveData(dc);
+
+//                            ((MapTabActivity) context).db.create(dc);
 
                     //Location loc = currentLocation;//locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     addMarker(Marker_Type.STOP, title, loc);

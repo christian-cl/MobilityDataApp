@@ -1,9 +1,7 @@
 package com.example.christian.mobilitydataapp;
 
-import android.app.IntentService;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
-import android.location.Address;
 import android.location.Geocoder;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -25,7 +23,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -50,7 +47,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -99,8 +95,6 @@ public class MapTabActivity extends ActionBarActivity implements
         mViewPager = (ViewPager) findViewById(R.id.fragment_container);
 
         buildGoogleApiClient();
-//        fetchAddressButtonHandler(mViewPager);
-
 
         final ActionBar bar = getSupportActionBar();
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -108,7 +102,6 @@ public class MapTabActivity extends ActionBarActivity implements
 
         mTabsAdapter = new TabsAdapter(this, mViewPager);
         mTabsAdapter.addTab(bar.newTab().setText("Mapa"), MapTabFragment.class, null);
-//        mTabsAdapter.addTab(bar.newTab().setText("Información"), LogTabFragment.class, null);
         mTabsAdapter.addTab(bar.newTab().setText("Datos"), TrackFragment.class, null);
 
         if (savedInstanceState != null) {
@@ -116,8 +109,6 @@ public class MapTabActivity extends ActionBarActivity implements
         }
 
         dateFormatter = new SimpleDateFormat("dd-MM-yyyy",Locale.US);
-
-
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
 
         pref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -140,8 +131,8 @@ public class MapTabActivity extends ActionBarActivity implements
                     @Override
                     public void onLocationChanged(Location location) {
                         myLocationChanged(location);
-                        mResultReceiver = new AddressResultReceiver(mHandler);
-                        startIntentService();
+//                        AddressResultReceiver mResultReceiver = new AddressResultReceiver(mHandler);
+//                        startIntentService(mResultReceiver);
                     }
                     @Override
                     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -169,17 +160,13 @@ public class MapTabActivity extends ActionBarActivity implements
     @Override
     public void onResume() {
         super.onResume();
-//        setHiddenFragment();
         db.open();
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
-//        startRepeatingTask();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        stopRepeatingTask();
-//        ((LogTabFragment) getHiddenFragment()).appendLog(DATA_END);
         locationManager.removeUpdates(gpsLocationListener);
         db.close();
     }
@@ -403,6 +390,16 @@ public class MapTabActivity extends ActionBarActivity implements
     }
 
 
+
+    private void configureDialogWait() {
+        dialogWait = new ProgressDialog(this);
+        dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialogWait.setMessage(GPS_LOADING);
+        dialogWait.setIndeterminate(true);
+        dialogWait.setCanceledOnTouchOutside(false);
+        dialogWait.show();
+    }
+
     /*****
      * GPS
      */
@@ -432,7 +429,7 @@ public class MapTabActivity extends ActionBarActivity implements
 
     // Process to repeat
     private int intervalCapture;
-    private Handler mHandler;
+    public Handler mHandler;
     private Location currentLocation;
     private LocationListener gpsLocationListener;
     public GpsStatus.Listener mGPSStatusListener = new GpsStatus.Listener() {
@@ -440,21 +437,17 @@ public class MapTabActivity extends ActionBarActivity implements
             switch (event) {
                 case GpsStatus.GPS_EVENT_STARTED:
                     Log.i("GPS", "Searching...");
-                    Toast.makeText(MapTabActivity.this, "GPS_SEARCHING", Toast.LENGTH_SHORT).show();
                     break;
                 case GpsStatus.GPS_EVENT_STOPPED:
                     Log.i("GPS", "STOPPED");
                     break;
                 case GpsStatus.GPS_EVENT_FIRST_FIX:
+                    // GPS_EVENT_FIRST_FIX Event is called when GPS is locked
                     Log.i("GPS", "Locked position");
-                /*
-                 * GPS_EVENT_FIRST_FIX Event is called when GPS is locked
-                 */
-                    Toast.makeText(MapTabActivity.this, "GPS_LOCKED", Toast.LENGTH_SHORT).show();
                     dialogWait.dismiss();
-                    Location gpslocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (gpslocation != null) {
-                        String s = gpslocation.getLatitude() + ":" + gpslocation.getLongitude();
+                    Location gpsloc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    if (gpsloc != null) {
+                        String s = gpsloc.getLatitude() + ":" + gpsloc.getLongitude();
                         Log.i("GPS Info", s);
                     }
                     break;
@@ -482,8 +475,6 @@ public class MapTabActivity extends ActionBarActivity implements
     }
 
     private void myLocationChanged(Location location) {
-        Toast.makeText(this, "New Location", Toast.LENGTH_SHORT).show();
-
         currentLocation = location;
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 setHiddenFragment();
@@ -493,20 +484,8 @@ setHiddenFragment();
     }
 
 
-
-    private void configureDialogWait() {
-        dialogWait = new ProgressDialog(this);
-        dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialogWait.setMessage(GPS_LOADING);
-        dialogWait.setIndeterminate(true);
-        dialogWait.setCanceledOnTouchOutside(false);
-        dialogWait.show();
-    }
-
-
     // Repeat process for catch information
     public Runnable mStatusChecker = new Runnable() {
-
         @Override
         public void run() {
             updateStatus(); //this function can change value of mInterval.
@@ -534,11 +513,10 @@ setHiddenFragment();
 //            dc.setAddress(getStreet(currentLocation));
             dc.setDate(sdf.format(Calendar.getInstance().getTime()));
 
-            DataCaptureDAO dbLocalInstance = new DataCaptureDAO(this);
-            dbLocalInstance.open();
-            dbLocalInstance.create(dc);
-            dbLocalInstance.close();
-
+            AddressResultReceiver receiver = new AddressResultReceiver(mHandler);
+            receiver.setDataCapture(dc);
+            startIntentService(receiver);
+//            db.create(dc);
             ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.GPS, null, currentLocation);
         }
     }
@@ -653,7 +631,8 @@ setHiddenFragment();
 
             if (mAddressRequested) {
                 Toast.makeText(this, R.string.no_geocoder_available, Toast.LENGTH_LONG).show();
-                startIntentService();
+//                AddressResultReceiver mResultReceiver = new AddressResultReceiver(mHandler);
+//                startIntentService(mResultReceiver);
             }
         }
     }
@@ -665,28 +644,12 @@ setHiddenFragment();
 
 
     protected Location mLastLocation;
-    private AddressResultReceiver mResultReceiver;
 
-    protected void startIntentService() {
+    protected void startIntentService(AddressResultReceiver mResultReceiver) {
         Intent intent = new Intent(this, FetchAddressIntentService.class);
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
         intent.putExtra(Constants.LOCATION_DATA_EXTRA, currentLocation);
         startService(intent);
-    }
-
-    public void fetchAddressButtonHandler(View view) {
-        // Only start the service to fetch the address if GoogleApiClient is
-        // connected.
-        if (mGoogleApiClient.isConnected() && mLastLocation != null) {
-            startIntentService();
-        }
-        // If GoogleApiClient isn't connected, process the user's request by
-        // setting mAddressRequested to true. Later, when GoogleApiClient connects,
-        // launch the service to fetch the address. As far as the user is
-        // concerned, pressing the Fetch Address button
-        // immediately kicks off the process of getting the address.
-        mAddressRequested = true;
-//        updateUIWidgets();
     }
 
     @Override
@@ -694,8 +657,9 @@ setHiddenFragment();
 
     }
 
-    class AddressResultReceiver extends ResultReceiver {
+    public class AddressResultReceiver extends ResultReceiver {
         private String mAddressOutput;
+        private DataCapture dataCapture;
 
         public AddressResultReceiver(Handler handler) {
             super(handler);
@@ -704,8 +668,11 @@ setHiddenFragment();
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
-            Toast.makeText(MapTabActivity.this, "Nueva Dirección", Toast.LENGTH_SHORT).show();
-            Toast.makeText(MapTabActivity.this, mAddressOutput, Toast.LENGTH_SHORT).show();
+            dataCapture.setAddress(mAddressOutput);
+            db.create(dataCapture);
+        }
+        public void setDataCapture(DataCapture dataCapture) {
+            this.dataCapture = dataCapture;
         }
     }
 
@@ -718,6 +685,11 @@ setHiddenFragment();
     }
 
 
+    public void saveData(DataCapture dc) {
+        AddressResultReceiver receiver = new AddressResultReceiver(mHandler);
+        receiver.setDataCapture(dc);
+        startIntentService(receiver);
+    }
 
 
 
