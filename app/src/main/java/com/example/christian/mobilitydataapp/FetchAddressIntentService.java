@@ -1,6 +1,7 @@
 package com.example.christian.mobilitydataapp;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
@@ -13,6 +14,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Christian Cintrano on 18/05/15.
@@ -45,14 +47,17 @@ public class FetchAddressIntentService extends IntentService {
         String errorMessage = "";
 
         // Get the location passed to this service through an extra.
-        Location location = intent.getParcelableExtra(
-                Constants.LOCATION_DATA_EXTRA);
+        Location location = intent.getParcelableExtra(Constants.LOCATION_DATA_EXTRA);
+
+        mReceiver = intent.getParcelableExtra(Constants.RECEIVER);
+        Log.d(TAG,"Receiver " + (mReceiver != null));
 
         Log.i(TAG,"New Location: " + location.toString());
 
         List<Address> addresses = null;
 
         try {
+            geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
             addresses = geocoder.getFromLocation(
                     location.getLatitude(),
                     location.getLongitude(),

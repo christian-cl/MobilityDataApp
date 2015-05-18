@@ -1,7 +1,9 @@
 package com.example.christian.mobilitydataapp;
 
+import android.app.IntentService;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
+import android.location.Address;
 import android.location.Geocoder;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -23,6 +25,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -47,6 +50,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -94,9 +98,9 @@ public class MapTabActivity extends ActionBarActivity implements
         setContentView(R.layout.activity_tab_map);
         mViewPager = (ViewPager) findViewById(R.id.fragment_container);
 
-//        buildGoogleApiClient();
+        buildGoogleApiClient();
 //        fetchAddressButtonHandler(mViewPager);
-//        startIntentService();
+
 
         final ActionBar bar = getSupportActionBar();
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -136,6 +140,8 @@ public class MapTabActivity extends ActionBarActivity implements
                     @Override
                     public void onLocationChanged(Location location) {
                         myLocationChanged(location);
+                        mResultReceiver = new AddressResultReceiver(mHandler);
+                        startIntentService();
                     }
                     @Override
                     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -664,7 +670,7 @@ setHiddenFragment();
     protected void startIntentService() {
         Intent intent = new Intent(this, FetchAddressIntentService.class);
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
-        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, currentLocation);
         startService(intent);
     }
 
@@ -710,5 +716,20 @@ setHiddenFragment();
                 .addApi(LocationServices.API)
                 .build();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
