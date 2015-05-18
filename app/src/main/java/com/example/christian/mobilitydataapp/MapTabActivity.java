@@ -1,9 +1,16 @@
 package com.example.christian.mobilitydataapp;
 
+import android.app.ProgressDialog;
+import android.content.SharedPreferences;
 import android.location.Geocoder;
+import android.location.GpsStatus;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
@@ -29,15 +36,17 @@ import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
 import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
+import com.example.christian.mobilitydataapp.persistence.StreetTrack;
+import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -71,17 +80,11 @@ public class MapTabActivity extends ActionBarActivity implements
     private GoogleApiClient mGoogleApiClient;
     private boolean mAddressRequested;
 
-//    private List<Fragment> getFragments(){
-//
-//        List<Fragment> fList = new ArrayList<>();
-//        fList.add(new MapTabFragment());
-//        fList.add(new TrackFragment());
-////        fList.add(new LogTabFragment());
-//        return fList;
-//    }
 
     ViewPager mViewPager;
     TabsAdapter mTabsAdapter;
+    private Fragment mapFragment;
+    private Fragment trackFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +96,7 @@ public class MapTabActivity extends ActionBarActivity implements
 
 //        buildGoogleApiClient();
 //        fetchAddressButtonHandler(mViewPager);
+//        startIntentService();
 
         final ActionBar bar = getSupportActionBar();
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -108,6 +112,76 @@ public class MapTabActivity extends ActionBarActivity implements
         }
 
         dateFormatter = new SimpleDateFormat("dd-MM-yyyy",Locale.US);
+
+
+        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
+
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        loadSettings();
+        PreferenceChangeListener preferenceListener = new PreferenceChangeListener();
+        pref.registerOnSharedPreferenceChangeListener(preferenceListener);
+
+        configureDialogWait();
+        db = new DataCaptureDAO(this);
+        db.open();
+        mHandler = new Handler();
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        if (isGPSEnabled) {
+            if (locationManager != null) {
+                // Register GPSStatus listener for events
+                locationManager.addGpsStatusListener(mGPSStatusListener);
+                gpsLocationListener = new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        myLocationChanged(location);
+                    }
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+                        // TODO Auto-generated method stub
+                    }
+                    @Override
+                    public void onProviderEnabled(String provider) {
+                        Toast.makeText(MapTabActivity.this, "Enabled new provider " + provider,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    @Override
+                    public void onProviderDisabled(String provider) {
+                        Toast.makeText(MapTabActivity.this, "Disabled provider " + provider,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                };
+
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
+            }
+        }
+    }
+
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+//        setHiddenFragment();
+        db.open();
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
+//        startRepeatingTask();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+//        stopRepeatingTask();
+//        ((LogTabFragment) getHiddenFragment()).appendLog(DATA_END);
+        locationManager.removeUpdates(gpsLocationListener);
+        db.close();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        locationManager.removeGpsStatusListener(mGPSStatusListener);
     }
 
     @Override
@@ -323,6 +397,241 @@ public class MapTabActivity extends ActionBarActivity implements
     }
 
 
+    /*****
+     * GPS
+     */
+
+    private static final String GPS_LOADING = "Iniciando conexión GPS. Por favor, espere.";
+    private static final String DATA_START = "Iniciando la recogida de los datos...";
+    private static final String DATA_END = "Recogida de datos terminada";
+    private static final String NEW_POSITION = "Guardando la siguiente posición: ";
+    private static final String NEW_GPS = "Nueva posición GPS: ";
+
+    private long intervalTimeGPS; // milliseconds
+    private float minDistance; // meters
+
+    private SimpleDateFormat sdf;
+
+    public LocationManager locationManager;
+    private ProgressDialog dialogWait;
+    public DataCaptureDAO db;
+
+    private SharedPreferences pref; // Settings listener
+
+    public boolean runningCaptureData;
+    private float trackDistance;
+    private DataCapture currentTrackPoint;
+
+    private DataCapture startTrackPoint;
+
+    // Process to repeat
+    private int intervalCapture;
+    private Handler mHandler;
+    private Location currentLocation;
+    private LocationListener gpsLocationListener;
+    public GpsStatus.Listener mGPSStatusListener = new GpsStatus.Listener() {
+        public void onGpsStatusChanged(int event) {
+            switch (event) {
+                case GpsStatus.GPS_EVENT_STARTED:
+                    Log.i("GPS", "Searching...");
+                    Toast.makeText(MapTabActivity.this, "GPS_SEARCHING", Toast.LENGTH_SHORT).show();
+                    break;
+                case GpsStatus.GPS_EVENT_STOPPED:
+                    Log.i("GPS", "STOPPED");
+                    break;
+                case GpsStatus.GPS_EVENT_FIRST_FIX:
+                    Log.i("GPS", "Locked position");
+                /*
+                 * GPS_EVENT_FIRST_FIX Event is called when GPS is locked
+                 */
+                    Toast.makeText(MapTabActivity.this, "GPS_LOCKED", Toast.LENGTH_SHORT).show();
+                    dialogWait.dismiss();
+                    Location gpslocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    if (gpslocation != null) {
+                        String s = gpslocation.getLatitude() + ":" + gpslocation.getLongitude();
+                        Log.i("GPS Info", s);
+                    }
+                    break;
+                case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+                    break;
+            }
+        }
+    };
+
+
+    private void loadSettings() {
+        Log.i("MapActivity","Loading settings...");
+        String syncConnPref = pref.getString("pref_key_interval_time", "0");
+        int intervalTimeSetting = Integer.parseInt(syncConnPref);
+
+        syncConnPref = pref.getString("pref_key_interval_capture", "0");
+        int intervalCaptureSetting = Integer.parseInt(syncConnPref);
+
+        syncConnPref = pref.getString("pref_key_min_distance", "0");
+        int minDistanceSetting = Integer.parseInt(syncConnPref);
+
+        intervalTimeGPS = intervalTimeSetting * 1000;
+        intervalCapture = intervalCaptureSetting * 1000;
+        minDistance = minDistanceSetting;
+    }
+
+    private void myLocationChanged(Location location) {
+        Toast.makeText(this, "New Location", Toast.LENGTH_SHORT).show();
+
+        currentLocation = location;
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+setHiddenFragment();
+        ((MapTabFragment) mapFragment).setCamera(latLng);
+        processTrackData(location); // Global process information
+        ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
+    }
+
+
+
+    private void configureDialogWait() {
+        dialogWait = new ProgressDialog(this);
+        dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialogWait.setMessage(GPS_LOADING);
+        dialogWait.setIndeterminate(true);
+        dialogWait.setCanceledOnTouchOutside(false);
+        dialogWait.show();
+    }
+
+
+    // Repeat process for catch information
+    public Runnable mStatusChecker = new Runnable() {
+
+        @Override
+        public void run() {
+            updateStatus(); //this function can change value of mInterval.
+            mHandler.postDelayed(mStatusChecker, intervalCapture);
+        }
+    };
+
+    public void startRepeatingTask() {
+        mStatusChecker.run();
+        runningCaptureData = true;
+    }
+
+    public void stopRepeatingTask() {
+        mHandler.removeCallbacks(mStatusChecker);
+        runningCaptureData = false;
+    }
+
+    private void updateStatus() {
+        if (currentLocation != null) {
+            Log.i("Background", "Collecting data in: " + currentLocation.getLatitude() + ", " + currentLocation.getLongitude());
+
+            DataCapture dc = new DataCapture();
+            dc.setLatitude(currentLocation.getLatitude());
+            dc.setLongitude(currentLocation.getLongitude());
+//            dc.setAddress(getStreet(currentLocation));
+            dc.setDate(sdf.format(Calendar.getInstance().getTime()));
+
+            DataCaptureDAO dbLocalInstance = new DataCaptureDAO(this);
+            dbLocalInstance.open();
+            dbLocalInstance.create(dc);
+            dbLocalInstance.close();
+
+            ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.GPS, null, currentLocation);
+        }
+    }
+
+    public void setHiddenFragment(){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        List<Fragment> fragments = fragmentManager.getFragments();
+        Log.i("Activity","Num of fragments: " + fragments.size());
+        for(Fragment fragment : fragments){
+            if(fragment != null) {
+                if (fragment instanceof MapTabFragment)//!fragment.isVisible())
+                    mapFragment = fragment;
+                else if (fragment instanceof TrackFragment)//!fragment.isVisible())
+                    trackFragment = fragment;
+            }
+        }
+    }
+
+    /**
+     * Handle preferences changes
+     */
+    private class PreferenceChangeListener implements
+            SharedPreferences.OnSharedPreferenceChangeListener {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            Log.i("Settings", "Changed settings");
+            loadSettings();
+        }
+    }
+
+    public void processTrackData(Location location) {
+//        ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog("Hollaaa");
+        if(startTrackPoint == null) {
+            startTrackPoint = new DataCapture();
+            startTrackPoint.setLatitude(location.getLatitude());
+            startTrackPoint.setLongitude(location.getLongitude());
+//            startTrackPoint.setAddress(getStreet(location));
+            startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+            trackDistance = 0;
+        } else {
+            String street = null;//getStreet(location);
+            if(street == null) {
+                Log.e("Geocoder", "Address is null");
+            } else {
+                if(startTrackPoint.getAddress().equals(street)) {
+                    Location start = new Location("");
+                    start.setLatitude(startTrackPoint.getLatitude());
+                    start.setLongitude(startTrackPoint.getLongitude());
+                    trackDistance += start.distanceTo(location);
+
+                    currentTrackPoint = new DataCapture();
+                    startTrackPoint.setLatitude(location.getLatitude());
+                    startTrackPoint.setLongitude(location.getLongitude());
+//                    startTrackPoint.setAddress(getStreet(location));
+                    startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+                } else {
+                    // Save track data
+                    DataCaptureDAO dbLocalInstanceDC = new DataCaptureDAO(this);
+                    dbLocalInstanceDC.open();
+                    dbLocalInstanceDC.create(startTrackPoint);
+                    dbLocalInstanceDC.create(currentTrackPoint);
+                    dbLocalInstanceDC.close();
+
+                    StreetTrack st = new StreetTrack(startTrackPoint.getAddress(),
+                            startTrackPoint.getLatitude(), startTrackPoint.getLongitude(),
+                            currentTrackPoint.getLatitude(), currentTrackPoint.getLongitude(),
+                            startTrackPoint.getDate(), currentTrackPoint.getDate(),
+                            trackDistance);
+
+
+                    StreetTrackDAO dbLocalInstanceST = new StreetTrackDAO(this);
+                    dbLocalInstanceST.open();
+                    dbLocalInstanceST.create(st);
+                    dbLocalInstanceST.close();
+                    // Display Information
+                    String line = "Dirección: " + st.getAddress() + "\n"
+                            + "\t Distancia recorrida: " + st.getDistance() + " m.\n"
+                            + "\t Tiempo transcurrido: " + st.getDistance() + " s.";
+
+//                    ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog(line);
+
+
+                    startTrackPoint = new DataCapture();
+                    startTrackPoint.setLatitude(location.getLatitude());
+                    startTrackPoint.setLongitude(location.getLongitude());
+//                    startTrackPoint.setAddress(getStreet(location));
+                    startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+                    trackDistance = 0;
+                }
+            }
+        }
+    }
+
+
+    /**
+     * GEOCODER
+     *
+     */
+
     @Override
     public void onConnected(Bundle connectionHint) {
         // Gets the best and most recent location currently available,
@@ -353,12 +662,6 @@ public class MapTabActivity extends ActionBarActivity implements
     private AddressResultReceiver mResultReceiver;
 
     protected void startIntentService() {
-        Log.i("-","-----------------------");
-        Log.i("-","-----------------------");
-        Log.i("-","-----------------------");
-        Log.i("-","-----------------------");
-        Log.i("-","-----------------------");
-        Log.i("-","-----------------------");
         Intent intent = new Intent(this, FetchAddressIntentService.class);
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
         intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
@@ -394,17 +697,9 @@ public class MapTabActivity extends ActionBarActivity implements
 
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
-
-            // Display the address string
-            // or an error message sent from the intent service.
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
-//        displayAddressOutput();
-
-            // Show a toast message if an address was found.
-//        if (resultCode == Constants.SUCCESS_RESULT) {
-//            Toast.makeText(R.string.address_found);
-//        }
             Toast.makeText(MapTabActivity.this, "Nueva Dirección", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MapTabActivity.this, mAddressOutput, Toast.LENGTH_SHORT).show();
         }
     }
 

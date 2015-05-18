@@ -25,12 +25,12 @@ public class FetchAddressIntentService extends IntentService {
     Geocoder geocoder;
 
     /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
-     *
-     * @param name Used to name the worker thread, important only for debugging.
+     * This constructor is required, and calls the super IntentService(String)
+     * constructor with the name for a worker thread.
      */
-    public FetchAddressIntentService(String name) {
-        super(name);
+    public FetchAddressIntentService() {
+        // Use the TAG to name the worker thread.
+        super(TAG);
     }
 
     private void deliverResultToReceiver(int resultCode, String message) {
@@ -41,12 +41,14 @@ public class FetchAddressIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        Log.i(TAG,"Init Handle Intent");
         String errorMessage = "";
 
         // Get the location passed to this service through an extra.
         Location location = intent.getParcelableExtra(
                 Constants.LOCATION_DATA_EXTRA);
 
+        Log.i(TAG,"New Location: " + location.toString());
 
         List<Address> addresses = null;
 
