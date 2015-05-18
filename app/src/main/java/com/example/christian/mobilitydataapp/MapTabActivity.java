@@ -1,17 +1,18 @@
 package com.example.christian.mobilitydataapp;
 
+import android.location.Geocoder;
+import android.location.Location;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.v7.app.ActionBar;
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
@@ -28,6 +29,9 @@ import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
 import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,14 +47,13 @@ import java.util.Locale;
  *
  * Maps Activity with tabs
  */
-public class MapTabActivity extends ActionBarActivity /*implements TabListener*/ {
+public class MapTabActivity extends ActionBarActivity implements
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private final static String DIALOG_SAVE_FILE_TITLE = "Guardar archivo";
     private final static String B_OK = "Aceptar";
     private final static String B_CANCEL = "Cancelar";
 
-    private ViewPager viewPager;
-//    private android.support.v7.app.ActionBar actionBar;
     // Tab titles
     private String[] tabs = { "Mapa", "Registro", "Información"};
 
@@ -64,17 +67,18 @@ public class MapTabActivity extends ActionBarActivity /*implements TabListener*/
     private EditText etNameSaveFile;
     private Calendar newDateStart;
     private Calendar newDateEnd;
-    android.support.v7.app.ActionBar actionBar;
-    private Bundle bundle;
 
-    private List<Fragment> getFragments(){
+    private GoogleApiClient mGoogleApiClient;
+    private boolean mAddressRequested;
 
-        List<Fragment> fList = new ArrayList<>();
-        fList.add(new MapTabFragment());
-        fList.add(new TrackFragment());
-        fList.add(new LogTabFragment());
-        return fList;
-    }
+//    private List<Fragment> getFragments(){
+//
+//        List<Fragment> fList = new ArrayList<>();
+//        fList.add(new MapTabFragment());
+//        fList.add(new TrackFragment());
+////        fList.add(new LogTabFragment());
+//        return fList;
+//    }
 
     ViewPager mViewPager;
     TabsAdapter mTabsAdapter;
@@ -87,17 +91,17 @@ public class MapTabActivity extends ActionBarActivity /*implements TabListener*/
         setContentView(R.layout.activity_tab_map);
         mViewPager = (ViewPager) findViewById(R.id.fragment_container);
 
+//        buildGoogleApiClient();
+//        fetchAddressButtonHandler(mViewPager);
+
         final ActionBar bar = getSupportActionBar();
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
         bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
 
         mTabsAdapter = new TabsAdapter(this, mViewPager);
-        mTabsAdapter.addTab(bar.newTab().setText("Mapa"),
-                MapTabFragment.class, null);
-        mTabsAdapter.addTab(bar.newTab().setText("Información"),
-                LogTabFragment.class, null);
-        mTabsAdapter.addTab(bar.newTab().setText("Datos"),
-                TrackFragment.class, null);
+        mTabsAdapter.addTab(bar.newTab().setText("Mapa"), MapTabFragment.class, null);
+//        mTabsAdapter.addTab(bar.newTab().setText("Información"), LogTabFragment.class, null);
+        mTabsAdapter.addTab(bar.newTab().setText("Datos"), TrackFragment.class, null);
 
         if (savedInstanceState != null) {
             bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
@@ -105,51 +109,6 @@ public class MapTabActivity extends ActionBarActivity /*implements TabListener*/
 
         dateFormatter = new SimpleDateFormat("dd-MM-yyyy",Locale.US);
     }
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_tab_map);
-//        // Initilization
-//        viewPager = (ViewPager) findViewById(R.id.fragment_container);
-//        /**
-//         * on swiping the viewpager make respective tab selected
-//         * */
-//        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-//
-//            @Override
-//            public void onPageSelected(int position) {
-//                // on changing the page
-//                // make respected tab selected
-//                actionBar.setSelectedNavigationItem(position);
-//            }
-//
-//            @Override
-//            public void onPageScrolled(int arg0, float arg1, int arg2) {
-//            }
-//
-//            @Override
-//            public void onPageScrollStateChanged(int arg0) {
-//            }
-//        });
-//
-//        actionBar = getSupportActionBar();
-//        actionBar.setHomeButtonEnabled(true);
-//        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-//
-//        // Adding Tabs
-//        for (String tab_name : tabs) {
-//            actionBar.addTab(actionBar.newTab().setText(tab_name)
-//                    .setTabListener(this));
-//        }
-//
-//        bundle = new Bundle();
-//        TabsPagerAdapter mAdapter = new TabsPagerAdapter(getSupportFragmentManager(),getFragments());
-//        for(int i = 0; i< mAdapter.getCount(); i++) {
-//            getSupportFragmentManager().putFragment(bundle,String.valueOf(i),mAdapter.getItem(i));
-//        }
-//        viewPager.setAdapter(mAdapter);
-//
-//        dateFormatter = new SimpleDateFormat("dd-MM-yyyy",Locale.US);
-//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -357,120 +316,104 @@ public class MapTabActivity extends ActionBarActivity /*implements TabListener*/
         return "info_track" + "_" + etDateStart.getText() + "_" + etDateEnd.getText();
     }
 
-//    @Override
-//    public void onTabSelected(Tab tab, android.support.v4.app.FragmentTransaction ft) {
-//        Log.d("TAB S",String.valueOf(tab.getPosition()));
-//        viewPager.setCurrentItem(tab.getPosition());
-//    }
-//
-//    @Override
-//    public void onTabUnselected(Tab tab, android.support.v4.app.FragmentTransaction ft) {
-//        Log.d("TAB U", String.valueOf(tab.getPosition()));
-//        ft.detach(((TabsPagerAdapter) viewPager.getAdapter()).getItem(tab.getPosition()));
-//
-//    }
-//
-//    @Override
-//    public void onTabReselected(Tab tab, android.support.v4.app.FragmentTransaction ft) {
-//        Log.d("TAB R",String.valueOf(tab.getPosition()));
-//
-//    }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
     }
 
-    /**
-     * This is a helper class that implements the management of tabs and all
-     * details of connecting a ViewPager with associated TabHost.  It relies on a
-     * trick.  Normally a tab host has a simple API for supplying a View or
-     * Intent that each tab will show.  This is not sufficient for switching
-     * between pages.  So instead we make the content part of the tab host
-     * 0dp high (it is not shown) and the TabsAdapter supplies its own dummy
-     * view to show as the tab content.  It listens to changes in tabs, and takes
-     * care of switch to the correct paged in the ViewPager whenever the selected
-     * tab changes.
-     */
-    public static class TabsAdapter extends FragmentPagerAdapter
-            implements ActionBar.TabListener, ViewPager.OnPageChangeListener {
-        private final Context mContext;
-        private final ActionBar mActionBar;
-        private final ViewPager mViewPager;
-        private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
 
-        @Override
-        public void onTabSelected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
-            Object tag = tab.getTag();
-            for (int i=0; i<mTabs.size(); i++) {
-                if (mTabs.get(i) == tag) {
-                    mViewPager.setCurrentItem(i);
-                }
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        // Gets the best and most recent location currently available,
+        // which may be null in rare cases when a location is not available.
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if (mLastLocation != null) {
+            // Determine whether a Geocoder is available.
+            if (!Geocoder.isPresent()) {
+                Toast.makeText(this, R.string.no_geocoder_available, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (mAddressRequested) {
+                Toast.makeText(this, R.string.no_geocoder_available, Toast.LENGTH_LONG).show();
+                startIntentService();
             }
         }
+    }
 
-        @Override
-        public void onTabUnselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
-
-        }
-
-        @Override
-        public void onTabReselected(ActionBar.Tab tab, android.support.v4.app.FragmentTransaction ft) {
-
-        }
-
-        static final class TabInfo {
-            private final Class<?> clss;
-            private final Bundle args;
-
-            TabInfo(Class<?> _class, Bundle _args) {
-                clss = _class;
-                args = _args;
-            }
-        }
-
-        public TabsAdapter(Activity activity, ViewPager pager) {
-            super(((ActionBarActivity) activity).getSupportFragmentManager());
-            mContext = activity;
-            mActionBar = ((ActionBarActivity) activity).getSupportActionBar();
-            mViewPager = pager;
-            mViewPager.setAdapter(this);
-            mViewPager.setOnPageChangeListener(this);
-        }
-
-        public void addTab(ActionBar.Tab tab, Class<?> clss, Bundle args) {
-            TabInfo info = new TabInfo(clss, args);
-            tab.setTag(info);
-            tab.setTabListener(this);
-            mTabs.add(info);
-            mActionBar.addTab(tab);
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public int getCount() {
-            return mTabs.size();
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            TabInfo info = mTabs.get(position);
-            return Fragment.instantiate(mContext, info.clss.getName(), info.args);
-        }
-
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-        }
-
-        @Override
-        public void onPageSelected(int position) {
-            mActionBar.setSelectedNavigationItem(position);
-        }
-
-        @Override
-        public void onPageScrollStateChanged(int state) {
-        }
+    @Override
+    public void onConnectionSuspended(int i) {
 
     }
+
+
+    protected Location mLastLocation;
+    private AddressResultReceiver mResultReceiver;
+
+    protected void startIntentService() {
+        Log.i("-","-----------------------");
+        Log.i("-","-----------------------");
+        Log.i("-","-----------------------");
+        Log.i("-","-----------------------");
+        Log.i("-","-----------------------");
+        Log.i("-","-----------------------");
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+        startService(intent);
+    }
+
+    public void fetchAddressButtonHandler(View view) {
+        // Only start the service to fetch the address if GoogleApiClient is
+        // connected.
+        if (mGoogleApiClient.isConnected() && mLastLocation != null) {
+            startIntentService();
+        }
+        // If GoogleApiClient isn't connected, process the user's request by
+        // setting mAddressRequested to true. Later, when GoogleApiClient connects,
+        // launch the service to fetch the address. As far as the user is
+        // concerned, pressing the Fetch Address button
+        // immediately kicks off the process of getting the address.
+        mAddressRequested = true;
+//        updateUIWidgets();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
+    class AddressResultReceiver extends ResultReceiver {
+        private String mAddressOutput;
+
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            // Display the address string
+            // or an error message sent from the intent service.
+            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+//        displayAddressOutput();
+
+            // Show a toast message if an address was found.
+//        if (resultCode == Constants.SUCCESS_RESULT) {
+//            Toast.makeText(R.string.address_found);
+//        }
+            Toast.makeText(MapTabActivity.this, "Nueva Dirección", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
+
 }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
@@ -13,6 +14,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -32,6 +34,8 @@ import com.example.christian.mobilitydataapp.persistence.DataCapture;
 import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
 import com.example.christian.mobilitydataapp.persistence.StreetTrack;
 import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -73,6 +77,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private View view;
 
 
+
     private static enum Marker_Type {GPS, STOP, POSITION}
     private static enum Tab_Type {LogTabFragment, TrackFragment}
 
@@ -100,11 +105,9 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 case GpsStatus.GPS_EVENT_STARTED:
                     Log.i("GPS", "Searching...");
                     Toast.makeText(context, "GPS_SEARCHING", Toast.LENGTH_SHORT).show();
-                    System.out.println("TAG - GPS searching: ");
                     break;
                 case GpsStatus.GPS_EVENT_STOPPED:
                     Log.i("GPS", "STOPPED");
-                    System.out.println("TAG - GPS Stopped");
                     break;
                 case GpsStatus.GPS_EVENT_FIRST_FIX:
                     Log.i("GPS", "Locked position");
@@ -120,7 +123,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     }
                     break;
                 case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-                    //                 System.out.println("TAG - GPS_EVENT_SATELLITE_STATUS");
                     break;
             }
         }
@@ -141,8 +143,8 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             Log.e("M", e.getMessage());
             e.printStackTrace();
         }
-//        view = inflater.inflate(R.layout.activity_maps, container, false);
 
+//        view = inflater.inflate(R.layout.activity_maps, container, false);
         ImageButton bStop = (ImageButton) view.findViewById(R.id.stop_button);
         Button bStart = (Button) view.findViewById(R.id.start_button);
         Button bEnd = (Button) view.findViewById(R.id.end_button);
@@ -199,6 +201,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
         return view;
     }
+
 
 
     private void loadSettings() {
@@ -295,7 +298,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             DataCapture dc = new DataCapture();
             dc.setLatitude(currentLocation.getLatitude());
             dc.setLongitude(currentLocation.getLongitude());
-            dc.setAddress(getStreet(currentLocation));
+//            dc.setAddress(getStreet(currentLocation));
             dc.setDate(sdf.format(Calendar.getInstance().getTime()));
 
             DataCaptureDAO dbLocalInstance = new DataCaptureDAO(context);
@@ -313,8 +316,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             List<Address> addresses;
             try {
                 addresses = geocoder.getFromLocation(localization.getLatitude(), localization.getLongitude(), 1);
-                System.out.println("Address");
-                System.out.println(addresses);
                 // Only considered the first result
                 if(addresses != null) {
                     return addresses.get(0).getAddressLine(0);
@@ -363,7 +364,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             public void onClick(DialogInterface dialog, int which) {
                 if(title != null) {
                     Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    String street = getStreet(loc);
+                    String street = null;//getStreet(loc);
                     String text = null;
                     if(title.equals("Otros")) {
                         text = editText.getText().toString();
@@ -409,10 +410,10 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         switch (type) {
             case GPS: map.addMarker(new MarkerOptions().position(coordinates)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
-                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
+//                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             case STOP: map.addMarker(new MarkerOptions().position(coordinates).title(title));
-                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
+//                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             case POSITION:
                 if (currentMarker != null) {
@@ -420,7 +421,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 }
                 currentMarker = map.addMarker(new MarkerOptions().position(coordinates)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
-                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_GPS + loc.getLatitude() + ", " + loc.getLongitude());
+//                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_GPS + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             default: Log.e("MAP", "Marker type is not valid");
         }
@@ -429,9 +430,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     public Fragment getHiddenFragment(Tab_Type tabType){
         FragmentManager fragmentManager = ((MapTabActivity) context).getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
-        System.out.println(fragments.size());
         for(Fragment fragment : fragments){
-            System.out.println(fragment.getClass().getName());
             if(fragment != null)
                 if (tabType.equals(Tab_Type.TrackFragment) && fragment instanceof TrackFragment)//!fragment.isVisible())
                     return fragment;
@@ -476,13 +475,13 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     public void stopCollectingData() {
         Log.i("BG","End repeating task");
         stopRepeatingTask();
-        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_END);
+//        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_END);
     }
 
     public void startCollectingData() {
         Log.i("BG","Start repeating task");
         startRepeatingTask();
-        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_START);
+//        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_START);
     }
 
 
@@ -492,11 +491,11 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             startTrackPoint = new DataCapture();
             startTrackPoint.setLatitude(location.getLatitude());
             startTrackPoint.setLongitude(location.getLongitude());
-            startTrackPoint.setAddress(getStreet(location));
+//            startTrackPoint.setAddress(getStreet(location));
             startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
             trackDistance = 0;
         } else {
-            String street = getStreet(location);
+            String street = null;//getStreet(location);
             if(street == null) {
                 Log.e("Geocoder", "Address is null");
             } else {
@@ -535,7 +534,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                             + "\t Distancia recorrida: " + st.getDistance() + " m.\n"
                             + "\t Tiempo transcurrido: " + st.getDistance() + " s.";
 
-                    ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog(line);
+//                    ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog(line);
 
 
                     startTrackPoint = new DataCapture();
@@ -548,5 +547,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             }
         }
     }
+
+
 
 }

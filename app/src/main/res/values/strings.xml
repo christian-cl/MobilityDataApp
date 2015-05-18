@@ -42,5 +42,10 @@
     <string name="name_file">Nombre del fichero</string>
     <string name="date_start">Fecha de inicio</string>
     <string name="date_end">Fecha de fin</string>
+    <string name="service_not_available">Servicio no disponible</string>
+    <string name="invalid_lat_long_used">Logitud y Latitud inválidos</string>
+    <string name="no_address_found">No se ha encontrado la dirección</string>
+    <string name="address_found">Dirección encontrada</string>
+    <string name="no_geocoder_available">No existe conexión con gocoder disponible</string>
 
 </resources>
