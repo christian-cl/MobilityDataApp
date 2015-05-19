@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class MySQLiteOpenHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "mobilityDB";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 6;
 
     public static class TableDataCapture{
         public static String TABLE_NAME = "datacapture";
@@ -59,7 +59,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
             TableStreetTrack.COLUMN_END_LONGITUDE + " real not null, " +
             TableStreetTrack.COLUMN_START_DATETIME + " DATETIME not null, " +
             TableStreetTrack.COLUMN_END_DATETIME + " DATETIME not null, " +
-            TableStreetTrack.COLUMN_DISTANCE + " real not null, " +
+            TableStreetTrack.COLUMN_DISTANCE + " real not null" +
             ");";
 
     private static final String DROP_TABLE_DATA_CAPTURE =
@@ -81,14 +81,18 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // TODO Auto-generated method stub
-        db.execSQL(DATABASE_CREATE);
+        db.execSQL(CREATE_TABLE_DATA_CAPTURE);
+        db.execSQL(CREATE_TABLE_STREET_TRACK);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub
-        db.execSQL(DATABASE_DROP);
-        onCreate(db);
+        if(newVersion > oldVersion) {
+            db.execSQL(DROP_TABLE_DATA_CAPTURE);
+            db.execSQL(DROP_CREATE_TABLE_STREET_TRACK);
+            onCreate(db);
+        }
     }
 
 }

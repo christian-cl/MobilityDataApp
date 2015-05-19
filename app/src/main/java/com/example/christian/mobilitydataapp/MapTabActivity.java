@@ -46,8 +46,10 @@ import com.google.android.gms.maps.model.LatLng;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -117,8 +119,6 @@ public class MapTabActivity extends ActionBarActivity implements
         pref.registerOnSharedPreferenceChangeListener(preferenceListener);
 
         configureDialogWait();
-        db = new DataCaptureDAO(this);
-        db.open();
         mHandler = new Handler();
         addressHandler = new Handler();
 
@@ -161,15 +161,15 @@ public class MapTabActivity extends ActionBarActivity implements
     @Override
     public void onResume() {
         super.onResume();
-        db.open();
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
+//        db.open();
+//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        locationManager.removeUpdates(gpsLocationListener);
-        db.close();
+//        locationManager.removeUpdates(gpsLocationListener);
+//        db.close();
     }
 
     @Override
@@ -555,8 +555,8 @@ setHiddenFragment();
 //        ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog("Hollaaa");
 //        Log.e("TRACK",startTrackPoint.toString());
         if((startTrackPoint != null) && (startTrackPoint.getAddress() != null)) {
-            System.out.println("!= null");
-            System.out.println(startTrackPoint);
+//            System.out.println("!= null");
+//            System.out.println(startTrackPoint);
             DataCapture dc = new DataCapture();
             dc.setLatitude(location.getLatitude());
             dc.setLongitude(location.getLongitude());
@@ -568,8 +568,8 @@ setHiddenFragment();
             receiver.setIsInserted(false);
             startIntentService(receiver);
         } else {
-            System.out.println("== null");
-            System.out.println(startTrackPoint);
+//            System.out.println("== null");
+//            System.out.println(startTrackPoint);
             startTrackPoint = new DataCapture();
             startTrackPoint.setLatitude(location.getLatitude());
             startTrackPoint.setLongitude(location.getLongitude());
@@ -645,8 +645,13 @@ setHiddenFragment();
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
             dataCapture.setAddress(mAddressOutput);
+            Toast.makeText(MapTabActivity.this, "New Address: "  + mAddressOutput,
+                    Toast.LENGTH_SHORT).show();
             if(isInserted) {
+                db = new DataCaptureDAO(MapTabActivity.this);
+                db.open();
                 db.create(dataCapture);
+                db.close();
             } else {
                 callbackTrack(dataCapture);
             }
@@ -670,6 +675,18 @@ setHiddenFragment();
     private void callbackTrack(DataCapture dataCapture) {
         if(dataCapture.getAddress() == null) {
             Log.e("Geocoder", "Address is null");
+            startTrackPoint = dataCapture;
+//            startTrackPoint.setLatitude(location.getLatitude());
+//            startTrackPoint.setLongitude(location.getLongitude());
+////            startTrackPoint.setAddress(getStreet(location));
+//            startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+//            AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
+//            receiver.setDataCapture(startTrackPoint);
+//            receiver.setIsInserted(true);
+//            startIntentService(receiver);
+//            currentTrackPoint = startTrackPoint;
+//            Log.i("Track","Set start track point in " +startTrackPoint.getLatitude() + " " + startTrackPoint.getLongitude());
+            trackDistance = 0;
         } else {
             if(startTrackPoint.getAddress().equals(dataCapture.getAddress())) {
                 Location start = new Location("");
@@ -684,7 +701,10 @@ setHiddenFragment();
                 currentTrackPoint = dataCapture;
             } else {
                 // Save track data
-                db.create(dataCapture);
+                AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
+                receiver.setDataCapture(dataCapture);
+                receiver.setIsInserted(true);
+                startIntentService(receiver);
 
                 StreetTrack st = new StreetTrack(startTrackPoint.getAddress(),
                         startTrackPoint.getLatitude(), startTrackPoint.getLongitude(),
@@ -697,13 +717,27 @@ setHiddenFragment();
                 dbLocalInstanceST.open();
                 dbLocalInstanceST.create(st);
                 dbLocalInstanceST.close();
+                // Elapsed
+
+                long time = 0;
+                try {
+                    Date dateStart = sdf.parse(st.getStartDateTime());
+                    Date dateEnd = sdf.parse(st.getEndDateTime());
+                    time = (dateEnd.getTime()-dateStart.getTime())/1000;
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 // Display Information
                 String line = "Dirección: " + st.getAddress() + "\n"
-                        + "\t Distancia recorrida: " + st.getDistance() + " m.\n"
-                        + "\t Tiempo transcurrido: " + st.getDistance() + " s.";
+                        + "\t Distancia recorrida: " + time + " m.\n"
+                        + "\t Tiempo transcurrido: " + st.getDistance() + " s.\n"
+                        + "\t Punto de entrada: " + st.getStartLatitude() + " "
+                        + st.getStartLongitude() + " m.\n"
+                        + "\t Punto de salida: " + st.getEndLatitude() + " "
+                        + st.getEndLongitude() + " m.\n";
 
 //                    ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog(line);
-
+                ((TrackFragment) trackFragment).appendLog(line);
 
                 startTrackPoint = dataCapture;
                 currentTrackPoint = dataCapture;
