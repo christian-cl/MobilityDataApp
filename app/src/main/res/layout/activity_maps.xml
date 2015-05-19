@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
-    android:id="@+id/mapfragment"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/map_fragment_id"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:orientation="vertical">
     <fragment
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/map"
@@ -34,10 +34,11 @@
             android:id="@+id/start_button"
             android:text="@string/button_start_collecting"
             android:onClick="startCollectingData"
-            style="@android:style/Holo.Light.ButtonBar"
+            android:background="@color/material_green_500"
             android:layout_marginRight="@dimen/abc_action_button_min_width_overflow_material"
             android:layout_marginLeft="@dimen/abc_action_button_min_width_material"
-            android:background="#ff2aff83" />
+            android:padding="2dp"
+            />
         <Button
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
@@ -45,7 +46,7 @@
             android:id="@+id/end_button"
             android:text="@string/button_end_collecting"
             android:onClick="stopCollectingData"
-            android:background="#ffff4646"
-            style="@android:style/ButtonBar" />
+            android:background="@color/material_blue_500"
+            android:padding="2dp"/>
     </LinearLayout>
 </RelativeLayout>

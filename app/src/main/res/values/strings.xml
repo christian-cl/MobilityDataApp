@@ -5,8 +5,8 @@
     <string name="title_activity_main">Principal</string>
     <string name="title_activity_debug">Debug</string>
 
-    <string name="button_send_map">Go Map</string>
-    <string name="button_send_debug">Go Debug</string>
+    <string name="button_send_map">IR AL MAPA</string>
+    <string name="button_send_debug">IR A LA CONSOLA</string>
 
     <string name="action_settings">Ajustes</string>
     <string name="action_save_file">Guardar archivo</string>
@@ -26,12 +26,12 @@
     <string name="setting_database_title">Almacenaje de la Information</string>
     <string name="setting_interval_title">Intervalo entre ubicaciones</string>
     <string name="setting_interval_summary">Intervalo de tiempo para volver a ubicarse vía GPS</string>
-    <string name="setting_collect_time_title">Tiempo entre recogida de datos</string>
-    <string name="setting_collect_time_summary">Intervalo de tiempo en segundos entre las recogidas automáticas de posición</string>
+    <string name="setting_collect_time_title">Tiempo entre los muestreos de datos</string>
+    <string name="setting_collect_time_summary">Intervalo de tiempo en segundos entre las muestras automáticas de posición</string>
     <string name="setting_min_distance_title">Distancia mínima</string>
     <string name="setting_min_distance_summary">Distancia mínima en metros para aproximar la posición</string>
     <string name="setting_remove_database_title">Borrar toda la información almacenada</string>
-    <string name="setting_remove_database_summary">Borrar toda la información de puntos almacenada en anteriores recogidas</string>
+    <string name="setting_remove_database_summary">Borrar toda la información de puntos almacenada en anteriores muestras</string>
     <string name="setting_delay_backup_database_title">Número de días entre copias de seguridad</string>
     <string name="setting_delay_backup_database_summary">Número de días entre copias de seguridad automáticas de la información almacenada</string>
     <string name="button_end_collecting">Terminar la recolección automática de datos</string>

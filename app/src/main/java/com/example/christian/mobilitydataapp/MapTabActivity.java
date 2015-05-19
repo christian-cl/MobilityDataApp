@@ -214,21 +214,29 @@ public class MapTabActivity extends ActionBarActivity implements
         Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
         Log.i("DB", "Saving file...");
         FileOutputStream out = null;
+        FileOutputStream outST = null;
         DataCaptureDAO db = new DataCaptureDAO(this);
+        StreetTrackDAO dbST = new StreetTrackDAO(this);
         db.open();
+        dbST.open();
         List<DataCapture> data = db.get(newDateStart, newDateEnd);
-        Log.i("DB","Find " + data.size() + " elements");
+        List<StreetTrack> dataST = dbST.getAll();
+        Log.i("DB","Find " + data.size() + " DataCapture elements");
+        Log.i("DB","Find " + dataST.size() + " StreetTrack elements");
         String extension = ".csv";
-        String folderName = "/mdaFolder";
+        String folderName = "/neoTrack";
         try {
             if(isExternalStorageWritable()) {
                 String path = Environment.getExternalStorageDirectory().toString();
                 File dir = new File(path + folderName);
                 dir.mkdirs();
                 File file = new File (dir, fileName + extension);
+                File fileST = new File (dir, "ST" + fileName + extension);
                 out = new FileOutputStream(file);
+                outST = new FileOutputStream(fileST);
             } else {
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
+                outST = openFileOutput("ST" + fileName + extension, Context.MODE_PRIVATE);
             }
             String head = "_id,latitude,longitude,street,stoptype,comment,date\n";
             out.write(head.getBytes());
@@ -255,6 +263,25 @@ public class MapTabActivity extends ActionBarActivity implements
             }
             out.flush();
             out.close();
+
+            String headST = "_id,address,latitude start,longitude start," +
+                    "latitude end,longitude end,datetime start,datetime end,distance\n";
+            outST.write(headST.getBytes());
+            for(StreetTrack st : dataST) {
+                outST.write((String.valueOf(st.getId()) + ",").getBytes());
+                outST.write(("\"" + st.getAddress() + "\",").getBytes());
+                outST.write((String.valueOf(st.getStartLatitude()) + ",").getBytes());
+                outST.write((String.valueOf(st.getStartLongitude()) + ",").getBytes());
+                outST.write((String.valueOf(st.getEndLatitude()) + ",").getBytes());
+                outST.write((String.valueOf(st.getEndLongitude()) + ",").getBytes());
+                outST.write(("\"" + st.getStartDateTime() + "\",").getBytes());
+                outST.write(("\"" + st.getEndDateTime() + "\",").getBytes());
+                outST.write((String.valueOf(st.getDistance()) + "\n").getBytes());
+            }
+            outST.flush();
+            outST.close();
+
+
             Log.i("DB", "File saved");
             Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
@@ -262,8 +289,12 @@ public class MapTabActivity extends ActionBarActivity implements
         } finally {
             try {
                 db.close();
+                dbST.close();
                 if (out != null) {
                     out.close();
+                }
+                if(outST != null) {
+                    outST.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -517,7 +548,6 @@ setHiddenFragment();
 
             AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
             receiver.setDataCapture(dc);
-            Log.e("TEST", "2");
             receiver.setIsInserted(true);
             startIntentService(receiver);
 //            db.create(dc);
@@ -564,7 +594,6 @@ setHiddenFragment();
 
             AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
             receiver.setDataCapture(dc);
-            Log.e("TEST","3");
             receiver.setIsInserted(false);
             startIntentService(receiver);
         } else {
@@ -644,9 +673,10 @@ setHiddenFragment();
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+            mAddressOutput.replace("\n", "");
             dataCapture.setAddress(mAddressOutput);
-            Toast.makeText(MapTabActivity.this, "New Address: "  + mAddressOutput,
-                    Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MapTabActivity.this, "New Address: "  + mAddressOutput,
+//                    Toast.LENGTH_SHORT).show();
             if(isInserted) {
                 db = new DataCaptureDAO(MapTabActivity.this);
                 db.open();
@@ -666,9 +696,7 @@ setHiddenFragment();
         }
 
         public void setIsInserted(boolean isInserted) {
-            Log.e("TEST"," " + isInserted + " " + this.isInserted);
             this.isInserted = isInserted;
-            Log.e("TEST"," " + isInserted + " " + this.isInserted);
         }
     }
 
@@ -758,7 +786,6 @@ setHiddenFragment();
     public void saveData(DataCapture dc) {
         AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
         receiver.setDataCapture(dc);
-        Log.e("TEST","1");
         receiver.setIsInserted(true);
         startIntentService(receiver);
     }

@@ -9,6 +9,7 @@ import android.preference.PreferenceFragment;
 import android.util.Log;
 
 import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
+import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
 
 /**
  * Created by Christian Cintrano on 29/04/15.
@@ -68,6 +69,10 @@ public class SettingsFragment extends PreferenceFragment
                 dbLocalInstance.open();
                 dbLocalInstance.deleteAll();
                 dbLocalInstance.close();
+                StreetTrackDAO dbLocalInstanceST = new StreetTrackDAO(getActivity());
+                dbLocalInstanceST.open();
+                dbLocalInstanceST.deleteAll();
+                dbLocalInstanceST.close();
             }
         });
         builder.setNegativeButton("No", new DialogInterface.OnClickListener() {

@@ -1,23 +1,12 @@
 package com.example.christian.mobilitydataapp;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.GpsStatus;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.ResultReceiver;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.InflateException;
@@ -31,11 +20,6 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
-import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
-import com.example.christian.mobilitydataapp.persistence.StreetTrack;
-import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -45,10 +29,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -185,7 +167,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             public void onClick(DialogInterface dialog, int which) {
                 if(title != null) {
                     Location loc = ((MapTabActivity) context).locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    String street = null;//getStreet(loc);
+
                     String text = null;
                     if(title.equals("Otros")) {
                         text = editText.getText().toString();
@@ -194,7 +176,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     DataCapture dc = new DataCapture();
                     dc.setLatitude(loc.getLatitude());
                     dc.setLongitude(loc.getLongitude());
-                    dc.setAddress(street);
                     dc.setStopType(title);
                     dc.setComment(text);
                     dc.setDate(sdf.format(Calendar.getInstance().getTime()));
@@ -280,12 +261,16 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
     public void stopCollectingData() {
         Log.i("BG","End repeating task");
+        Toast.makeText(context, "Finalizando captura de datos",
+                Toast.LENGTH_SHORT).show();
         ((MapTabActivity) context).stopRepeatingTask();
 //        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_END);
     }
 
     public void startCollectingData() {
         Log.i("BG","Start repeating task");
+        Toast.makeText(context, "Iniciando captura de datos",
+                    Toast.LENGTH_SHORT).show();
         ((MapTabActivity) context).startRepeatingTask();
 //        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_START);
     }

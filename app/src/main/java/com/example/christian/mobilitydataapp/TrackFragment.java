@@ -1,5 +1,7 @@
 package com.example.christian.mobilitydataapp;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Layout;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 public class TrackFragment extends Fragment {
     private TextView out;
     private View view;
+    private Context context;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState){
@@ -34,16 +37,19 @@ public class TrackFragment extends Fragment {
             e.printStackTrace();
         }
 //        View view = inflater.inflate(R.layout.activity_tab_fragment_track, container, false);
-        out = (TextView) view.findViewById(R.id.tracktext);
+        context = container.getContext();
+//        out = ((TextView) ((Activity) context).getFragmentManager().findFragmentById(R.id.track_text));
+        out = (TextView) view.findViewById(R.id.track_text);
         out.setMovementMethod(new ScrollingMovementMethod());
 
-        appendLog("Init: ");
+        appendLog("Información: ");
         return view;
     }
 
     // Métodos para mostrar información
     public void appendLog(String text) {
         out.append(text + "\n");
+
         // Scrolling down
         final Layout layout = out.getLayout();
         if(layout != null){

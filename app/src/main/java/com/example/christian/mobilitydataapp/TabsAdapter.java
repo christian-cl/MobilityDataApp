@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
  * care of switch to the correct paged in the ViewPager whenever the selected
  * tab changes.
  */
-public class TabsAdapter extends FragmentPagerAdapter
+public class TabsAdapter extends FragmentStatePagerAdapter
         implements ActionBar.TabListener, ViewPager.OnPageChangeListener {
     private final Context mContext;
     private final ActionBar mActionBar;
@@ -35,7 +36,8 @@ public class TabsAdapter extends FragmentPagerAdapter
         Object tag = tab.getTag();
         for (int i=0; i<mTabs.size(); i++) {
             if (mTabs.get(i) == tag) {
-                mViewPager.setCurrentItem(i);
+                mViewPager.setCurrentItem(i, true);
+                ft.commit();
             }
         }
     }
