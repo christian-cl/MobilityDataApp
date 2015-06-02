@@ -10,6 +10,7 @@ import android.location.LocationManager;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
+import android.speech.RecognizerIntent;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.app.DatePickerDialog;
@@ -29,6 +30,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -46,12 +48,15 @@ import com.google.android.gms.maps.model.LatLng;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * Created by Christian Cintrano on 8/05/15.
@@ -60,6 +65,8 @@ import java.util.Locale;
  */
 public class MapTabActivity extends ActionBarActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+    private final int REQ_CODE_SPEECH_INPUT = 100;
 
     private final static String DIALOG_SAVE_FILE_TITLE = "Guardar archivo";
     private final static String B_OK = "Aceptar";
@@ -95,6 +102,8 @@ public class MapTabActivity extends ActionBarActivity implements
 
         setContentView(R.layout.activity_tab_map);
         mViewPager = (ViewPager) findViewById(R.id.fragment_container);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         buildGoogleApiClient();
 
@@ -796,9 +805,71 @@ setHiddenFragment();
 
 
 
+    /**
+     * Receiving speech input
+     * */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
+        switch (requestCode) {
+            case REQ_CODE_SPEECH_INPUT: {
+                if (resultCode == RESULT_OK && null != data) {
 
+                    ArrayList<String> result = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    //// Para debug
+                    System.out.println(result);
+                    String out = "";
+                    for(String s : result) {
+                        out += s + " ";
+                    }
+                    Log.i("Speak",out);
+                    //// Para debug END
+                    if(getStopType(result) == null) {
+                        Log.e("Speak","Not match stop cause");
+                    }
+                    processStopChoice(getStopType(result),null);
+                }
+                break;
+            }
 
+        }
+    }
+
+    private String getStopType(ArrayList<String> result) {
+        final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
+        final String[] stopChoicesPattern = {"asco", "bra", "ente", "tro"};
+
+        for(String str : result) {
+         System.out.println(str);
+            str = Normalizer.normalize(str, Normalizer.Form.NFD);
+         System.out.println(str);
+            // remove accents
+            str = str.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+         System.out.println(str);
+            for(int i = 0; i<stopChoicesPattern.length;i++) {
+                if(str.toLowerCase().contains(stopChoicesPattern[i])) {
+                    return stopChoices[i];
+                }
+            }
+        }
+        return null;
+    }
+
+    public void processStopChoice(String title, String text) {
+        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+        DataCapture dc = new DataCapture();
+        dc.setLatitude(loc.getLatitude());
+        dc.setLongitude(loc.getLongitude());
+        dc.setStopType(title);
+        dc.setComment(text);
+        dc.setDate(sdf.format(Calendar.getInstance().getTime()));
+        saveData(dc);
+
+        ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.STOP, title, loc);
+    }
 
 
 

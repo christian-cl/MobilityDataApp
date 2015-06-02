@@ -8,7 +8,8 @@
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
+    <!-- For keep app visible -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-sdk android:minSdkVersion="11" />
 
     <uses-feature
@@ -71,6 +72,13 @@
             android:name=".SettingsActivity"
             android:theme="@android:style/Theme.Light.NoTitleBar"
             android:configChanges="orientation|screenSize">
+        </activity>
+        <activity
+            android:name=".SpeakActivity"
+            android:label="@string/app_name" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.christian.mobilitydataapp.MainActivity" />
         </activity>
     </application>
 

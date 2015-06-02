@@ -47,5 +47,7 @@
     <string name="no_address_found">No se ha encontrado la dirección</string>
     <string name="address_found">Dirección encontrada</string>
     <string name="no_geocoder_available">No existe conexión con gocoder disponible</string>
+    <string name="speech_prompt">Indique el tipo de parada</string>
+    <string name="speech_not_supported">Función no soportada</string>
 
 </resources>

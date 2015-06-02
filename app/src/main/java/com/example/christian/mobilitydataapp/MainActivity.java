@@ -138,6 +138,15 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
+    /** Called when the user clicks the Send button */
+    public void sendSpeak(View view) {
+        // Do something in response to button
+        // Activity is a subclass from context
+        Intent intent = new Intent(this, SpeakActivity.class);
+        // Init the activity
+        startActivity(intent);
+    }
+
     public boolean saveFileAndRemove(String fileName, Calendar dateStart, Calendar dateEnd) {
         if(saveFile(fileName, dateStart, dateEnd)) {
             Log.i("____","          DELETE");
