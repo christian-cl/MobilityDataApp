@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <EditText
+            android:layout_width="286dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText"
+            android:focusable="false" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="04/05/2015"
+            android:id="@+id/tvConsultStartDate"
+            android:minWidth="@android:dimen/app_icon_size" />
+
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pick_date"
+            android:onClick="showDatePickerStartDialog" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="04/05/2015"
+            android:id="@+id/tvConsultEndDate"
+            android:minWidth="@android:dimen/app_icon_size" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pick_date"
+            android:onClick="showDatePickerEndDialog" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/b_find_data"
+            android:id="@+id/button"
+            android:layout_gravity="right"
+            android:onClick="findData" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent" >
+
+
+
+    <HorizontalScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent" >
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:id="@+id/dataTable"
+        android:layout_marginTop="@android:dimen/app_icon_size">
+        <!--<TableRow>-->
+            <!--<TextView-->
+                <!--android:layout_column="1"-->
+                <!--android:text="Save As..."-->
+                <!--android:padding="3dip" />-->
+            <!--<TextView-->
+                <!--android:text="Ctrl-Shift-S"-->
+                <!--android:gravity="right"-->
+                <!--android:padding="3dip" />-->
+        <!--</TableRow>-->
+
+        <!--<View-->
+            <!--android:layout_height="2dip"-->
+            <!--android:background="#FF909090" />-->
+    </TableLayout>
+    </HorizontalScrollView>
+    </ScrollView>
+</RelativeLayout>

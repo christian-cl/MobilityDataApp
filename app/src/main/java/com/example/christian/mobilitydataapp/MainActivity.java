@@ -54,10 +54,6 @@ public class MainActivity extends ActionBarActivity {
             getSupportActionBar().setLogo(R.mipmap.ic_launcher_inv);
         }
 
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.my_awesome_toolbar);
-//        if(toolbar != null)
-//            setSupportActionBar(toolbar);
-
         db = new DataCaptureDAO(this);
         db.open();
 
@@ -134,6 +130,14 @@ public class MainActivity extends ActionBarActivity {
     /** Called when the user clicks the Send button */
     public void sendMessagePreferences() {
         Intent intent = new Intent(this,SettingsActivity.class);
+        startActivity(intent);
+    }
+    /** Called when the user clicks the Send button */
+    public void sendMessageConsult(View view) {
+        // Do something in response to button
+        // Activity is a subclass from context
+        Intent intent = new Intent(this, ConsultActivity.class);
+        // Init the activity
         startActivity(intent);
     }
 

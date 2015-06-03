@@ -7,6 +7,7 @@
 
     <string name="button_send_map">IR AL MAPA</string>
     <string name="button_send_debug">IR A LA CONSOLA</string>
+    <string name="button_consult">Consultar información almacenada</string>
 
     <string name="action_settings">Ajustes</string>
     <string name="action_save_file">Guardar archivo</string>
@@ -49,5 +50,7 @@
     <string name="no_geocoder_available">No existe conexión con gocoder disponible</string>
     <string name="speech_prompt">Indique el tipo de parada</string>
     <string name="speech_not_supported">Función no soportada</string>
+    <string name="pick_date">Fecha</string>
+    <string name="b_find_data">Buscar</string>
 
 </resources>
