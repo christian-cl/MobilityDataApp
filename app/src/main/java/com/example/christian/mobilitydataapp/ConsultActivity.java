@@ -16,7 +16,6 @@ import android.widget.TextView;
 import com.example.christian.mobilitydataapp.persistence.StreetTrack;
 import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

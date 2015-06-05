@@ -53,5 +53,6 @@
     <string name="pick_date">Fecha</string>
     <string name="b_find_data">Buscar</string>
     <string name="b_clear_fields">Borrar Campos</string>
+    <string name="description">DESCRIPTION</string>
 
 </resources>

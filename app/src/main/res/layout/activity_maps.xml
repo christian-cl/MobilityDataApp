@@ -18,22 +18,30 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true">
-        <ImageButton
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:id="@+id/stop_button"
-            android:elevation="10dp"
-            android:background="@drawable/circle"
-            android:src="@mipmap/ic_add_white"/>
+
+        <View
+            android:layout_width="0dip"
+            android:layout_height="0dip"
+            android:layout_weight="1"/>
         <ImageButton
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:id="@+id/stop_button_speak"
-            android:elevation="10dp"
+            android:elevation="20dp"
             android:background="@drawable/circle"
-            android:src="@drawable/ic_action_microphone"/>
+            android:src="@drawable/ic_action_microphone"
+            android:contentDescription="@string/description"/>
+
+        <ImageButton
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:id="@+id/stop_button"
+            android:elevation="20dp"
+            android:background="@drawable/circle"
+            android:src="@mipmap/ic_add_white"
+            android:contentDescription="@string/description"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -47,9 +55,10 @@
             android:onClick="startCollectingData"
             android:layout_marginRight="@dimen/abc_action_button_min_width_overflow_material"
             android:layout_marginLeft="@dimen/abc_action_button_min_width_material"
-            android:padding="2dp"
+            android:padding="10dp"
             android:drawableLeft="@drawable/ic_action_play"
             android:textColor="#9ACD32"/>
+
         <Button
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
@@ -57,8 +66,7 @@
             android:id="@+id/end_button"
             android:text="@string/button_end_collecting"
             android:onClick="stopCollectingData"
-            style="?android:attr/borderlessButtonStyle"
-            android:padding="2dp"
+            android:padding="10dp"
             android:drawableLeft="@drawable/ic_action_stop"
             android:textColor="#FF6347"/>
     </LinearLayout>

@@ -3,3 +3,21 @@
     android:shape="oval">
     <solid android:color="#E64A19"/>
 </shape>
+<!--<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >-->
+    <!--<item>-->
+        <!--<shape-->
+            <!--android:shape="oval">>-->
+            <!--<solid android:color="#202020" />-->
+
+        <!--</shape>-->
+    <!--</item>-->
+    <!--<item-->
+        <!--android:bottom="5px"-->
+        <!--android:right="5px">-->
+        <!--<shape-->
+            <!--android:shape="oval">>-->
+            <!--<solid android:color="#E64A19" />-->
+
+        <!--</shape>-->
+    <!--</item>-->
+<!--</layer-list>-->
