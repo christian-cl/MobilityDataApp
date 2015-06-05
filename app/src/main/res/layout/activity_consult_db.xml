@@ -60,7 +60,7 @@
 
 
     <HorizontalScrollView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent" >
     <TableLayout
         android:layout_width="wrap_content"
@@ -72,6 +72,30 @@
             <!--<TextView-->
                 <!--android:layout_column="1"-->
                 <!--android:text="Save As..."-->
+                <!--android:padding="3dip" />-->
+            <!--<TextView-->
+                <!--android:text="Ctrl-Shift-S"-->
+                <!--android:gravity="right"-->
+                <!--android:padding="3dip" />-->
+            <!--<TextView-->
+                <!--android:text="Ctrl-Shift-S"-->
+                <!--android:gravity="right"-->
+                <!--android:padding="3dip" />-->
+            <!--<TextView-->
+                <!--android:text="Ctrl-Shift-S"-->
+                <!--android:gravity="right"-->
+                <!--android:padding="3dip" />-->
+            <!--<TextView-->
+                <!--android:text="Ctrl-Shift-S"-->
+                <!--android:gravity="right"-->
+                <!--android:padding="3dip" />-->
+            <!--<TextView-->
+                <!--android:text="Ctrl-Shift-S"-->
+                <!--android:gravity="right"-->
+                <!--android:padding="3dip" />-->
+            <!--<TextView-->
+                <!--android:text="Ctrl-Shift-S"-->
+                <!--android:gravity="right"-->
                 <!--android:padding="3dip" />-->
             <!--<TextView-->
                 <!--android:text="Ctrl-Shift-S"-->

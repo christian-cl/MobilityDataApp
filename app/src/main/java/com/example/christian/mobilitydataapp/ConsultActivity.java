@@ -27,6 +27,9 @@ public class ConsultActivity extends AppCompatActivity {
     private static final String DATE_START_TAG = "datePickerStart";
     private static final String DATE_END_TAG = "datePickerEnd";
 
+    private static final String[] TABLE_HEADERS =
+            {"Dirección", "Fecha inicio", "Fecha fin", "Distancia"};
+
     private StreetTrackDAO db;
 
     @Override
@@ -89,19 +92,13 @@ public class ConsultActivity extends AppCompatActivity {
         dataTable.bringToFront();
         List<StreetTrack> data = db.getAll();
 
-        TableRow header =  new TableRow(this);
-        TextView h1 = new TextView(this);
-        h1.setText("Dirección");
-        header.addView(h1);
-        TextView h2 = new TextView(this);
-        h2.setText("Fecha inicio");
-        header.addView(h2);
-        TextView h3 = new TextView(this);
-        h3.setText("Fecha fin");
-        header.addView(h3);
-        TextView h4 = new TextView(this);
-        h4.setText("Distancia");
-        header.addView(h4);
+        TableRow header = new TableRow(this);
+        header.setPadding(20,10,20,10);
+        for(String s : TABLE_HEADERS) {
+            TextView h = new TextView(this);
+            h.setText("Dirección  ");
+            header.addView(h);
+        }
 
         View div = new View(this);//<!--android:layout_height="2dip"-->
         div.setBackgroundColor(Color.parseColor("#FF909090"));
@@ -111,25 +108,20 @@ public class ConsultActivity extends AppCompatActivity {
 
         dataTable.addView(header);
         dataTable.addView(div);
-System.out.println("SIZE " + data.size());
 
-        System.out.println(data.get(data.size()-1).getStartLatitude());
-        System.out.println(data.get(data.size()-1).getStartLongitude());
-        System.out.println(data.get(data.size()-1).getEndLatitude());
-        System.out.println(data.get(data.size()-1).getEndLongitude());
-        System.out.println(data.get(data.size()-1).getStartDateTime());
-        System.out.println(data.get(data.size()-1).getEndDateTime());
-        System.out.println(data.get(data.size()-1).getDistance());
         for(StreetTrack st : data){
             TableRow tr =  new TableRow(this);
+            tr.setPadding(10,10,10,10);
 
             TextView c1 = new TextView(this);
             c1.setText(st.getAddress());
 
             TextView c2 = new TextView(this);
             c2.setText(st.getStartDateTime());
+
             TextView c3 = new TextView(this);
             c3.setText(st.getEndDateTime());
+
             TextView c4 = new TextView(this);
             c4.setText(String.valueOf(st.getDistance()));
 

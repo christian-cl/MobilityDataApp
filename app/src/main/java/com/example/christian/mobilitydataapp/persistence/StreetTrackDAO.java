@@ -79,13 +79,13 @@ public class StreetTrackDAO {
         StreetTrack streetTrack = new StreetTrack();
         streetTrack.setId(cursor.getLong(0));
         streetTrack.setAddress(cursor.getString(1));
-        streetTrack.setStartLatitude(cursor.getDouble(1));
-        streetTrack.setStartLongitude(cursor.getDouble(2));
-        streetTrack.setEndLatitude(cursor.getDouble(3));
-        streetTrack.setEndLongitude(cursor.getDouble(4));
-        streetTrack.setStartDateTime(cursor.getString(5));
-        streetTrack.setEndDateTime(cursor.getString(6));
-        streetTrack.setDistance(cursor.getFloat(7));
+        streetTrack.setStartLatitude(cursor.getDouble(2));
+        streetTrack.setStartLongitude(cursor.getDouble(3));
+        streetTrack.setEndLatitude(cursor.getDouble(4));
+        streetTrack.setEndLongitude(cursor.getDouble(5));
+        streetTrack.setStartDateTime(cursor.getString(6));
+        streetTrack.setEndDateTime(cursor.getString(7));
+        streetTrack.setDistance(cursor.getFloat(8));
         return streetTrack;
     }
 }
