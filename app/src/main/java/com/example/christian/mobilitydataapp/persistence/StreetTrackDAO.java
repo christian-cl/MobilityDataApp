@@ -66,6 +66,24 @@ public class StreetTrackDAO {
         return listStreetTrack;
     }
 
+    public List<StreetTrack> get(String dateStart, String dateEnd) {
+        List<StreetTrack> listStreetTrack = new ArrayList<>();
+
+        String[] arg = new String[] { dateStart, dateEnd};
+        String where = TableStreetTrack.COLUMN_START_DATETIME + ">=? and " + TableStreetTrack.COLUMN_END_DATETIME + "<=?";
+        Cursor cursor = db.query(TableStreetTrack.TABLE_NAME, columns, where,arg, null, null, null, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            StreetTrack streetTrack = cursorToStreetTrack(cursor);
+            listStreetTrack.add(streetTrack);
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        return listStreetTrack;
+    }
+
     public void delete(StreetTrack streetTrack) {
         long id = streetTrack.getId();
         db.delete(TableStreetTrack.TABLE_NAME, TableStreetTrack.COLUMN_ID + " = " + id, null);

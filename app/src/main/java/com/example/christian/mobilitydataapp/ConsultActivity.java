@@ -3,13 +3,12 @@ package com.example.christian.mobilitydataapp;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -17,6 +16,7 @@ import android.widget.TextView;
 import com.example.christian.mobilitydataapp.persistence.StreetTrack;
 import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -88,23 +88,21 @@ public class ConsultActivity extends AppCompatActivity {
     /** Called when the user clicks the Send button */
     public void findData(View view) {
         TableLayout dataTable = (TableLayout)findViewById(R.id.dataTable);
-        dataTable.setStretchAllColumns(true);
+        dataTable.removeAllViewsInLayout();
         dataTable.bringToFront();
-        List<StreetTrack> data = db.getAll();
+        List<StreetTrack> data = searchByLayoutFields();
 
         TableRow header = new TableRow(this);
         header.setPadding(20,10,20,10);
         for(String s : TABLE_HEADERS) {
             TextView h = new TextView(this);
-            h.setText("Dirección  ");
+            h.setText(s);
             header.addView(h);
         }
 
-        View div = new View(this);//<!--android:layout_height="2dip"-->
+        View div = new View(this);
         div.setBackgroundColor(Color.parseColor("#FF909090"));
-        div.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                2));
+        div.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2));
 
         dataTable.addView(header);
         dataTable.addView(div);
@@ -132,5 +130,22 @@ public class ConsultActivity extends AppCompatActivity {
             dataTable.addView(tr);
         }
 
+    }
+
+    private List<StreetTrack> searchByLayoutFields() {
+        TextView startDate = (TextView) findViewById(R.id.tvConsultStartDate);
+        TextView endDate = (TextView) findViewById(R.id.tvConsultEndDate);
+        EditText street = (EditText) findViewById(R.id.et_streetParam);
+        //crear criterion
+        return db.get(startDate.getText().toString(), endDate.getText().toString());
+    }
+
+    public void clearFields(View v) {
+        TextView startDate = (TextView) findViewById(R.id.tvConsultStartDate);
+        TextView endDate = (TextView) findViewById(R.id.tvConsultEndDate);
+        EditText street = (EditText) findViewById(R.id.et_streetParam);
+        startDate.setText(null);
+        endDate.setText(null);
+        street.setText(null);
     }
 }

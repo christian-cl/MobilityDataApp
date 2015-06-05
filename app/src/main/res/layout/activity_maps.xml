@@ -45,11 +45,11 @@
             android:id="@+id/start_button"
             android:text="@string/button_start_collecting"
             android:onClick="startCollectingData"
-            android:background="@color/material_green_500"
             android:layout_marginRight="@dimen/abc_action_button_min_width_overflow_material"
             android:layout_marginLeft="@dimen/abc_action_button_min_width_material"
             android:padding="2dp"
-            />
+            android:drawableLeft="@drawable/ic_action_play"
+            android:textColor="#9ACD32"/>
         <Button
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="wrap_content"
@@ -57,7 +57,9 @@
             android:id="@+id/end_button"
             android:text="@string/button_end_collecting"
             android:onClick="stopCollectingData"
-            android:background="@color/material_blue_500"
-            android:padding="2dp"/>
+            style="?android:attr/borderlessButtonStyle"
+            android:padding="2dp"
+            android:drawableLeft="@drawable/ic_action_stop"
+            android:textColor="#FF6347"/>
     </LinearLayout>
 </RelativeLayout>
