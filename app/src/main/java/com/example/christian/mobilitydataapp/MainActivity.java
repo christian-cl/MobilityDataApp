@@ -102,22 +102,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    /** Called when the user clicks the Send button */
-    public void sendMessageMap(View view) {
-        // Do something in response to button
-        // Activity is a subclass from context
-        Intent intent = new Intent(this, MapsActivity.class);
-        // Init the activity
-        startActivity(intent);
-    }
-    /** Called when the user clicks the Send button */
-    public void sendMessageDebug(View view) {
-        // Do something in response to button
-        // Activity is a subclass from context
-        Intent intent = new Intent(this, DebugActivity.class);
-        // Init the activity
-        startActivity(intent);
-    }
+
     /** Called when the user clicks the Send button */
     public void sendMessageMapTab(View view) {
         // Do something in response to button

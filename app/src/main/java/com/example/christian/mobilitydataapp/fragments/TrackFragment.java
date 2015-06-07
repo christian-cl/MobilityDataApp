@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.mobilitydataapp.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,14 +9,15 @@ import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.christian.mobilitydataapp.R;
+
 /**
- * Created by Christian Cintrano on 8/05/15.
+ * Created by Christian Cintrano on 14/05/15.
  *
  */
-public class LogTabFragment extends Fragment {
+public class TrackFragment extends Fragment {
     private TextView out;
     private View view;
 
@@ -28,23 +29,23 @@ public class LogTabFragment extends Fragment {
                 parent.removeView(view);
         }
         try {
-            view = inflater.inflate(R.layout.activity_tab_fragment_log, container, false);
+            view = inflater.inflate(R.layout.activity_tab_fragment_track, container, false);
         } catch (InflateException e) {
         /* map is already there, just return view as it is */
-            Log.e("L", e.getMessage());
+            Log.e("T", e.getMessage());
             e.printStackTrace();
         }
-//        View view = inflater.inflate(R.layout.activity_tab_fragment_log, container, false);
-        out = (TextView) view.findViewById(R.id.tabtextview);
+        out = (TextView) view.findViewById(R.id.track_text);
         out.setMovementMethod(new ScrollingMovementMethod());
 
-        appendLog("Init: ");
+        appendLog("Información: ");
         return view;
     }
 
     // Métodos para mostrar información
     public void appendLog(String text) {
         out.append(text + "\n");
+
         // Scrolling down
         final Layout layout = out.getLayout();
         if(layout != null){

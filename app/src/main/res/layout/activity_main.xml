@@ -19,26 +19,8 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:padding="@dimen/abc_button_inset_vertical_material"
         android:layout_margin="@dimen/abc_button_inset_vertical_material"
-        android:background="@color/material_deep_orange_700"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_send_debug"
-        android:onClick="sendMessageDebug"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:padding="@dimen/abc_button_inset_vertical_material"
-        android:layout_margin="@dimen/abc_button_inset_vertical_material"/>
-
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Go Speak"
-        android:onClick="sendSpeak"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:padding="@dimen/abc_button_inset_vertical_material"
-        android:layout_margin="@dimen/abc_button_inset_vertical_material"/>
+        style="@android:style/ButtonBar"
+        android:backgroundTint="@color/material_deep_orange_700" />
 
     <Button
         android:layout_width="wrap_content"
@@ -47,5 +29,7 @@
         android:onClick="sendMessageConsult"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:padding="@dimen/abc_button_inset_vertical_material"
-        android:layout_margin="@dimen/abc_button_inset_vertical_material"/>
+        android:layout_margin="@dimen/abc_button_inset_vertical_material"
+        style="@android:style/ButtonBar"
+        android:backgroundTint="@color/material_blue_500" />
 </LinearLayout>

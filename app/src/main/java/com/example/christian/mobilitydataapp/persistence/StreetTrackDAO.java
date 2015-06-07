@@ -97,7 +97,7 @@ public class StreetTrackDAO {
         }
         String[] arg = new String[] { dateStart, dateEnd, street};
         String where = TableStreetTrack.COLUMN_START_DATETIME + ">=? and " + TableStreetTrack.COLUMN_END_DATETIME + "<=? " +
-                TableStreetTrack.COLUMN_ADDRESS + " like '%?%'";
+                "UPPER(" + TableStreetTrack.COLUMN_ADDRESS + ") like UPPER('%?%')";
         Cursor cursor = db.query(TableStreetTrack.TABLE_NAME, columns, where,arg, null, null, null, null);
 
         cursor.moveToFirst();

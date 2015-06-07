@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.mobilitydataapp.fragments;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.widget.DatePicker;
+
+import com.example.christian.mobilitydataapp.ConsultActivity;
 
 import java.util.Calendar;
 

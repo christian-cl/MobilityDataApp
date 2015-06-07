@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.mobilitydataapp.fragments;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -22,6 +22,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.example.christian.mobilitydataapp.MapTabActivity;
+import com.example.christian.mobilitydataapp.R;
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -33,7 +35,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -44,21 +45,16 @@ import java.util.Locale;
  */
 public class MapTabFragment extends Fragment implements View.OnClickListener {
 
-    private final int REQ_CODE_SPEECH_INPUT = 100;
-
+    private final static int REQ_CODE_SPEECH_INPUT = 100;
     private static final int ZOOM = 20;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
-
 
     public static enum Marker_Type {GPS, STOP, POSITION}
 
     private Context context;
-
     private View view;
-
     private Marker currentMarker;
-
-    String title = null;
+    private String title = null;
     private GoogleMap map; // Might be null if Google Play services APK is not available.
 
     private SimpleDateFormat sdf;
@@ -90,58 +86,30 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
 
         context = container.getContext();
-        map = ((MapFragment) ((Activity) context).getFragmentManager().findFragmentById(R.id.map)).getMap();
+        map = ((MapFragment) ((Activity) context)
+                .getFragmentManager().findFragmentById(R.id.map)).getMap();
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-    //        startRepeatingTask();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        stopRepeatingTask();
-//        ((LogTabFragment) getHiddenFragment()).appendLog(DATA_END);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-//        locationManager.removeGpsStatusListener(mGPSStatusListener);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-//        locationManager.removeGpsStatusListener(mGPSStatusListener);
     }
-
-
-
-//    private String getStreet(Location localization) {
-//        if(localization != null) {
-//            Geocoder geocoder = new Geocoder(context, Locale.getDefault());
-//            List<Address> addresses;
-//            try {
-//                addresses = geocoder.getFromLocation(localization.getLatitude(), localization.getLongitude(), 1);
-//                // Only considered the first result
-//                if(addresses != null) {
-//                    return addresses.get(0).getAddressLine(0);
-//                } else {
-//                    return null;
-//                }
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//                return null;
-//            }
-//        } else {
-//            return null;
-//        }
-//    }
 
     public void displayStopChoices() {
 
@@ -157,7 +125,8 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 if (stopChoices[item].equals("Otros")) {
                     editText.setEnabled(true);
                     editText.requestFocus();
-                    InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager imm =
+                        (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
                 } else {
                     editText.setEnabled(false);
@@ -174,7 +143,8 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(title != null) {
-                    Location loc = ((MapTabActivity) context).locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    Location loc = ((MapTabActivity) context)
+                            .locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
                     String text = null;
                     if(title.equals("Otros")) {
@@ -189,10 +159,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     dc.setDate(sdf.format(Calendar.getInstance().getTime()));
 
                     ((MapTabActivity) context).saveData(dc);
-
-//                            ((MapTabActivity) context).db.create(dc);
-
-                    //Location loc = currentLocation;//locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     addMarker(Marker_Type.STOP, title, loc);
                 }
             }
@@ -220,19 +186,14 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
      * @param loc location of market
      */
     public void addMarker(Marker_Type type, String title, Location loc) {
-
         LatLng coordinates = new LatLng(loc.getLatitude(), loc.getLongitude());
-
-
         Log.i("DB", "Adding marker to (" + loc.getLatitude() + ", " + loc.getLongitude() + ")");
 
         switch (type) {
             case GPS: map.addMarker(new MarkerOptions().position(coordinates)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_device_gps_fixed)));
-//                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             case STOP: map.addMarker(new MarkerOptions().position(coordinates).title(title));
-//                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_POSITION + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             case POSITION:
                 if (currentMarker != null) {
@@ -240,7 +201,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 }
                 currentMarker = map.addMarker(new MarkerOptions().position(coordinates)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
-//                ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(NEW_GPS + loc.getLatitude() + ", " + loc.getLongitude());
                 break;
             default: Log.e("MAP", "Marker type is not valid");
         }
@@ -292,15 +252,11 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-
-
-
     public void stopCollectingData() {
         Log.i("BG","End repeating task");
         Toast.makeText(context, "Finalizando captura de datos",
                 Toast.LENGTH_SHORT).show();
         ((MapTabActivity) context).stopRepeatingTask();
-//        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_END);
     }
 
     public void startCollectingData() {
@@ -308,12 +264,6 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         Toast.makeText(context, "Iniciando captura de datos",
                     Toast.LENGTH_SHORT).show();
         ((MapTabActivity) context).startRepeatingTask();
-//        ((LogTabFragment) getHiddenFragment(Tab_Type.LogTabFragment)).appendLog(DATA_START);
     }
-
-
-
-
-
 
 }

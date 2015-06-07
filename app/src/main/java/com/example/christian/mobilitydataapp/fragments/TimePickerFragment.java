@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.mobilitydataapp.fragments;
 
 import android.app.Dialog;
 import android.app.TimePickerDialog;

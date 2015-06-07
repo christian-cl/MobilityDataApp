@@ -22,8 +22,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,6 +36,8 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.christian.mobilitydataapp.fragments.MapTabFragment;
+import com.example.christian.mobilitydataapp.fragments.TrackFragment;
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
 import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
 import com.example.christian.mobilitydataapp.persistence.StreetTrack;
@@ -56,17 +58,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 /**
  * Created by Christian Cintrano on 8/05/15.
  *
  * Maps Activity with tabs
  */
-public class MapTabActivity extends ActionBarActivity implements
+public class MapTabActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    private final int REQ_CODE_SPEECH_INPUT = 100;
+    private final static int REQ_CODE_SPEECH_INPUT = 100;
 
     private final static String DIALOG_SAVE_FILE_TITLE = "Guardar archivo";
     private final static String B_OK = "Aceptar";
@@ -89,7 +90,6 @@ public class MapTabActivity extends ActionBarActivity implements
     private GoogleApiClient mGoogleApiClient;
     private boolean mAddressRequested;
 
-
     ViewPager mViewPager;
     TabsAdapter mTabsAdapter;
     private Fragment mapFragment;
@@ -105,29 +105,19 @@ public class MapTabActivity extends ActionBarActivity implements
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        buildGoogleApiClient();
-
-        final ActionBar bar = getSupportActionBar();
-        bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
-
-        mTabsAdapter = new TabsAdapter(this, mViewPager);
-        mTabsAdapter.addTab(bar.newTab().setText("Mapa"), MapTabFragment.class, null);
-        mTabsAdapter.addTab(bar.newTab().setText("Datos"), TrackFragment.class, null);
-
-        if (savedInstanceState != null) {
-            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
-        }
-
         dateFormatter = new SimpleDateFormat("dd-MM-yyyy",Locale.US);
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
 
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        loadSettings();
-        PreferenceChangeListener preferenceListener = new PreferenceChangeListener();
-        pref.registerOnSharedPreferenceChangeListener(preferenceListener);
-
+        buildGoogleApiClient();
+        configureActionBar(savedInstanceState);
+        configurePreference();
         configureDialogWait();
+        configureLocation();
+
+
+    }
+
+    private void configureLocation() {
         mHandler = new Handler();
         addressHandler = new Handler();
 
@@ -141,8 +131,6 @@ public class MapTabActivity extends ActionBarActivity implements
                     @Override
                     public void onLocationChanged(Location location) {
                         myLocationChanged(location);
-//                        AddressResultReceiver mResultReceiver = new AddressResultReceiver(mHandler);
-//                        startIntentService(mResultReceiver);
                     }
                     @Override
                     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -165,20 +153,38 @@ public class MapTabActivity extends ActionBarActivity implements
         }
     }
 
+    private void configurePreference() {
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        loadSettings();
+        PreferenceChangeListener preferenceListener = new PreferenceChangeListener();
+        pref.registerOnSharedPreferenceChangeListener(preferenceListener);
+    }
+
+    private void configureActionBar(Bundle savedInstanceState) {
+        final ActionBar bar = getSupportActionBar();
+        if (bar != null) {
+            bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+            bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+        }
+
+        mTabsAdapter = new TabsAdapter(this, mViewPager);
+        mTabsAdapter.addTab(bar.newTab().setText("Mapa"), MapTabFragment.class, null);
+        mTabsAdapter.addTab(bar.newTab().setText("Datos"), TrackFragment.class, null);
+
+        if (savedInstanceState != null) {
+            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+        }
+    }
 
 
     @Override
     public void onResume() {
         super.onResume();
-//        db.open();
-//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        locationManager.removeUpdates(gpsLocationListener);
-//        db.close();
     }
 
     @Override
@@ -290,7 +296,6 @@ public class MapTabActivity extends ActionBarActivity implements
             outST.flush();
             outST.close();
 
-
             Log.i("DB", "File saved");
             Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
@@ -310,7 +315,6 @@ public class MapTabActivity extends ActionBarActivity implements
             }
         }
     }
-
 
     public void displaySaveFile() {
         Calendar newCalendar = Calendar.getInstance();
@@ -519,7 +523,7 @@ public class MapTabActivity extends ActionBarActivity implements
     private void myLocationChanged(Location location) {
         currentLocation = location;
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-setHiddenFragment();
+        setHiddenFragment();
         ((MapTabFragment) mapFragment).setCamera(latLng);
         processTrackData(location); // Global process information
         ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
@@ -594,8 +598,6 @@ setHiddenFragment();
 //        ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog("Hollaaa");
 //        Log.e("TRACK",startTrackPoint.toString());
         if((startTrackPoint != null) && (startTrackPoint.getAddress() != null)) {
-//            System.out.println("!= null");
-//            System.out.println(startTrackPoint);
             DataCapture dc = new DataCapture();
             dc.setLatitude(location.getLatitude());
             dc.setLongitude(location.getLongitude());
@@ -606,8 +608,6 @@ setHiddenFragment();
             receiver.setIsInserted(false);
             startIntentService(receiver);
         } else {
-//            System.out.println("== null");
-//            System.out.println(startTrackPoint);
             startTrackPoint = new DataCapture();
             startTrackPoint.setLatitude(location.getLatitude());
             startTrackPoint.setLongitude(location.getLongitude());

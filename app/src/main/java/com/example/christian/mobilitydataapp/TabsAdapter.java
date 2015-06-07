@@ -4,12 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 
 import java.util.ArrayList;
 
@@ -29,7 +28,7 @@ public class TabsAdapter extends FragmentStatePagerAdapter
     private final Context mContext;
     private final ActionBar mActionBar;
     private final ViewPager mViewPager;
-    private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
+    private final ArrayList<TabInfo> mTabs = new ArrayList<>();
 
     @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
@@ -63,16 +62,16 @@ public class TabsAdapter extends FragmentStatePagerAdapter
     }
 
     public TabsAdapter(Activity activity, ViewPager pager) {
-        super(((ActionBarActivity) activity).getSupportFragmentManager());
+        super(((AppCompatActivity) activity).getSupportFragmentManager());
         mContext = activity;
-        mActionBar = ((ActionBarActivity) activity).getSupportActionBar();
+        mActionBar = ((AppCompatActivity) activity).getSupportActionBar();
         mViewPager = pager;
         mViewPager.setAdapter(this);
         mViewPager.setOnPageChangeListener(this);
     }
 
-    public void addTab(ActionBar.Tab tab, Class<?> clss, Bundle args) {
-        TabInfo info = new TabInfo(clss, args);
+    public void addTab(ActionBar.Tab tab, Class<?> cls, Bundle args) {
+        TabInfo info = new TabInfo(cls, args);
         tab.setTag(info);
         tab.setTabListener(this);
         mTabs.add(info);

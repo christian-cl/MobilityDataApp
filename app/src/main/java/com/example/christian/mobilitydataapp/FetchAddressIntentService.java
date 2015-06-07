@@ -1,7 +1,6 @@
 package com.example.christian.mobilitydataapp;
 
 import android.app.IntentService;
-import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
@@ -58,11 +57,7 @@ public class FetchAddressIntentService extends IntentService {
 
         try {
             geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-            addresses = geocoder.getFromLocation(
-                    location.getLatitude(),
-                    location.getLongitude(),
-                    // In this sample, get just a single address.
-                    1);
+            addresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
         } catch (IOException ioException) {
             // Catch network or other I/O problems.
             errorMessage = getString(R.string.service_not_available);
@@ -70,10 +65,8 @@ public class FetchAddressIntentService extends IntentService {
         } catch (IllegalArgumentException illegalArgumentException) {
             // Catch invalid latitude or longitude values.
             errorMessage = getString(R.string.invalid_lat_long_used);
-            Log.e(TAG, errorMessage + ". " +
-                    "Latitude = " + location.getLatitude() +
-                    ", Longitude = " +
-                    location.getLongitude(), illegalArgumentException);
+            Log.e(TAG, errorMessage + ". " + "Latitude = " + location.getLatitude() +
+                    ", Longitude = " + location.getLongitude(), illegalArgumentException);
         }
 
         // Handle case where no address was found.
@@ -85,17 +78,16 @@ public class FetchAddressIntentService extends IntentService {
             deliverResultToReceiver(Constants.FAILURE_RESULT, errorMessage);
         } else {
             Address address = addresses.get(0);
-            ArrayList<String> addressFragments = new ArrayList<String>();
+            ArrayList<String> addressFragments = new ArrayList<>();
 
             // Fetch the address lines using getAddressLine,
             // join them, and send them to the thread.
-            for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
+            for (int i = 0; i < address.getMaxAddressLineIndex(); i++) {
                 addressFragments.add(address.getAddressLine(i));
             }
             Log.i(TAG, getString(R.string.address_found));
             deliverResultToReceiver(Constants.SUCCESS_RESULT,
-                    TextUtils.join(System.getProperty("line.separator"),
-                            addressFragments));
+                    TextUtils.join(System.getProperty("line.separator"), addressFragments));
         }
     }
 
