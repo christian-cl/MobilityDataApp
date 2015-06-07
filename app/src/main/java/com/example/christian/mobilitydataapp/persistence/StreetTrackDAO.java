@@ -84,6 +84,33 @@ public class StreetTrackDAO {
         return listStreetTrack;
     }
 
+    public List<StreetTrack> get(String street, String dateStart, String dateEnd) {
+        List<StreetTrack> listStreetTrack = new ArrayList<>();
+        if(dateStart == null) {
+            dateStart = "0";
+        }
+        if(dateEnd == null) {
+            dateEnd = "2200-12-31";
+        }
+        if(street == null) {
+            street = "";
+        }
+        String[] arg = new String[] { dateStart, dateEnd, street};
+        String where = TableStreetTrack.COLUMN_START_DATETIME + ">=? and " + TableStreetTrack.COLUMN_END_DATETIME + "<=? " +
+                TableStreetTrack.COLUMN_ADDRESS + " like '%?%'";
+        Cursor cursor = db.query(TableStreetTrack.TABLE_NAME, columns, where,arg, null, null, null, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            StreetTrack streetTrack = cursorToStreetTrack(cursor);
+            listStreetTrack.add(streetTrack);
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        return listStreetTrack;
+    }
+
     public void delete(StreetTrack streetTrack) {
         long id = streetTrack.getId();
         db.delete(TableStreetTrack.TABLE_NAME, TableStreetTrack.COLUMN_ID + " = " + id, null);

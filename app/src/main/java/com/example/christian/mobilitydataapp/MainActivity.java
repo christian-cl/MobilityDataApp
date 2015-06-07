@@ -12,8 +12,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,7 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
     private static final String BACKUP_DB_NAME = "backup";
     private static final String PREF_LAST_DATE_BACKUP = "backupLastDate";
@@ -141,19 +140,9 @@ public class MainActivity extends ActionBarActivity {
         startActivity(intent);
     }
 
-
-    /** Called when the user clicks the Send button */
-    public void sendSpeak(View view) {
-        // Do something in response to button
-        // Activity is a subclass from context
-        Intent intent = new Intent(this, SpeakActivity.class);
-        // Init the activity
-        startActivity(intent);
-    }
-
     public boolean saveFileAndRemove(String fileName, Calendar dateStart, Calendar dateEnd) {
         if(saveFile(fileName, dateStart, dateEnd)) {
-            Log.i("____","          DELETE");
+            Log.i("MainActivity", "Delete database");
             db.delete(dateStart, dateEnd);
             return true;
         } else {

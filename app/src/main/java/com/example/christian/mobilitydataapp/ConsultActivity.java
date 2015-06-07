@@ -136,7 +136,7 @@ public class ConsultActivity extends AppCompatActivity {
         TextView endDate = (TextView) findViewById(R.id.tvConsultEndDate);
         EditText street = (EditText) findViewById(R.id.et_streetParam);
         //crear criterion
-        return db.get(startDate.getText().toString(), endDate.getText().toString());
+        return db.get(street.getText().toString(), startDate.getText().toString(), endDate.getText().toString());
     }
 
     public void clearFields(View v) {
