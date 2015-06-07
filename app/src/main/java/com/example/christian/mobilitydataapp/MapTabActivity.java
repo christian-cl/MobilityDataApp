@@ -161,14 +161,14 @@ public class MapTabActivity extends AppCompatActivity implements
         if (bar != null) {
             bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
             bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
-        }
 
-        mTabsAdapter = new TabsAdapter(this, mViewPager);
-        mTabsAdapter.addTab(bar.newTab().setText("Mapa"), MapTabFragment.class, null);
-        mTabsAdapter.addTab(bar.newTab().setText("Datos"), TrackFragment.class, null);
+            mTabsAdapter = new TabsAdapter(this, mViewPager);
+            mTabsAdapter.addTab(bar.newTab().setText("Mapa"), MapTabFragment.class, null);
+            mTabsAdapter.addTab(bar.newTab().setText("Datos"), TrackFragment.class, null);
 
-        if (savedInstanceState != null) {
-            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+            if (savedInstanceState != null) {
+                bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+            }
         }
     }
 
