@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.mobilitydataapp.services;
 
 import android.app.Activity;
 import android.content.Context;
@@ -52,11 +52,11 @@ public class TabsAdapter extends FragmentStatePagerAdapter
     }
 
     static final class TabInfo {
-        private final Class<?> clss;
+        private final Class<?> cls;
         private final Bundle args;
 
         TabInfo(Class<?> _class, Bundle _args) {
-            clss = _class;
+            cls = _class;
             args = _args;
         }
     }
@@ -87,7 +87,7 @@ public class TabsAdapter extends FragmentStatePagerAdapter
     @Override
     public Fragment getItem(int position) {
         TabInfo info = mTabs.get(position);
-        return Fragment.instantiate(mContext, info.clss.getName(), info.args);
+        return Fragment.instantiate(mContext, info.cls.getName(), info.args);
     }
 
     @Override

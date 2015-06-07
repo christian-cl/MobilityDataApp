@@ -67,11 +67,6 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     private static final String DROP_CREATE_TABLE_STREET_TRACK =
             "drop table if exists "+ TableStreetTrack.TABLE_NAME + ";";
 
-    private static final String DATABASE_CREATE =
-            CREATE_TABLE_DATA_CAPTURE + CREATE_TABLE_STREET_TRACK;
-
-    private static final String DATABASE_DROP =
-            DROP_TABLE_DATA_CAPTURE + DROP_CREATE_TABLE_STREET_TRACK;
 
     public MySQLiteOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

@@ -15,10 +15,7 @@ public class DataCapture {
     private String date;
 
     public DataCapture() {
-    }
-
-    public DataCapture(long id) {
-        this.id = id;
+        super();
     }
 
     public long getId() {

@@ -42,6 +42,8 @@ import com.example.christian.mobilitydataapp.persistence.DataCapture;
 import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
 import com.example.christian.mobilitydataapp.persistence.StreetTrack;
 import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
+import com.example.christian.mobilitydataapp.services.FetchAddressIntentService;
+import com.example.christian.mobilitydataapp.services.TabsAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -72,9 +74,6 @@ public class MapTabActivity extends AppCompatActivity implements
     private final static String DIALOG_SAVE_FILE_TITLE = "Guardar archivo";
     private final static String B_OK = "Aceptar";
     private final static String B_CANCEL = "Cancelar";
-
-    // Tab titles
-    private String[] tabs = { "Mapa", "Registro", "Información"};
 
     private AlertDialog saveFileDialog;
     private DatePickerDialog dateInitDialog;
@@ -109,18 +108,15 @@ public class MapTabActivity extends AppCompatActivity implements
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
 
         buildGoogleApiClient();
+        mHandler = new Handler();
+        addressHandler = new Handler();
         configureActionBar(savedInstanceState);
         configurePreference();
         configureDialogWait();
         configureLocation();
-
-
     }
 
     private void configureLocation() {
-        mHandler = new Handler();
-        addressHandler = new Handler();
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         if (isGPSEnabled) {
@@ -460,6 +456,7 @@ public class MapTabActivity extends AppCompatActivity implements
 
     private SimpleDateFormat sdf;
 
+    //GPS periodico
     public LocationManager locationManager;
     private ProgressDialog dialogWait;
     public DataCaptureDAO db;
@@ -498,6 +495,13 @@ public class MapTabActivity extends AppCompatActivity implements
                     }
                     break;
                 case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+                    Log.i("__", "GPS_EVENT_SATELLITE_STATUS");
+                    Location aux = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    System.out.println(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                    if (aux != null) {
+                        String s = aux.getLatitude() + ":" + aux.getLongitude();
+                        Log.i("GPS Info", s);
+                    }
                     break;
             }
         }
@@ -684,8 +688,6 @@ public class MapTabActivity extends AppCompatActivity implements
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
             mAddressOutput.replace("\n", "");
             dataCapture.setAddress(mAddressOutput);
-//            Toast.makeText(MapTabActivity.this, "New Address: "  + mAddressOutput,
-//                    Toast.LENGTH_SHORT).show();
             if(isInserted) {
                 db = new DataCaptureDAO(MapTabActivity.this);
                 db.open();
@@ -844,10 +846,8 @@ public class MapTabActivity extends AppCompatActivity implements
         for(String str : result) {
          System.out.println(str);
             str = Normalizer.normalize(str, Normalizer.Form.NFD);
-         System.out.println(str);
             // remove accents
             str = str.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-         System.out.println(str);
             for(int i = 0; i<stopChoicesPattern.length;i++) {
                 if(str.toLowerCase().contains(stopChoicesPattern[i])) {
                     return stopChoices[i];
@@ -870,8 +870,5 @@ public class MapTabActivity extends AppCompatActivity implements
 
         ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.STOP, title, loc);
     }
-
-
-
 
 }

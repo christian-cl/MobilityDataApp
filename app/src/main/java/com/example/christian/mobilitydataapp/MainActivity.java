@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         db = new DataCaptureDAO(this);
         db.open();
 
-        sdf = new SimpleDateFormat(FORMAT_DATE);
+        sdf = new SimpleDateFormat(FORMAT_DATE, Locale.US);
 
 
         if(checkBackupTime()) {
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
             if(isExternalStorageWritable()) {
                 String path = Environment.getExternalStorageDirectory().toString();
                 File dir = new File(path + folderName);
-                dir.mkdirs();
+                if(dir.mkdirs()) Log.i("DB", "Folder created");
                 File file = new File (dir, fileName + extension);
                 out = new FileOutputStream(file);
             } else {

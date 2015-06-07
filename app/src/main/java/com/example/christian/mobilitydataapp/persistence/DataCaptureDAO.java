@@ -122,7 +122,7 @@ public class DataCaptureDAO {
      */
     public void delete(Calendar dateStart, Calendar dateEnd) {
         String FORMAT_DATE = "yyyy-MM-dd HH:mm:ss";
-        SimpleDateFormat sdf = new SimpleDateFormat(FORMAT_DATE);
+        SimpleDateFormat sdf = new SimpleDateFormat(FORMAT_DATE, Locale.US);
         delete(sdf.format(dateStart.getTime()),sdf.format(dateEnd.getTime()));
     }
 
