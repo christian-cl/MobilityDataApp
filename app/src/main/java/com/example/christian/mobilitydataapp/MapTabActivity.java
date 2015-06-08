@@ -96,6 +96,7 @@ public class MapTabActivity extends AppCompatActivity implements
     private Fragment mapFragment;
     private Fragment trackFragment;
     private boolean isFirstLocation = true;
+    private String addressPattern;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -741,7 +742,8 @@ public class MapTabActivity extends AppCompatActivity implements
 //            Log.i("Track","Set start track point in " +startTrackPoint.getLatitude() + " " + startTrackPoint.getLongitude());
             trackDistance = 0;
         } else {
-            if(startTrackPoint.getAddress().equals(dataCapture.getAddress())) {
+//            if(startTrackPoint.getAddress().equals(dataCapture.getAddress())) {
+            if(addressPattern.equals(dataCapture.getAddress())) {
                 Location start = new Location("");
                 start.setLatitude(currentTrackPoint.getLatitude());
                 start.setLongitude(currentTrackPoint.getLongitude());
@@ -764,7 +766,6 @@ public class MapTabActivity extends AppCompatActivity implements
                         currentTrackPoint.getLatitude(), currentTrackPoint.getLongitude(),
                         startTrackPoint.getDate(), currentTrackPoint.getDate(),
                         trackDistance);
-
 
                 StreetTrackDAO dbLocalInstanceST = new StreetTrackDAO(this);
                 dbLocalInstanceST.open();
@@ -793,6 +794,11 @@ public class MapTabActivity extends AppCompatActivity implements
                 ((TrackFragment) trackFragment).appendLog(line);
 
                 startTrackPoint = dataCapture;
+                int index = startTrackPoint.getAddress().indexOf(",");
+                if(index == -1) {
+                    index = startTrackPoint.getAddress().length();
+                }
+                addressPattern = startTrackPoint.getAddress().substring(0,index);
                 currentTrackPoint = dataCapture;
                 trackDistance = 0;
             }
