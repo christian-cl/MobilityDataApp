@@ -75,6 +75,8 @@ public class MapTabActivity extends AppCompatActivity implements
     private final static String B_OK = "Aceptar";
     private final static String B_CANCEL = "Cancelar";
 
+    private static final int ZOOM = 20;
+
     private AlertDialog saveFileDialog;
     private DatePickerDialog dateInitDialog;
 
@@ -487,21 +489,17 @@ public class MapTabActivity extends AppCompatActivity implements
                 case GpsStatus.GPS_EVENT_FIRST_FIX:
                     // GPS_EVENT_FIRST_FIX Event is called when GPS is locked
                     Log.i("GPS", "Locked position");
-                    dialogWait.dismiss();
-                    Location gpsloc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (gpsloc != null) {
-                        String s = gpsloc.getLatitude() + ":" + gpsloc.getLongitude();
-                        Log.i("GPS Info", s);
-                    }
+                    gpsFirstFixed();
                     break;
                 case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-                    Log.i("__", "GPS_EVENT_SATELLITE_STATUS");
-                    Location aux = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    System.out.println(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
-                    if (aux != null) {
-                        String s = aux.getLatitude() + ":" + aux.getLongitude();
-                        Log.i("GPS Info", s);
-                    }
+//                    Log.i("GPS", "GPS_EVENT_SATELLITE_STATUS");
+//                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//                    System.out.println(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+//                    if (location != null) {
+//                        myLocationChanged(location);
+//                        String s = location.getLatitude() + ":" + location.getLongitude();
+//                        Log.i("GPS Info", s);
+//                    }
                     break;
             }
         }
@@ -531,6 +529,12 @@ public class MapTabActivity extends AppCompatActivity implements
         ((MapTabFragment) mapFragment).setCamera(latLng);
         processTrackData(location); // Global process information
         ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
+    }
+
+    private void gpsFirstFixed() {
+        dialogWait.dismiss();
+        setHiddenFragment();
+        ((MapTabFragment) mapFragment).setZoom(ZOOM);
     }
 
 

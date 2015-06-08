@@ -46,7 +46,6 @@ import java.util.Locale;
 public class MapTabFragment extends Fragment implements View.OnClickListener {
 
     private final static int REQ_CODE_SPEECH_INPUT = 100;
-    private static final int ZOOM = 20;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
     public static enum Marker_Type {GPS, STOP, POSITION}
@@ -175,7 +174,12 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
 
     public void setCamera(LatLng latLng) {
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, ZOOM);
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
+        map.animateCamera(cameraUpdate);
+    }
+
+    public void setZoom(float zoom) {
+        CameraUpdate cameraUpdate = CameraUpdateFactory.zoomTo(zoom);
         map.animateCamera(cameraUpdate);
     }
 

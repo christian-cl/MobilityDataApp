@@ -86,18 +86,19 @@ public class StreetTrackDAO {
 
     public List<StreetTrack> get(String street, String dateStart, String dateEnd) {
         List<StreetTrack> listStreetTrack = new ArrayList<>();
-        if(dateStart == null) {
-            dateStart = "0";
+        System.out.println(dateStart);
+        if(dateStart == null || dateStart == "") {
+            dateStart = "1991-03-04";
         }
-        if(dateEnd == null) {
+        if(dateEnd == null || dateEnd == "") {
             dateEnd = "2200-12-31";
         }
-        if(street == null) {
+        if(street == null || street == "") {
             street = "";
         }
-        String[] arg = new String[] { dateStart, dateEnd, street};
-        String where = TableStreetTrack.COLUMN_START_DATETIME + ">=? and " + TableStreetTrack.COLUMN_END_DATETIME + "<=? " +
-                "UPPER(" + TableStreetTrack.COLUMN_ADDRESS + ") like UPPER('%?%')";
+        String[] arg = new String[] { dateStart, dateEnd, "%" + street + "%"};
+        String where = TableStreetTrack.COLUMN_START_DATETIME + ">=? and " + TableStreetTrack.COLUMN_END_DATETIME + "<=?"
+               + " and UPPER(" + TableStreetTrack.COLUMN_ADDRESS + ") like UPPER(?)";
         Cursor cursor = db.query(TableStreetTrack.TABLE_NAME, columns, where,arg, null, null, null, null);
 
         cursor.moveToFirst();

@@ -133,6 +133,7 @@ public class ConsultActivity extends AppCompatActivity {
     }
 
     private List<StreetTrack> searchByLayoutFields() {
+        Log.i("DB", "searchByLayoutFields()");
         TextView startDate = (TextView) findViewById(R.id.tvConsultStartDate);
         TextView endDate = (TextView) findViewById(R.id.tvConsultEndDate);
         EditText street = (EditText) findViewById(R.id.et_streetParam);
