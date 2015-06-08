@@ -96,7 +96,7 @@ public class MapTabActivity extends AppCompatActivity implements
     private Fragment mapFragment;
     private Fragment trackFragment;
     private boolean isFirstLocation = true;
-    private String addressPattern;
+    private String addressPattern = "ZZZZZZZZZZ"; // cadena imposible
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +131,9 @@ public class MapTabActivity extends AppCompatActivity implements
                     @Override
                     public void onLocationChanged(Location location) {
                         myLocationChanged(location);
+                        if(!runningCaptureData) {
+                            startRepeatingTask();
+                        }
                     }
                     @Override
                     public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -638,6 +641,7 @@ public class MapTabActivity extends AppCompatActivity implements
             startIntentService(receiver);
             currentTrackPoint = startTrackPoint;
             Log.i("Track","Set start track point in " +startTrackPoint.getLatitude() + " " + startTrackPoint.getLongitude());
+
             trackDistance = 0;
         }
     }
@@ -703,6 +707,7 @@ public class MapTabActivity extends AppCompatActivity implements
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
             mAddressOutput.replace("\n", "");
             dataCapture.setAddress(mAddressOutput);
+
             if(isInserted) {
                 db = new DataCaptureDAO(MapTabActivity.this);
                 db.open();
@@ -743,13 +748,17 @@ public class MapTabActivity extends AppCompatActivity implements
             trackDistance = 0;
         } else {
 //            if(startTrackPoint.getAddress().equals(dataCapture.getAddress())) {
-            if(addressPattern.equals(dataCapture.getAddress())) {
+            Log.i("--------", addressPattern + " " + dataCapture.getAddress());
+            if(dataCapture.getAddress().contains(addressPattern)) {
                 Location start = new Location("");
                 start.setLatitude(currentTrackPoint.getLatitude());
                 start.setLongitude(currentTrackPoint.getLongitude());
                 Location end = new Location("");
-                start.setLatitude(dataCapture.getLatitude());
-                start.setLongitude(dataCapture.getLongitude());
+                end.setLatitude(dataCapture.getLatitude());
+                end.setLongitude(dataCapture.getLongitude());
+                Log.i("-TT-------", trackDistance + " " + start.distanceTo(end));
+                Log.i("-TT-------", start.getLatitude() + " " + start.getLongitude());
+                Log.i("-TT-------", end.getLatitude() + " " + end.getLongitude());
                 trackDistance += start.distanceTo(end);
 
                 // set new current
@@ -786,9 +795,9 @@ public class MapTabActivity extends AppCompatActivity implements
                         + "\t Distancia recorrida: " + st.getDistance()+ " m.\n"
                         + "\t Tiempo transcurrido: " + time + " s.\n"
                         + "\t Punto de entrada: " + st.getStartLatitude() + " "
-                        + st.getStartLongitude() + " m.\n"
+                        + st.getStartLongitude() + "\n"
                         + "\t Punto de salida: " + st.getEndLatitude() + " "
-                        + st.getEndLongitude() + " m.\n";
+                        + st.getEndLongitude() + "\n";
 
 //                    ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog(line);
                 ((TrackFragment) trackFragment).appendLog(line);
@@ -799,6 +808,7 @@ public class MapTabActivity extends AppCompatActivity implements
                     index = startTrackPoint.getAddress().length();
                 }
                 addressPattern = startTrackPoint.getAddress().substring(0,index);
+                Log.i("addressPattern",addressPattern);
                 currentTrackPoint = dataCapture;
                 trackDistance = 0;
             }

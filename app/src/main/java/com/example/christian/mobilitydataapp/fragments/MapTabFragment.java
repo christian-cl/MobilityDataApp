@@ -75,12 +75,12 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
         ImageButton bStop = (ImageButton) view.findViewById(R.id.stop_button);
         ImageButton bStopSpeak = (ImageButton) view.findViewById(R.id.stop_button_speak);
-        Button bStart = (Button) view.findViewById(R.id.start_button);
-        Button bEnd = (Button) view.findViewById(R.id.end_button);
+//        Button bStart = (Button) view.findViewById(R.id.start_button);
+//        Button bEnd = (Button) view.findViewById(R.id.end_button);
         bStop.setOnClickListener(this);
         bStopSpeak.setOnClickListener(this);
-        bStart.setOnClickListener(this);
-        bEnd.setOnClickListener(this);
+//        bStart.setOnClickListener(this);
+//        bEnd.setOnClickListener(this);
 
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
 
@@ -227,15 +227,15 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 promptSpeechInput();
                 break;
 
-            case R.id.start_button:
-                Log.i("Click", "start_button");
-                if(!((MapTabActivity) context).runningCaptureData) startCollectingData();
-                break;
-
-            case R.id.end_button:
-                Log.i("Click", "end_button");
-                stopCollectingData();
-                break;
+//            case R.id.start_button:
+//                Log.i("Click", "start_button");
+//                if(!((MapTabActivity) context).runningCaptureData) startCollectingData();
+//                break;
+//
+//            case R.id.end_button:
+//                Log.i("Click", "end_button");
+//                stopCollectingData();
+//                break;
         }
     }
 
@@ -256,18 +256,18 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    public void stopCollectingData() {
-        Log.i("BG","End repeating task");
-        Toast.makeText(context, "Finalizando captura de datos",
-                Toast.LENGTH_SHORT).show();
-        ((MapTabActivity) context).stopRepeatingTask();
-    }
-
-    public void startCollectingData() {
-        Log.i("BG","Start repeating task");
-        Toast.makeText(context, "Iniciando captura de datos",
-                    Toast.LENGTH_SHORT).show();
-        ((MapTabActivity) context).startRepeatingTask();
-    }
+//    public void stopCollectingData() {
+//        Log.i("BG","End repeating task");
+//        Toast.makeText(context, "Finalizando captura de datos",
+//                Toast.LENGTH_SHORT).show();
+//        ((MapTabActivity) context).stopRepeatingTask();
+//    }
+//
+//    public void startCollectingData() {
+//        Log.i("BG","Start repeating task");
+//        Toast.makeText(context, "Iniciando captura de datos",
+//                    Toast.LENGTH_SHORT).show();
+//        ((MapTabActivity) context).startRepeatingTask();
+//    }
 
 }
