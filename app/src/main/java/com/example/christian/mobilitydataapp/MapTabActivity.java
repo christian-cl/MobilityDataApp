@@ -95,6 +95,7 @@ public class MapTabActivity extends AppCompatActivity implements
     TabsAdapter mTabsAdapter;
     private Fragment mapFragment;
     private Fragment trackFragment;
+    private boolean isFirstLocation = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,7 +146,6 @@ public class MapTabActivity extends AppCompatActivity implements
                                 Toast.LENGTH_SHORT).show();
                     }
                 };
-
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
             }
         }
@@ -178,16 +178,24 @@ public class MapTabActivity extends AppCompatActivity implements
     @Override
     public void onResume() {
         super.onResume();
+        locationManager.addGpsStatusListener(mGPSStatusListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
+//        startRepeatingTask();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        stopRepeatingTask();
+        locationManager.removeUpdates(gpsLocationListener);
+        locationManager.removeGpsStatusListener(mGPSStatusListener);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        stopRepeatingTask();
+        locationManager.removeUpdates(gpsLocationListener);
         locationManager.removeGpsStatusListener(mGPSStatusListener);
     }
 
@@ -529,12 +537,14 @@ public class MapTabActivity extends AppCompatActivity implements
         ((MapTabFragment) mapFragment).setCamera(latLng);
         processTrackData(location); // Global process information
         ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
+        if(isFirstLocation) {
+            ((MapTabFragment) mapFragment).setZoom(ZOOM);
+            isFirstLocation = false;
+        }
     }
 
     private void gpsFirstFixed() {
         dialogWait.dismiss();
-        setHiddenFragment();
-        ((MapTabFragment) mapFragment).setZoom(ZOOM);
     }
 
 

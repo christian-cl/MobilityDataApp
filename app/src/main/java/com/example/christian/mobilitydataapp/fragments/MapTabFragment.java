@@ -175,7 +175,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
     public void setCamera(LatLng latLng) {
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(latLng);
-        map.animateCamera(cameraUpdate);
+        map.moveCamera(cameraUpdate);
     }
 
     public void setZoom(float zoom) {
