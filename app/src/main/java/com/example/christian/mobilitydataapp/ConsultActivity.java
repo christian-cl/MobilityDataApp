@@ -1,7 +1,9 @@
 package com.example.christian.mobilitydataapp;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -12,11 +14,17 @@ import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.fragments.DatePickerFragment;
+import com.example.christian.mobilitydataapp.persistence.DataCapture;
+import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
 import com.example.christian.mobilitydataapp.persistence.StreetTrack;
 import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -148,5 +156,69 @@ public class ConsultActivity extends AppCompatActivity {
         startDate.setText(null);
         endDate.setText(null);
         street.setText(null);
+    }
+
+    public void saveFields(View v) {
+        saveFile("consult");
+    }
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals(state);
+    }
+    public void saveFile(String fileName) {
+        Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
+        Log.i("DB", "Saving file...");
+        FileOutputStream outST = null;
+        StreetTrackDAO dbST = new StreetTrackDAO(this);
+        db.open();
+        dbST.open();
+        List<StreetTrack> dataST = searchByLayoutFields();
+        Log.i("DB","Find " + dataST.size() + " StreetTrack elements");
+        String extension = ".csv";
+        String folderName = "/neoTrack";
+        try {
+            if(isExternalStorageWritable()) {
+                String path = Environment.getExternalStorageDirectory().toString();
+                File dir = new File(path + folderName);
+                dir.mkdirs();
+                File fileST = new File (dir, "ST" + fileName + extension);
+                outST = new FileOutputStream(fileST);
+            } else {
+                outST = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
+            }
+
+            String headST = "_id,address;latitude start;longitude start;" +
+                    "latitude end;longitude end;datetime start;datetime end;distance\n";
+            outST.write(headST.getBytes());
+            for(StreetTrack st : dataST) {
+                outST.write((String.valueOf(st.getId()) + ";").getBytes());
+                outST.write(("\"" + st.getAddress() + "\";").getBytes());
+                outST.write((String.valueOf(st.getStartLatitude()) + ";").getBytes());
+                outST.write((String.valueOf(st.getStartLongitude()) + ";").getBytes());
+                outST.write((String.valueOf(st.getEndLatitude()) + ";").getBytes());
+                outST.write((String.valueOf(st.getEndLongitude()) + ";").getBytes());
+                outST.write(("\"" + st.getStartDateTime() + "\";").getBytes());
+                outST.write(("\"" + st.getEndDateTime() + "\";").getBytes());
+                outST.write((String.valueOf(st.getDistance()) + "\n").getBytes());
+            }
+            outST.flush();
+            outST.close();
+
+            Log.i("DB", "File saved");
+            Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                db.close();
+                dbST.close();
+                if(outST != null) {
+                    outST.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

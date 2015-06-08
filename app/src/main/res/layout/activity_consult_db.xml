@@ -55,6 +55,14 @@
             android:id="@+id/b_clear_fields"
             android:layout_gravity="end"
             android:onClick="clearFields" />
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_action_save"
+            android:contentDescription="@string/description"
+            android:id="@+id/b_save_consult_fields"
+            android:layout_gravity="end"
+            android:onClick="saveFields" />
 
     </LinearLayout>
 

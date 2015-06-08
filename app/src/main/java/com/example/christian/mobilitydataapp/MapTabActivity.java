@@ -782,8 +782,8 @@ public class MapTabActivity extends AppCompatActivity implements
                 }
                 // Display Information
                 String line = "Dirección: " + st.getAddress() + "\n"
-                        + "\t Distancia recorrida: " + time + " m.\n"
-                        + "\t Tiempo transcurrido: " + st.getDistance() + " s.\n"
+                        + "\t Distancia recorrida: " + st.getDistance()+ " m.\n"
+                        + "\t Tiempo transcurrido: " + time + " s.\n"
                         + "\t Punto de entrada: " + st.getStartLatitude() + " "
                         + st.getStartLongitude() + " m.\n"
                         + "\t Punto de salida: " + st.getEndLatitude() + " "

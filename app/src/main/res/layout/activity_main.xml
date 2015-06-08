@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:gravity="center">
+    android:gravity="center"
+    android:weightSum="1">
 
     <!--<Button-->
         <!--android:layout_width="wrap_content"-->
@@ -13,14 +14,19 @@
 
     <Button
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:text="@string/button_send_map"
         android:onClick="sendMessageMapTab"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:padding="@dimen/abc_button_inset_vertical_material"
         android:layout_margin="@dimen/abc_button_inset_vertical_material"
-        style="@android:style/ButtonBar"
-        android:backgroundTint="@color/material_deep_orange_700" />
+        android:elevation="@dimen/abc_action_bar_content_inset_material"
+        android:paddingTop="5dip"
+        android:paddingLeft="4dip"
+        android:paddingRight="4dip"
+        android:paddingBottom="1dip"
+        android:background="@color/material_deep_orange_700"
+        android:layout_weight="0.27" />
 
     <Button
         android:layout_width="wrap_content"
