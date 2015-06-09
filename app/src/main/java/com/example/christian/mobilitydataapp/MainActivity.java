@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
         List<DataCapture> data = db.get(dateStart, dateEnd);
         Log.i("DB","Find " + data.size() + " elements");
         String extension = ".csv";
-        String folderName = "/mdaFolder";
+        String folderName = "/neoTrack";
         try {
             if(isExternalStorageWritable()) {
                 String path = Environment.getExternalStorageDirectory().toString();
@@ -162,27 +162,27 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date\n";
+            String head = "_id;latitude;longitude;street;stoptype;comment;date\n";
             out.write(head.getBytes());
             for(DataCapture dc : data) {
                 System.out.print(dc);
-                out.write((String.valueOf(dc.getId()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
+                out.write((String.valueOf(dc.getId()) + ";").getBytes());
+                out.write((String.valueOf(dc.getLatitude()) + ";").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + ";").getBytes());
                 if(dc.getAddress() != null) {
-                    out.write(("\"" + dc.getAddress() + "\",").getBytes());
+                    out.write(("\"" + dc.getAddress() + "\";").getBytes());
                 } else {
-                    out.write(("null,").getBytes());
+                    out.write(("null;").getBytes());
                 }
                 if(dc.getStopType() != null) {
-                    out.write(("\"" + dc.getStopType() + "\",").getBytes());
+                    out.write(("\"" + dc.getStopType() + "\";").getBytes());
                 } else {
-                    out.write(("null,").getBytes());
+                    out.write(("null;").getBytes());
                 }
                 if(dc.getComment() != null) {
-                    out.write(("\"" + dc.getComment() + "\",").getBytes());
+                    out.write(("\"" + dc.getComment() + "\";").getBytes());
                 } else {
-                    out.write(("null,").getBytes());
+                    out.write(("null;").getBytes());
                 }
                 out.write(("\"" + dc.getDate() + "\"\n").getBytes());
             }

@@ -18,7 +18,7 @@ import java.util.Locale;
  * DAO for DataCapture points
  */
 
-public class DataCaptureDAO {
+public class DataCaptureDAO implements GenericDAO<DataCapture>{
 
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss",Locale.US);
 
@@ -72,7 +72,6 @@ public class DataCaptureDAO {
         return listDataCapture;
     }
 
-
     /**
      * List of elements between two dates
      *
@@ -81,12 +80,25 @@ public class DataCaptureDAO {
      * @return list of results
      */
     public List<DataCapture> get(Calendar dateStart, Calendar dateEnd) {
+        return get(dateFormatter.format(dateStart.getTime()),
+                dateFormatter.format(dateEnd.getTime()));
+    }
+
+    /**
+     * List of elements between two dates
+     *
+     * @param dateStart initial date
+     * @param dateEnd finish date
+     * @return list of results
+     */
+    public List<DataCapture> get(String dateStart, String dateEnd) {
         List<DataCapture> listDataCapture = new ArrayList<>();
 
-        String[] arg = new String[] { dateFormatter.format(dateStart.getTime()),
-                dateFormatter.format(dateEnd.getTime())};
-        String where = TableDataCapture.COLUMN_DATE + ">=? and " + TableDataCapture.COLUMN_DATE + "<=?";
-        Cursor cursor = db.query(TableDataCapture.TABLE_NAME, columns, where,arg, null, null, null, null);
+        String[] arg = new String[] { dateStart, dateEnd};
+        String where = TableDataCapture.COLUMN_DATE + ">=? and "
+                + TableDataCapture.COLUMN_DATE + "<=?";
+        Cursor cursor = db.query(TableDataCapture.TABLE_NAME, columns,
+                where,arg, null, null, null, null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {

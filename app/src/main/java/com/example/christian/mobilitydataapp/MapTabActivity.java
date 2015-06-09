@@ -43,6 +43,7 @@ import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
 import com.example.christian.mobilitydataapp.persistence.StreetTrack;
 import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
 import com.example.christian.mobilitydataapp.services.FetchAddressIntentService;
+import com.example.christian.mobilitydataapp.services.SaveData;
 import com.example.christian.mobilitydataapp.services.TabsAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -263,44 +264,44 @@ public class MapTabActivity extends AppCompatActivity implements
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
                 outST = openFileOutput("ST" + fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date\n";
+            String head = "_id;latitude;longitude;street;stoptype;comment;date\n";
             out.write(head.getBytes());
             for(DataCapture dc : data) {
-                out.write((String.valueOf(dc.getId()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
+                out.write((String.valueOf(dc.getId()) + ";").getBytes());
+                out.write((String.valueOf(dc.getLatitude()) + ";").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + ";").getBytes());
                 if(dc.getAddress() != null) {
-                    out.write(("\"" + dc.getAddress() + "\",").getBytes());
+                    out.write(("\"" + dc.getAddress() + "\";").getBytes());
                 } else {
-                    out.write(("null,").getBytes());
+                    out.write(("null;").getBytes());
                 }
                 if(dc.getStopType() != null) {
-                    out.write(("\"" + dc.getStopType() + "\",").getBytes());
+                    out.write(("\"" + dc.getStopType() + "\";").getBytes());
                 } else {
-                    out.write(("null,").getBytes());
+                    out.write(("null;").getBytes());
                 }
                 if(dc.getComment() != null) {
-                    out.write(("\"" + dc.getComment() + "\",").getBytes());
+                    out.write(("\"" + dc.getComment() + "\";").getBytes());
                 } else {
-                    out.write(("null,").getBytes());
+                    out.write(("null;").getBytes());
                 }
                 out.write(("\"" + dc.getDate() + "\"\n").getBytes());
             }
             out.flush();
             out.close();
 
-            String headST = "_id,address,latitude start,longitude start," +
-                    "latitude end,longitude end,datetime start,datetime end,distance\n";
+            String headST = "_id;address;latitude start;longitude start;" +
+                    "latitude end;longitude end;datetime start;datetime end;distance\n";
             outST.write(headST.getBytes());
             for(StreetTrack st : dataST) {
-                outST.write((String.valueOf(st.getId()) + ",").getBytes());
-                outST.write(("\"" + st.getAddress() + "\",").getBytes());
-                outST.write((String.valueOf(st.getStartLatitude()) + ",").getBytes());
-                outST.write((String.valueOf(st.getStartLongitude()) + ",").getBytes());
-                outST.write((String.valueOf(st.getEndLatitude()) + ",").getBytes());
-                outST.write((String.valueOf(st.getEndLongitude()) + ",").getBytes());
-                outST.write(("\"" + st.getStartDateTime() + "\",").getBytes());
-                outST.write(("\"" + st.getEndDateTime() + "\",").getBytes());
+                outST.write((String.valueOf(st.getId()) + ";").getBytes());
+                outST.write(("\"" + st.getAddress() + "\";").getBytes());
+                outST.write((String.valueOf(st.getStartLatitude()) + ";").getBytes());
+                outST.write((String.valueOf(st.getStartLongitude()) + ";").getBytes());
+                outST.write((String.valueOf(st.getEndLatitude()) + ";").getBytes());
+                outST.write((String.valueOf(st.getEndLongitude()) + ";").getBytes());
+                outST.write(("\"" + st.getStartDateTime() + "\";").getBytes());
+                outST.write(("\"" + st.getEndDateTime() + "\";").getBytes());
                 outST.write((String.valueOf(st.getDistance()) + "\n").getBytes());
             }
             outST.flush();
@@ -397,8 +398,20 @@ public class MapTabActivity extends AppCompatActivity implements
                 .setPositiveButton(B_OK, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-//                        dateInitDialog.show();
-                        saveFile(etNameSaveFile.getText().toString());
+//                        saveFile(etNameSaveFile.getText().toString());
+                        StreetTrackDAO dbST = new StreetTrackDAO(getApplicationContext());
+                        dbST.open();
+                        List<StreetTrack> dataST = dbST.get(newDateStart, newDateEnd);
+                        dbST.close();
+                        SaveData.saveFile(etNameSaveFile.getText().toString() + "S",
+                                dataST, SaveData.TYPE_STREET_TRACK, getApplicationContext());
+
+                        DataCaptureDAO dbDC = new DataCaptureDAO(getApplicationContext());
+                        dbDC.open();
+                        List<DataCapture> dataDC = dbDC.get(newDateStart, newDateEnd);
+                        dbDC.close();
+                        SaveData.saveFile(etNameSaveFile.getText().toString() + "D",
+                                dataDC, SaveData.TYPE_DATA_CAPTURE, getApplicationContext());
                     }
                 })
                 .setNegativeButton(B_CANCEL, new DialogInterface.OnClickListener() {

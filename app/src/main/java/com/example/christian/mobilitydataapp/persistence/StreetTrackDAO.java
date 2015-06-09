@@ -6,8 +6,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Christian Cintrano on 5/05/15.
@@ -15,7 +18,9 @@ import java.util.List;
  * DAO for StreetTrack points
  */
 
-public class StreetTrackDAO {
+public class StreetTrackDAO implements GenericDAO<StreetTrack>{
+
+    private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);
 
     private SQLiteDatabase db;
     private MySQLiteOpenHelper dbHelper;
@@ -66,12 +71,19 @@ public class StreetTrackDAO {
         return listStreetTrack;
     }
 
+    public List<StreetTrack> get(Calendar dateStart, Calendar dateEnd) {
+        return get(dateFormatter.format(dateStart.getTime()),
+                dateFormatter.format(dateEnd.getTime()));
+    }
+
     public List<StreetTrack> get(String dateStart, String dateEnd) {
         List<StreetTrack> listStreetTrack = new ArrayList<>();
 
-        String[] arg = new String[] { dateStart, dateEnd};
-        String where = TableStreetTrack.COLUMN_START_DATETIME + ">=? and " + TableStreetTrack.COLUMN_END_DATETIME + "<=?";
-        Cursor cursor = db.query(TableStreetTrack.TABLE_NAME, columns, where,arg, null, null, null, null);
+        String[] arg = new String[] {dateStart, dateEnd};
+        String where = TableStreetTrack.COLUMN_START_DATETIME + ">=? and "
+                + TableStreetTrack.COLUMN_END_DATETIME + "<=?";
+        Cursor cursor = db.query(TableStreetTrack.TABLE_NAME, columns,
+                where,arg, null, null, null, null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -87,19 +99,21 @@ public class StreetTrackDAO {
     public List<StreetTrack> get(String street, String dateStart, String dateEnd) {
         List<StreetTrack> listStreetTrack = new ArrayList<>();
         System.out.println(dateStart);
-        if(dateStart == null || dateStart == "") {
+        if(dateStart == null || dateStart.equals("")) {
             dateStart = "1991-03-04";
         }
-        if(dateEnd == null || dateEnd == "") {
+        if(dateEnd == null || dateEnd.equals("")) {
             dateEnd = "2200-12-31";
         }
-        if(street == null || street == "") {
+        if(street == null || street.equals("")) {
             street = "";
         }
         String[] arg = new String[] { dateStart, dateEnd, "%" + street + "%"};
-        String where = TableStreetTrack.COLUMN_START_DATETIME + ">=? and " + TableStreetTrack.COLUMN_END_DATETIME + "<=?"
-               + " and UPPER(" + TableStreetTrack.COLUMN_ADDRESS + ") like UPPER(?)";
-        Cursor cursor = db.query(TableStreetTrack.TABLE_NAME, columns, where,arg, null, null, null, null);
+        String where = TableStreetTrack.COLUMN_START_DATETIME + ">=? and "
+                + TableStreetTrack.COLUMN_END_DATETIME + "<=?"
+                + " and UPPER(" + TableStreetTrack.COLUMN_ADDRESS + ") like UPPER(?)";
+        Cursor cursor = db.query(TableStreetTrack.TABLE_NAME, columns,
+                where,arg, null, null, null, null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
