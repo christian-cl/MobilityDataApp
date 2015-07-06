@@ -184,7 +184,8 @@ public class MapTabActivity extends AppCompatActivity implements
     public void onResume() {
         super.onResume();
         locationManager.addGpsStatusListener(mGPSStatusListener);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
+        if(gpsLocationListener != null)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
 //        startRepeatingTask();
     }
 
@@ -192,7 +193,8 @@ public class MapTabActivity extends AppCompatActivity implements
     public void onPause() {
         super.onPause();
         stopRepeatingTask();
-        locationManager.removeUpdates(gpsLocationListener);
+        if(gpsLocationListener != null)
+            locationManager.removeUpdates(gpsLocationListener);
         locationManager.removeGpsStatusListener(mGPSStatusListener);
     }
 
@@ -200,7 +202,8 @@ public class MapTabActivity extends AppCompatActivity implements
     public void onDestroy() {
         super.onDestroy();
         stopRepeatingTask();
-        locationManager.removeUpdates(gpsLocationListener);
+        if(gpsLocationListener != null)
+            locationManager.removeUpdates(gpsLocationListener);
         locationManager.removeGpsStatusListener(mGPSStatusListener);
     }
 
