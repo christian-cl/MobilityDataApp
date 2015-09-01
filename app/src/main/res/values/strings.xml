@@ -54,5 +54,7 @@
     <string name="b_find_data">Buscar</string>
     <string name="b_clear_fields">Borrar Campos</string>
     <string name="description">DESCRIPTION</string>
+    <string name="b_change_position">Cambiar posición</string>
+    <string name="b_delete">Eliminar</string>
 
 </resources>
