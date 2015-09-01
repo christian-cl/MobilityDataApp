@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/map_fragment_id"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <fragment
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/map_itinerary"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="com.google.android.gms.maps.MapFragment"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
+
+        <View
+            android:layout_width="0dip"
+            android:layout_height="0dip"
+            android:layout_weight="1"/>
+        <ImageButton
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="102dp"
+            android:layout_height="107dp"
+            android:id="@+id/b_save_itinerary"
+            android:elevation="30dp"
+            android:background="@drawable/circle"
+            android:src="@drawable/ic_action_save"
+            android:contentDescription="@string/description" />
+    </LinearLayout>
+</RelativeLayout>
+
