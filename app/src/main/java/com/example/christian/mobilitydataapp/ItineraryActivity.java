@@ -3,6 +3,7 @@ package com.example.christian.mobilitydataapp;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.view.Window;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -32,7 +33,7 @@ public class ItineraryActivity extends AppCompatActivity implements OnMapReadyCa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_itinerary);
 
-        points = new ArrayList<Marker>();
+        points = new ArrayList<>();
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
         configureMapActions();
 
@@ -96,6 +97,26 @@ public class ItineraryActivity extends AppCompatActivity implements OnMapReadyCa
         super.onDestroy();
     }
 
+    public class MarkerInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+        public MarkerInfoWindowAdapter() {
+        }
+
+        @Override
+        public View getInfoWindow(Marker marker) {
+            return null;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+            View v  = getLayoutInflater().inflate(R.layout.infowindow_layout, null);
+            Marker myMarker = points.get(points.indexOf(marker));
+//            ImageView markerIcon = (ImageView) v.findViewById(R.id.marker_icon);
+//            TextView markerLabel = (TextView)v.findViewById(R.id.marker_label);
+//            markerIcon.setImageResource(manageMarkerIcon(myMarker.getmIcon()));
+//            markerLabel.setText(myMarker.getmLabel());
+            return v;
+        }
+    }
 }
 
 

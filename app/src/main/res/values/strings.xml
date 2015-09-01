@@ -1,25 +1,36 @@
 <resources>
     <string name="app_name">NEOTrack</string>
+
+    <!--Activities Titles-->
     <string name="title_activity_maps">Mapa</string>
     <string name="title_activity_log">Detalle</string>
     <string name="title_activity_main">Principal</string>
     <string name="title_activity_debug">Debug</string>
 
-    <string name="button_send_map">IR AL MAPA</string>
-    <string name="button_send_debug">IR A LA CONSOLA</string>
-    <string name="button_consult">Consultar información almacenada</string>
+    <!--Basic Buttons-->
+    <string name="b_cancel">Cancelar</string> <!-- Para eliminar -->
+    <string name="button_cancel">Cancelar</string>
+    <string name="b_ok">Aceptar</string> <!-- Para eliminar -->
+    <string name="button_ok">Aceptar</string>
+    <string name="b_edit">Editar</string> <!-- Para eliminar -->
+    <string name="button_edit">Editar</string>
+    <string name="b_delete">Eliminar</string> <!-- Para eliminar -->
+    <string name="button_delete">Eliminar</string>
+    <string name="button_start">Iniciar</string>
+    <string name="button_stop">Parar</string>
+    <string name="button_show">Mostrar</string>
+    <string name="button_reset">Reiniciar</string>
+    <string name="button_save">Guardar</string>
 
+    <!--MainActivity Buttons-->
+    <string name="button_itinerary">Itinerarios</string>
+    <string name="button_send_map">Iniciar recorrido</string>
+    <string name="button_consult">Rutas realizadas</string>
+
+    <!--Settings-->
     <string name="action_settings">Ajustes</string>
     <string name="action_save_file">Guardar archivo</string>
     <string name="help">Ayuda</string>
-
-
-    <string name="button_start">Start</string>
-    <string name="button_stop">Stop</string>
-    <string name="button_show">Show</string>
-    <string name="button_reset">Reset</string>
-    <string name="button_save">Save</string>
-
 
     <string name="setting_title">Ajustes de la aplicación</string>
     <string name="setting_GPS_title">Información del GPS</string>
@@ -37,9 +48,6 @@
     <string name="setting_delay_backup_database_summary">Número de días entre copias de seguridad automáticas de la información almacenada</string>
     <string name="button_end_collecting">Terminar la recolección automática de datos</string>
     <string name="button_start_collecting">Iniciar la recolección automática de datos</string>
-    <string name="b_cancel">Cancelar</string>
-    <string name="b_ok">Aceptar</string>
-    <string name="b_edit">Editar</string>
     <string name="name_file">Nombre del fichero</string>
     <string name="date_start">Fecha de inicio</string>
     <string name="date_end">Fecha de fin</string>
@@ -47,7 +55,7 @@
     <string name="invalid_lat_long_used">Logitud y Latitud inválidos</string>
     <string name="no_address_found">No se ha encontrado la dirección</string>
     <string name="address_found">Dirección encontrada</string>
-    <string name="no_geocoder_available">No existe conexión con gocoder disponible</string>
+    <string name="no_geocoder_available">No existe conexión con geocoder disponible</string>
     <string name="speech_prompt">Indique el tipo de parada</string>
     <string name="speech_not_supported">Función no soportada</string>
     <string name="pick_date">Fecha</string>
@@ -55,6 +63,7 @@
     <string name="b_clear_fields">Borrar Campos</string>
     <string name="description">DESCRIPTION</string>
     <string name="b_change_position">Cambiar posición</string>
-    <string name="b_delete">Eliminar</string>
+
+
 
 </resources>
