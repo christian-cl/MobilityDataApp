@@ -66,6 +66,7 @@
     <string name="button_create">Crear</string>
     <string name="button_import">Importar</string>
     <string name="button_export">Exportar</string>
+    <string name="title_activity_itinerary">Itinerarios</string>
 
 
 </resources>

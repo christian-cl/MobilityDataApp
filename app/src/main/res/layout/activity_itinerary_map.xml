@@ -28,7 +28,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/points_list"
-                android:layout_above="@id/button_save_itinerary"
+                android:layout_above="@+id/button_save_itinerary"
                 android:layout_alignParentTop="true" />
 
             <Button

@@ -1,85 +1,87 @@
 package com.example.christian.mobilitydataapp;
 
-import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.ExpandableListView;
 
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.example.christian.mobilitydataapp.services.ExpandableListAdapter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created by Christian Cintrano.
  */
-public class ItineraryActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class ItineraryActivity extends AppCompatActivity {
 
-    private static final String GPS_LOADING = "Iniciando conexión GPS. Por favor, espere.";
-
-    private List<Marker> points;
-    private ProgressDialog dialogWait; // FALTA EL QUITARLO CUANDO EL MAPA TERMINE DE CARGAR
-    private GoogleMap map;
+    ExpandableListAdapter listAdapter;
+    ExpandableListView expListView;
+    List<String> listDataHeader;
+    HashMap<String, List<String>> listDataChild;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_itinerary_map);
+        setContentView(R.layout.activity_itinerary);
 
-        points = new ArrayList<>();
-        map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
-        configureMapActions();
+        // get the listview
+        expListView = (ExpandableListView) findViewById(R.id.expandableListView_itineraries);
 
-        configureDialogWait();
+        // preparing list data
+        prepareListData();
+
+        listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
+
+        // setting list adapter
+        expListView.setAdapter(listAdapter);
     }
 
-    private void configureMapActions() {
-        //Behavior OnClick map - create mark with number
-//        map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-//            @Override
-//            public void onMapClick(LatLng latLng) {
-//                Marker marker = map.addMarker(new MarkerOptions().position(latLng));
-//                points.add(marker);
-//            }
-//        });
-        map.setInfoWindowAdapter(new MarkerInfoWindowAdapter());
-        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker) {
-                // Display Options
-                marker.showInfoWindow();
-                return true;
-            }
-        });
-        map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng latLng) {
-                Marker marker = map.addMarker(new MarkerOptions().position(latLng));
-                points.add(marker);
-            }
-        });
+    /*
+     * Preparing the list data
+     */
+    private void prepareListData() {
+        listDataHeader = new ArrayList<String>();
+        listDataChild = new HashMap<String, List<String>>();
 
-    }
+        // Adding child data
+        listDataHeader.add("Top 250");
+        listDataHeader.add("Now Showing");
+        listDataHeader.add("Coming Soon..");
 
-    @Override
-    public void onMapReady(GoogleMap map) {
-        dialogWait.dismiss();
-    }
+        // Adding child data
+        List<String> top250 = new ArrayList<String>();
+        top250.add("The Shawshank Redemption");
+        top250.add("The Godfather");
+        top250.add("The Godfather: Part II");
+        top250.add("Pulp Fiction");
+        top250.add("The Good, the Bad and the Ugly");
+        top250.add("The Dark Knight");
+        top250.add("12 Angry Men");
 
-    private void configureDialogWait() {
-        dialogWait = new ProgressDialog(this);
-        dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialogWait.setMessage(GPS_LOADING);
-        dialogWait.setIndeterminate(true);
-        dialogWait.setCanceledOnTouchOutside(false);
-        dialogWait.show();
+        List<String> nowShowing = new ArrayList<String>();
+        nowShowing.add("The Conjuring");
+        nowShowing.add("Despicable Me 2");
+        nowShowing.add("Turbo");
+        nowShowing.add("Grown Ups 2");
+        nowShowing.add("Red 2");
+        nowShowing.add("The Wolverine");
+
+        List<String> comingSoon = new ArrayList<String>();
+        comingSoon.add("2 Guns");
+        comingSoon.add("The Smurfs 2");
+        comingSoon.add("The Spectacular Now");
+        comingSoon.add("The Canyons");
+        comingSoon.add("Europa Report");
+
+        listDataChild.put(listDataHeader.get(0), top250); // Header, Child data
+        listDataChild.put(listDataHeader.get(1), nowShowing);
+        listDataChild.put(listDataHeader.get(2), comingSoon);
     }
 
     @Override
@@ -97,25 +99,11 @@ public class ItineraryActivity extends AppCompatActivity implements OnMapReadyCa
         super.onDestroy();
     }
 
-    public class MarkerInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
-        public MarkerInfoWindowAdapter() {
-        }
-
-        @Override
-        public View getInfoWindow(Marker marker) {
-            return null;
-        }
-
-        @Override
-        public View getInfoContents(Marker marker) {
-            View v  = getLayoutInflater().inflate(R.layout.infowindow_layout, null);
-            Marker myMarker = points.get(points.indexOf(marker));
-//            ImageView markerIcon = (ImageView) v.findViewById(R.id.marker_icon);
-//            TextView markerLabel = (TextView)v.findViewById(R.id.marker_label);
-//            markerIcon.setImageResource(manageMarkerIcon(myMarker.getmIcon()));
-//            markerLabel.setText(myMarker.getmLabel());
-            return v;
-        }
+    public void editItinerary(View view) {
+        Log.i("ItineraryActivity","EDIT.....");
+    }
+    public void removeItinerary(View view) {
+        Log.i("ItineraryActivity","REMOVE.....");
     }
 }
 
