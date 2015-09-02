@@ -63,7 +63,9 @@
     <string name="b_clear_fields">Borrar Campos</string>
     <string name="description">DESCRIPTION</string>
     <string name="b_change_position">Cambiar posición</string>
-
+    <string name="button_create">Crear</string>
+    <string name="button_import">Importar</string>
+    <string name="button_export">Exportar</string>
 
 
 </resources>

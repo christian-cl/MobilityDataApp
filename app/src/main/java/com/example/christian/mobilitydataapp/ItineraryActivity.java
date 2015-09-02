@@ -31,7 +31,7 @@ public class ItineraryActivity extends AppCompatActivity implements OnMapReadyCa
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_itinerary);
+        setContentView(R.layout.activity_itinerary_map);
 
         points = new ArrayList<>();
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map)).getMap();
