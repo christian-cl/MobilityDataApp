@@ -35,7 +35,10 @@ public class ItineraryArrayAdapter extends ArrayAdapter<String> {
         TextView textViewIndex = (TextView) convertView.findViewById(R.id.itinerary_point_index);
         TextView textViewText = (TextView) convertView.findViewById(R.id.itinerary_point_text);
         textViewIndex.setText(String.valueOf(position));
-        textViewText.setText(((Marker) values.get(position)).getPosition().toString());
+        Marker m = (Marker) values.get(position);
+        String text =
+                m.getTitle() + "\n" + m.getPosition().latitude + " " + m.getPosition().longitude;
+        textViewText.setText(text);
 
         return convertView;
     }

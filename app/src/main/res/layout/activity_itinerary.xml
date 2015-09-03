@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <LinearLayout
@@ -27,7 +28,8 @@
             android:drawableRight="@drawable/ic_add_box_white_48dp"
             android:background="@color/material_amber_A200"
             android:layout_margin="5dp"
-            android:paddingLeft="5dp" />
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp" />
 
         <ImageButton
             android:layout_width="wrap_content"

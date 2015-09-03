@@ -2,8 +2,11 @@ package com.example.christian.mobilitydataapp;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -13,6 +16,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.christian.mobilitydataapp.persistence.Itinerary;
+import com.example.christian.mobilitydataapp.persistence.Point;
 import com.example.christian.mobilitydataapp.services.ItineraryArrayAdapter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -23,8 +27,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Christian Cintrano.
@@ -36,12 +42,14 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
     private static final String DEFAULT_ITINERARY_NAME = "Sin nombre";
     private static final int ZOOM = 15;
     private static final String GPS_LOADING = "Iniciando conexión GPS. Por favor, espere.";
+    private static final String ADDRESS_NOT_FOUND = "Dirección no encontrada";
 
     private List<Marker> points;
     private ProgressDialog dialogWait; // FALTA EL QUITARLO CUANDO EL MAPA TERMINE DE CARGAR
     private GoogleMap map;
     private ListView listView;
     private ArrayAdapter arrayAdapter;
+    private Geocoder geocoder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,13 +71,17 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
             Log.i(TAG, newItinerary.getParcelable(EXTRA_TAB).toString());
             loadEditData((Itinerary) newItinerary.getParcelable(EXTRA_TAB));
         }
+
+        geocoder = new Geocoder(this, Locale.getDefault());
     }
 
     private void loadEditData(Itinerary itinerary) {
         TextView textViewName = (TextView) this.findViewById(R.id.editText_itinerary_name);
         textViewName.setText(itinerary.getName());
-        for(LatLng latLng : (List<LatLng>) itinerary.getPoints()) {
-            Marker marker = map.addMarker(new MarkerOptions().position(latLng));
+        for(Point point : (List<Point>) itinerary.getPoints()) {
+            Marker marker = map.addMarker(new MarkerOptions().position(
+                    new LatLng(point.getLatitude(), point.getLongitude())));
+            marker.setTitle(point.getAddress());
             points.add(marker);
         }
         arrayAdapter.notifyDataSetChanged();
@@ -95,7 +107,6 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
 //                points.add(marker);
 //            }
 //        });
-        map.setTrafficEnabled(true);
 
         CameraUpdate center= CameraUpdateFactory.newLatLng(
                 new LatLng(36.7176109,-4.42346));
@@ -120,6 +131,7 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
             @Override
             public void onMapLongClick(LatLng latLng) {
                 Marker marker = map.addMarker(new MarkerOptions().position(latLng));
+                marker.setTitle(getAddress(latLng.latitude, latLng.longitude));
                 points.add(marker);
                 arrayAdapter.notifyDataSetChanged();
             }
@@ -188,7 +200,7 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
         Intent intent = new Intent(this, ItineraryActivity.class);
         List latLngList = new ArrayList();
         for(Marker m : points) {
-            latLngList.add(m.getPosition());
+            latLngList.add(new Point(m.getPosition().latitude, m.getPosition().longitude, m.getTitle()));
         }
         TextView textViewName = (TextView) this.findViewById(R.id.editText_itinerary_name);
         String name = textViewName.getText().length() == 0 ? DEFAULT_ITINERARY_NAME
@@ -198,6 +210,36 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
         bundle.putParcelable(EXTRA_TAB, itinerary);
         intent.putExtra(EXTRA_TAB, bundle);
         startActivity(intent);
+    }
+
+    public String getAddress(double latitude, double longitude) {
+        List<Address> addresses = null;
+        String output = null;
+
+        try {
+            // We need only one result
+            addresses = geocoder.getFromLocation(latitude, longitude, 1);
+        } catch (IOException | IllegalArgumentException ioException) {
+            // Catch network or other I/O problems.
+            Log.e(TAG, ioException.getMessage(), ioException);
+        }
+
+        if (addresses == null || addresses.size()  == 0) {
+            Log.e(TAG, getString(R.string.no_address_found));
+            output = ADDRESS_NOT_FOUND;
+        } else {
+            Address address = addresses.get(0);
+            ArrayList<String> addressFragments = new ArrayList<String>();
+
+            // Fetch the address lines using getAddressLine,
+            // join them, and send them to the thread.
+            for(int i = 0; i < address.getMaxAddressLineIndex(); i++) {
+                addressFragments.add(address.getAddressLine(i));
+            }
+            output = TextUtils.join(" ", addressFragments);
+        }
+
+        return output;
     }
 }
 

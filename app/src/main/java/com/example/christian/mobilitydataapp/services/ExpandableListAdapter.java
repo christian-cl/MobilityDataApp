@@ -19,6 +19,7 @@ import com.example.christian.mobilitydataapp.ItineraryActivity;
 import com.example.christian.mobilitydataapp.ItineraryMapActivity;
 import com.example.christian.mobilitydataapp.R;
 import com.example.christian.mobilitydataapp.persistence.Itinerary;
+import com.example.christian.mobilitydataapp.persistence.Point;
 import com.google.android.gms.maps.model.LatLng;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
@@ -44,8 +45,8 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getChildView(int groupPosition, final int childPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
-
-        final String childText = ((LatLng) getChild(groupPosition, childPosition)).toString();
+        Point p = (Point) getChild(groupPosition, childPosition);
+        final String childText = p.getAddress() + "\n" + p.getLatitude() + " " + p.getLongitude();
 
         if (convertView == null) {
             LayoutInflater infalInflater = (LayoutInflater) this._context
