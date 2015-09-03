@@ -4,19 +4,15 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.internal.widget.AdapterViewCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.Itinerary;
-import com.example.christian.mobilitydataapp.services.ExpandableListAdapter;
 import com.example.christian.mobilitydataapp.services.ItineraryArrayAdapter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -28,7 +24,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -37,11 +32,9 @@ import java.util.List;
 public class ItineraryMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private final String EXTRA_TAB = "newItinerary";
+    private static final String DEFAULT_ITINERARY_NAME = "Sin nombre";
     private static final int ZOOM = 15;
     private static final String GPS_LOADING = "Iniciando conexión GPS. Por favor, espere.";
-    static final String[] FRUITS = new String[] { "Apple", "Avocado", "Banana",
-            "Blueberry", "Coconut", "Durian", "Guava", "Kiwifruit",
-            "Jackfruit", "Mango", "Olive", "Pear", "Sugar-apple" };
 
     private List<Marker> points;
     private ProgressDialog dialogWait; // FALTA EL QUITARLO CUANDO EL MAPA TERMINE DE CARGAR
@@ -166,11 +159,14 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
 
     public void sendMessageSaveItinerary(View view) {
         Intent intent = new Intent(this, ItineraryActivity.class);
-        List<LatLng> latLngList = new ArrayList();
+        List latLngList = new ArrayList();
         for(Marker m : points) {
             latLngList.add(m.getPosition());
         }
-        Itinerary itinerary = new Itinerary("NAME_IT", latLngList);
+        TextView textViewName = (TextView) this.findViewById(R.id.editText_itinerary_name);
+        String name = textViewName.getText().length() == 0 ? DEFAULT_ITINERARY_NAME
+                : textViewName.getText().toString();
+        Itinerary itinerary = new Itinerary(name, latLngList);
         Bundle bundle = new Bundle();
         bundle.putParcelable(EXTRA_TAB, itinerary);
         intent.putExtra(EXTRA_TAB, bundle);

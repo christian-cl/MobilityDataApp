@@ -51,7 +51,8 @@
         <activity
             android:name=".ItineraryMapActivity"
             android:label="@string/title_activity_itinerary"
-            android:configChanges="orientation|screenSize">
+            android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.christian.mobilitydataapp.MainActivity" />

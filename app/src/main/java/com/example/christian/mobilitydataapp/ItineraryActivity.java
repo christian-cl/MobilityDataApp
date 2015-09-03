@@ -10,10 +10,10 @@ import android.view.View;
 import android.view.Window;
 import android.widget.ExpandableListView;
 
+import com.example.christian.mobilitydataapp.persistence.Itinerary;
 import com.example.christian.mobilitydataapp.services.ExpandableListAdapter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -21,12 +21,12 @@ import java.util.List;
  */
 public class ItineraryActivity extends AppCompatActivity {
 
+    private static final String TAG = "ItineraryActivity";
     private final String EXTRA_TAB = "newItinerary";
 
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
-    List<String> listDataHeader;
-    HashMap<String, List<String>> listDataChild;
+    List<Itinerary> itineraryList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,21 +34,21 @@ public class ItineraryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_itinerary);
 
-        listDataHeader = new ArrayList<>();
-        listDataChild = new HashMap<>();
+        itineraryList = new ArrayList<>();
 
         // get the listview
         expListView = (ExpandableListView) findViewById(R.id.expandableListView_itineraries);
         // preparing list data
 //        prepareListData();
-        listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
+        listAdapter = new ExpandableListAdapter(this, itineraryList);
         // setting list adapter
         expListView.setAdapter(listAdapter);
 
         Bundle newItinerary = getIntent().getParcelableExtra(EXTRA_TAB);
         if(newItinerary != null) {
-            System.out.println(newItinerary.getParcelable(EXTRA_TAB).toString());
-
+            Log.i(TAG, newItinerary.getParcelable(EXTRA_TAB).toString());
+            itineraryList.add((Itinerary) newItinerary.getParcelable(EXTRA_TAB));
+            listAdapter.notifyDataSetChanged();
         }
     }
 
@@ -90,8 +90,7 @@ public class ItineraryActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
-                        listDataChild.remove(listDataHeader.get(index));
-                        listDataHeader.remove(index);
+                        itineraryList.remove(index);
                         // SKET remove in database
                         listAdapter.notifyDataSetChanged();
                         break;

@@ -18,25 +18,22 @@ import android.widget.Toast;
 import com.example.christian.mobilitydataapp.ItineraryActivity;
 import com.example.christian.mobilitydataapp.ItineraryMapActivity;
 import com.example.christian.mobilitydataapp.R;
+import com.example.christian.mobilitydataapp.persistence.Itinerary;
+import com.google.android.gms.maps.model.LatLng;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     private Context _context;
-    private List<String> _listDataHeader; // header titles
-    // child data in format of header title, child title
-    private HashMap<String, List<String>> _listDataChild;
+    private List<Itinerary> listData;
 
-    public ExpandableListAdapter(Context context, List<String> listDataHeader,
-                                 HashMap<String, List<String>> listChildData) {
+    public ExpandableListAdapter(Context context, List<Itinerary> listData) {
         this._context = context;
-        this._listDataHeader = listDataHeader;
-        this._listDataChild = listChildData;
+        this.listData = listData;
     }
 
     @Override
     public Object getChild(int groupPosition, int childPosititon) {
-        return this._listDataChild.get(this._listDataHeader.get(groupPosition))
-                .get(childPosititon);
+        return listData.get(groupPosition).getPoints().get(childPosititon);
     }
 
     @Override
@@ -48,7 +45,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     public View getChildView(int groupPosition, final int childPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
 
-        final String childText = (String) getChild(groupPosition, childPosition);
+        final String childText = ((LatLng) getChild(groupPosition, childPosition)).toString();
 
         if (convertView == null) {
             LayoutInflater infalInflater = (LayoutInflater) this._context
@@ -64,18 +61,17 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getChildrenCount(int groupPosition) {
-        return this._listDataChild.get(this._listDataHeader.get(groupPosition))
-                .size();
+        return listData.get(groupPosition).getPoints().size();
     }
 
     @Override
     public Object getGroup(int groupPosition) {
-        return this._listDataHeader.get(groupPosition);
+        return listData.get(groupPosition);
     }
 
     @Override
     public int getGroupCount() {
-        return this._listDataHeader.size();
+        return listData.size();
     }
 
     @Override
@@ -87,7 +83,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     public View getGroupView(final int groupPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
 
-        String headerTitle = (String) getGroup(groupPosition);
+        String headerTitle = ((Itinerary) getGroup(groupPosition)).getName();
         if (convertView == null) {
             LayoutInflater infalInflater = (LayoutInflater) this._context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
