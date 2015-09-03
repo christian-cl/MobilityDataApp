@@ -29,9 +29,10 @@ import java.util.List;
 /**
  * Created by Christian Cintrano.
  */
-public class ItineraryMapActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class ItineraryMapActivity extends AppCompatActivity
+        implements OnMapReadyCallback {
 
-    private final String EXTRA_TAB = "newItinerary";
+    private static final String EXTRA_TAB = "newItinerary";
     private static final String DEFAULT_ITINERARY_NAME = "Sin nombre";
     private static final int ZOOM = 15;
     private static final String GPS_LOADING = "Iniciando conexión GPS. Por favor, espere.";
@@ -47,12 +48,15 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_itinerary_map);
+
+        configureDialogWait();
+
         points = new ArrayList<>();
+        ((MapFragment) getFragmentManager().findFragmentById(R.id.map_itinerary)).getMapAsync(this);
         map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map_itinerary)).getMap();
 
         configureMapActions();
         configureListView();
-        configureDialogWait();
     }
 
     private void configureListView() {
@@ -102,6 +106,13 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
                 Marker marker = map.addMarker(new MarkerOptions().position(latLng));
                 points.add(marker);
                 arrayAdapter.notifyDataSetChanged();
+            }
+        });
+        map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                Log.i("MAP", "onMapLoaded");
+                dialogWait.dismiss();
             }
         });
     }
