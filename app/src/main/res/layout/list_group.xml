@@ -20,8 +20,7 @@
         android:contentDescription="@string/description"
         android:src="@drawable/ic_mode_edit_black_48dp"
         android:background="@null"
-        android:focusable="false"
-        android:onClick="editItinerary"/>
+        android:focusable="false" />
 
     <ImageButton
         android:id="@+id/button_remove"
@@ -30,7 +29,6 @@
         android:contentDescription="@string/description"
         android:src="@drawable/ic_delete_black_48dp"
         android:background="@null"
-        android:focusable="false"
-        android:onClick="removeItinerary"/>
+        android:focusable="false" />
 
 </LinearLayout>

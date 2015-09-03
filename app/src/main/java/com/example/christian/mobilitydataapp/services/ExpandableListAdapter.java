@@ -4,14 +4,19 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Typeface;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.christian.mobilitydataapp.ItineraryActivity;
+import com.example.christian.mobilitydataapp.ItineraryMapActivity;
 import com.example.christian.mobilitydataapp.R;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
@@ -79,7 +84,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public View getGroupView(int groupPosition, boolean isExpanded,
+    public View getGroupView(final int groupPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
 
         String headerTitle = (String) getGroup(groupPosition);
@@ -90,14 +95,21 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         }
         ImageButton editButton = (ImageButton)convertView.findViewById(R.id.button_edit);
         editButton.setFocusable(false);
-        ImageButton removeButton = (ImageButton)convertView.findViewById(R.id.button_remove);
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((ItineraryActivity) _context).editItinerary(groupPosition);
+            }
+        });
+
+        final ImageButton removeButton = (ImageButton)convertView.findViewById(R.id.button_remove);
         removeButton.setFocusable(false);
-//            editButton.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    // your code to add to the child list
-//                }
-//            });
+        removeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((ItineraryActivity) _context).removeItinerary(groupPosition);
+            }
+        });
 
         TextView lblListHeader = (TextView) convertView.findViewById(R.id.lblListHeader);
         lblListHeader.setTypeface(null, Typeface.BOLD);

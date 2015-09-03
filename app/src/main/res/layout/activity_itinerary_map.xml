@@ -6,13 +6,24 @@
     android:layout_height="match_parent"
     android:baselineAligned="false">
 
-    <fragment
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/map_itinerary"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_weight="0.80"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:name="com.google.android.gms.maps.MapFragment"/>
+        android:layout_height="match_parent">
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText_itinerary_name" />
+
+        <fragment
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/map_itinerary"
+            android:name="com.google.android.gms.maps.MapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_weight="0.20"
@@ -52,4 +63,3 @@
         </RelativeLayout>
     </LinearLayout>
 </LinearLayout>
-
