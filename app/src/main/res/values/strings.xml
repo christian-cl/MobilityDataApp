@@ -68,6 +68,7 @@
     <string name="button_export">Exportar</string>
     <string name="title_activity_itinerary">Itinerarios</string>
     <string name="editText_itinerary_name_hint">Introduzca un nombre para el itinerario</string>
+    <string name="subtitle_itinerary_list">Lista de Itinerarios</string>
 
 
 </resources>
