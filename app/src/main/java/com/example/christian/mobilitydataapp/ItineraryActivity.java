@@ -76,7 +76,9 @@ public class ItineraryActivity extends AppCompatActivity {
     public void editItinerary(int index) {
         Log.i("ItineraryActivity", "editing itinerary...");
         Intent intent = new Intent(this, ItineraryMapActivity.class);
-        intent.putExtra("markerList", "markerList");
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(EXTRA_TAB, itineraryList.get(index));
+        intent.putExtra(EXTRA_TAB, bundle);
         startActivity(intent);
     }
 

@@ -29,9 +29,9 @@ import java.util.List;
 /**
  * Created by Christian Cintrano.
  */
-public class ItineraryMapActivity extends AppCompatActivity
-        implements OnMapReadyCallback {
+public class ItineraryMapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private static final String TAG = "ItineraryMapActivity";
     private static final String EXTRA_TAB = "newItinerary";
     private static final String DEFAULT_ITINERARY_NAME = "Sin nombre";
     private static final int ZOOM = 15;
@@ -57,6 +57,22 @@ public class ItineraryMapActivity extends AppCompatActivity
 
         configureMapActions();
         configureListView();
+
+        Bundle newItinerary = getIntent().getParcelableExtra(EXTRA_TAB);
+        if(newItinerary != null) {
+            Log.i(TAG, newItinerary.getParcelable(EXTRA_TAB).toString());
+            loadEditData((Itinerary) newItinerary.getParcelable(EXTRA_TAB));
+        }
+    }
+
+    private void loadEditData(Itinerary itinerary) {
+        TextView textViewName = (TextView) this.findViewById(R.id.editText_itinerary_name);
+        textViewName.setText(itinerary.getName());
+        for(LatLng latLng : (List<LatLng>) itinerary.getPoints()) {
+            Marker marker = map.addMarker(new MarkerOptions().position(latLng));
+            points.add(marker);
+        }
+        arrayAdapter.notifyDataSetChanged();
     }
 
     private void configureListView() {
