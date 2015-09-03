@@ -21,6 +21,8 @@ import java.util.List;
  */
 public class ItineraryActivity extends AppCompatActivity {
 
+    private final String EXTRA_TAB = "newItinerary";
+
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
     List<String> listDataHeader;
@@ -32,13 +34,22 @@ public class ItineraryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_itinerary);
 
+        listDataHeader = new ArrayList<>();
+        listDataChild = new HashMap<>();
+
         // get the listview
         expListView = (ExpandableListView) findViewById(R.id.expandableListView_itineraries);
         // preparing list data
-        prepareListData();
+//        prepareListData();
         listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
         // setting list adapter
         expListView.setAdapter(listAdapter);
+
+        Bundle newItinerary = getIntent().getParcelableExtra(EXTRA_TAB);
+        if(newItinerary != null) {
+            System.out.println(newItinerary.getParcelable(EXTRA_TAB).toString());
+
+        }
     }
 
     @Override
@@ -56,10 +67,16 @@ public class ItineraryActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    public void createItinerary(View view) {
+        Log.i("ItineraryActivity", "new itinerary...");
+        Intent intent = new Intent(this, ItineraryMapActivity.class);
+        startActivity(intent);
+    }
+
     public void editItinerary(int index) {
         Log.i("ItineraryActivity", "editing itinerary...");
         Intent intent = new Intent(this, ItineraryMapActivity.class);
-        intent.putExtra("keyName", "value");
+        intent.putExtra("markerList", "markerList");
         startActivity(intent);
     }
 
@@ -69,7 +86,7 @@ public class ItineraryActivity extends AppCompatActivity {
     }
 
     public void alertMessage(final int index) {
-        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
@@ -94,44 +111,44 @@ public class ItineraryActivity extends AppCompatActivity {
     /*
      * Preparing the list data
      */
-    private void prepareListData() {
-        listDataHeader = new ArrayList<>();
-        listDataChild = new HashMap<>();
-
-        // Adding child data
-        listDataHeader.add("Top 250");
-        listDataHeader.add("Now Showing");
-        listDataHeader.add("Coming Soon..");
-
-        // Adding child data
-        List<String> top250 = new ArrayList<>();
-        top250.add("The Shawshank Redemption");
-        top250.add("The Godfather");
-        top250.add("The Godfather: Part II");
-        top250.add("Pulp Fiction");
-        top250.add("The Good, the Bad and the Ugly");
-        top250.add("The Dark Knight");
-        top250.add("12 Angry Men");
-
-        List<String> nowShowing = new ArrayList<>();
-        nowShowing.add("The Conjuring");
-        nowShowing.add("Despicable Me 2");
-        nowShowing.add("Turbo");
-        nowShowing.add("Grown Ups 2");
-        nowShowing.add("Red 2");
-        nowShowing.add("The Wolverine");
-
-        List<String> comingSoon = new ArrayList<>();
-        comingSoon.add("2 Guns");
-        comingSoon.add("The Smurfs 2");
-        comingSoon.add("The Spectacular Now");
-        comingSoon.add("The Canyons");
-        comingSoon.add("Europa Report");
-
-        listDataChild.put(listDataHeader.get(0), top250); // Header, Child data
-        listDataChild.put(listDataHeader.get(1), nowShowing);
-        listDataChild.put(listDataHeader.get(2), comingSoon);
-    }
+//    private void prepareListData() {
+//        listDataHeader = new ArrayList<>();
+//        listDataChild = new HashMap<>();
+//
+//        // Adding child data
+//        listDataHeader.add("Top 250");
+//        listDataHeader.add("Now Showing");
+//        listDataHeader.add("Coming Soon..");
+//
+//        // Adding child data
+//        List<String> top250 = new ArrayList<>();
+//        top250.add("The Shawshank Redemption");
+//        top250.add("The Godfather");
+//        top250.add("The Godfather: Part II");
+//        top250.add("Pulp Fiction");
+//        top250.add("The Good, the Bad and the Ugly");
+//        top250.add("The Dark Knight");
+//        top250.add("12 Angry Men");
+//
+//        List<String> nowShowing = new ArrayList<>();
+//        nowShowing.add("The Conjuring");
+//        nowShowing.add("Despicable Me 2");
+//        nowShowing.add("Turbo");
+//        nowShowing.add("Grown Ups 2");
+//        nowShowing.add("Red 2");
+//        nowShowing.add("The Wolverine");
+//
+//        List<String> comingSoon = new ArrayList<>();
+//        comingSoon.add("2 Guns");
+//        comingSoon.add("The Smurfs 2");
+//        comingSoon.add("The Spectacular Now");
+//        comingSoon.add("The Canyons");
+//        comingSoon.add("Europa Report");
+//
+//        listDataChild.put(listDataHeader.get(0), top250); // Header, Child data
+//        listDataChild.put(listDataHeader.get(1), nowShowing);
+//        listDataChild.put(listDataHeader.get(2), comingSoon);
+//    }
 }
 
 

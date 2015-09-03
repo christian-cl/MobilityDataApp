@@ -12,7 +12,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/button_create"
-            android:id="@+id/button_create_itinerary" />
+            android:id="@+id/button_create_itinerary"
+            android:onClick="createItinerary"/>
 
         <Button
             android:layout_width="wrap_content"
