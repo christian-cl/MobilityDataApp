@@ -2,8 +2,13 @@ package com.example.christian.mobilitydataapp.persistence;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,4 +74,23 @@ public class Itinerary implements Parcelable {
             return new Itinerary[size];
         }
     };
+
+    public JSONObject getJSONObject() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("name", name);
+            List<JSONObject> points = new ArrayList<>();
+            for (Object p : points) {
+                JSONObject jsonPoint = new JSONObject();
+                jsonPoint.put("latitude", ((Point) p).getLatitude());
+                jsonPoint.put("longitude", ((Point) p).getLongitude());
+                jsonPoint.put("address", ((Point) p).getAddress());
+                points.add(jsonPoint);
+            }
+            jsonObject.put("points", new JSONArray(points));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
+    }
 }

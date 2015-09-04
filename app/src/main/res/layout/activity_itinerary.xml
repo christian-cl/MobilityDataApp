@@ -39,7 +39,8 @@
             android:src="@drawable/ic_file_download_white_48dp"
             android:contentDescription="@string/description"
             android:background="@color/material_blue_500"
-            android:layout_margin="5dp" />
+            android:layout_margin="5dp"
+            android:onClick="sendMessageExportItinerary"/>
 
         <ImageButton
             android:layout_width="wrap_content"

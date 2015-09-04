@@ -3,16 +3,24 @@ package com.example.christian.mobilitydataapp;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ExpandableListView;
+import android.widget.Toast;
 
 import com.example.christian.mobilitydataapp.persistence.Itinerary;
 import com.example.christian.mobilitydataapp.services.ExpandableListAdapter;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,10 +31,14 @@ public class ItineraryActivity extends AppCompatActivity {
 
     private static final String TAG = "ItineraryActivity";
     private final String EXTRA_TAB = "newItinerary";
+    private final String FOLDER_PATH = "/neoTrack";
+    private final String FILE_NAME = "itinerarios";
+    private final String FILE_EXTENSION = ".json";
 
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
     List<Itinerary> itineraryList;
+    private String ITIENRARIES_SAVED = "Itinerarios guardados";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +118,50 @@ public class ItineraryActivity extends AppCompatActivity {
                 .setPositiveButton("Sí", dialogClickListener)
                 .setNegativeButton("No", dialogClickListener).show();
     }
+
+    public void sendMessageExportItinerary(View view) {
+        List<JSONObject> itineraries = new ArrayList<>();
+        for(Itinerary i : itineraryList) {
+            itineraries.add(i.getJSONObject());
+        }
+        Log.i(TAG, "saving... " + new JSONArray(itineraries));
+        saveJSON(new JSONArray(itineraries));
+    }
+
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals(state);
+    }
+
+    private void saveJSON(JSONArray json) {
+        String content = json.toString();
+        FileOutputStream out = null;
+        try {
+            if (isExternalStorageWritable()) {
+                String path = Environment.getExternalStorageDirectory().toString();
+                File dir = new File(path + FOLDER_PATH);
+                dir.mkdirs();
+                File file = new File (dir, FILE_NAME + FILE_EXTENSION);
+                out = new FileOutputStream(file);
+                out.write(content.getBytes());
+                out.close();
+                Toast.makeText(this, ITIENRARIES_SAVED, Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
 
 
 
