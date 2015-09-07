@@ -16,6 +16,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.christian.mobilitydataapp.persistence.Itinerary;
+import com.example.christian.mobilitydataapp.persistence.ItineraryDAO;
 import com.example.christian.mobilitydataapp.persistence.Point;
 import com.example.christian.mobilitydataapp.services.ItineraryArrayAdapter;
 import com.google.android.gms.maps.CameraUpdate;
@@ -206,9 +207,15 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
         String name = textViewName.getText().length() == 0 ? DEFAULT_ITINERARY_NAME
                 : textViewName.getText().toString();
         Itinerary itinerary = new Itinerary(name, latLngList);
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(EXTRA_TAB, itinerary);
-        intent.putExtra(EXTRA_TAB, bundle);
+
+        ItineraryDAO db = new ItineraryDAO(ItineraryMapActivity.this);
+        db.open();
+        db.create(itinerary);
+        db.close();
+
+//        Bundle bundle = new Bundle();
+//        bundle.putParcelable(EXTRA_TAB, itinerary);
+//        intent.putExtra(EXTRA_TAB, bundle);
         startActivity(intent);
     }
 

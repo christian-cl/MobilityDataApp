@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class MySQLiteOpenHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "mobilityDB";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     public static class TableDataCapture{
         public static String TABLE_NAME = "datacapture";
@@ -36,6 +36,15 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
         public static String COLUMN_START_DATETIME = "startDateTime";
         public static String COLUMN_END_DATETIME = "endDateTime";
         public static String COLUMN_DISTANCE = "distance";
+    }
+
+    public static class TableItinerary {
+        public static String TABLE_NAME = "itineraries";
+        public static String COLUMN_ID = "_id";
+        public static String COLUMN_NAME = "name";
+        public static String COLUMN_LATITUDE = "latitude";
+        public static String COLUMN_LONGITUDE = "longitude";
+        public static String COLUMN_ADDRESS = "address";
     }
 
     private static final String CREATE_TABLE_DATA_CAPTURE =
@@ -62,10 +71,21 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
             TableStreetTrack.COLUMN_DISTANCE + " real not null" +
             ");";
 
+    private static final String CREATE_TABLE_ITINERARY =
+            "create table " + TableItinerary.TABLE_NAME + "(" +
+            TableItinerary.COLUMN_ID + " integer primary key autoincrement, " +
+            TableItinerary.COLUMN_NAME + " text not null, " +
+            TableItinerary.COLUMN_LATITUDE + " real not null, " +
+            TableItinerary.COLUMN_LONGITUDE + " real not null, " +
+            TableItinerary.COLUMN_ADDRESS + " text not null" +
+            ");";
+
     private static final String DROP_TABLE_DATA_CAPTURE =
             "drop table if exists "+ TableDataCapture.TABLE_NAME + ";";
     private static final String DROP_CREATE_TABLE_STREET_TRACK =
             "drop table if exists "+ TableStreetTrack.TABLE_NAME + ";";
+    private static final String DROP_CREATE_TABLE_ITINERARY =
+            "drop table if exists "+ TableItinerary.TABLE_NAME + ";";
 
 
     public MySQLiteOpenHelper(Context context) {
@@ -78,6 +98,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
         // TODO Auto-generated method stub
         db.execSQL(CREATE_TABLE_DATA_CAPTURE);
         db.execSQL(CREATE_TABLE_STREET_TRACK);
+        db.execSQL(CREATE_TABLE_ITINERARY);
     }
 
     @Override
@@ -86,6 +107,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
         if(newVersion > oldVersion) {
             db.execSQL(DROP_TABLE_DATA_CAPTURE);
             db.execSQL(DROP_CREATE_TABLE_STREET_TRACK);
+            db.execSQL(DROP_CREATE_TABLE_ITINERARY);
             onCreate(db);
         }
     }

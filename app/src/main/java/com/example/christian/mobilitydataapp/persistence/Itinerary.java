@@ -17,8 +17,13 @@ import java.util.List;
  * Created by Christian Cintrano.
  */
 public class Itinerary implements Parcelable {
+
+    private long id;
     private String name;
     private List points;
+
+    public Itinerary() {
+    }
 
     public Itinerary(String name, List points) {
         this.name = name;
@@ -40,6 +45,14 @@ public class Itinerary implements Parcelable {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getName() {

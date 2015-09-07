@@ -12,7 +12,9 @@ import android.view.Window;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
+import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
 import com.example.christian.mobilitydataapp.persistence.Itinerary;
+import com.example.christian.mobilitydataapp.persistence.ItineraryDAO;
 import com.example.christian.mobilitydataapp.services.ExpandableListAdapter;
 
 import org.json.JSONArray;
@@ -41,6 +43,7 @@ public class ItineraryActivity extends AppCompatActivity {
     ExpandableListView expListView;
     List<Itinerary> itineraryList;
     private String ITINERARIES_SAVED = "Itinerarios guardados";
+    private ItineraryDAO db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,12 +61,23 @@ public class ItineraryActivity extends AppCompatActivity {
         // setting list adapter
         expListView.setAdapter(listAdapter);
 
-        Bundle newItinerary = getIntent().getParcelableExtra(EXTRA_TAB);
-        if(newItinerary != null) {
-            Log.i(TAG, newItinerary.getParcelable(EXTRA_TAB).toString());
-            itineraryList.add((Itinerary) newItinerary.getParcelable(EXTRA_TAB));
-            listAdapter.notifyDataSetChanged();
-        }
+//        Bundle newItinerary = getIntent().getParcelableExtra(EXTRA_TAB);
+//        if(newItinerary != null) {
+//            Log.i(TAG, newItinerary.getParcelable(EXTRA_TAB).toString());
+//            itineraryList.add((Itinerary) newItinerary.getParcelable(EXTRA_TAB));
+//            listAdapter.notifyDataSetChanged();
+//        }
+
+        loadItinerariesFromDB();
+    }
+
+    private void loadItinerariesFromDB() {
+        db = new ItineraryDAO(ItineraryActivity.this);
+        db.open();
+        itineraryList.addAll(db.getAll());
+        db.close();
+
+        listAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -106,8 +120,13 @@ public class ItineraryActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
-                        itineraryList.remove(index);
                         // SKET remove in database
+                        db = new ItineraryDAO(ItineraryActivity.this);
+                        db.open();
+                        db.delete(itineraryList.get(index));
+                        db.close();
+                        ///
+                        itineraryList.remove(index);
                         listAdapter.notifyDataSetChanged();
                         break;
                     case DialogInterface.BUTTON_NEGATIVE: // No button clicked // do nothing
@@ -126,11 +145,17 @@ public class ItineraryActivity extends AppCompatActivity {
             JSONArray obj = new JSONArray(loadJSONFile());
             if (obj != null) {
                 Log.i(TAG, obj.toString());
-                for (int i = 0; i < obj.length(); i++) {
-                    itineraryList.add(new Itinerary(obj.getJSONObject(i)));
-                }
-                listAdapter.notifyDataSetChanged();
                 // SKET SAVE IN DATA BASE
+                db = new ItineraryDAO(ItineraryActivity.this);
+                db.open();
+                for (int i = 0; i < obj.length(); i++) {
+                    Itinerary itinerary = new Itinerary(obj.getJSONObject(i));
+                    itineraryList.add(itinerary);
+                    db.create(itinerary);
+                }
+                db.close();
+
+                listAdapter.notifyDataSetChanged();
             }
         } catch (JSONException e) {
             e.printStackTrace();
