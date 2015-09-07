@@ -3,6 +3,9 @@ package com.example.christian.mobilitydataapp.persistence;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by Christian Cintrano.
  */
@@ -32,6 +35,16 @@ public class Point implements Parcelable {
         this.latitude = in.readDouble();
         this.longitude = in.readDouble();
         this.address = in.readString();
+    }
+
+    public Point(JSONObject obj) {
+        try {
+            this.latitude = obj.getDouble("latitude");
+            this.longitude = obj.getDouble("longitude");
+            this.address = obj.getString("address");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public double getLatitude() {

@@ -20,9 +20,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +40,7 @@ public class ItineraryActivity extends AppCompatActivity {
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
     List<Itinerary> itineraryList;
-    private String ITIENRARIES_SAVED = "Itinerarios guardados";
+    private String ITINERARIES_SAVED = "Itinerarios guardados";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,26 +122,36 @@ public class ItineraryActivity extends AppCompatActivity {
     }
 
     public void sendMessageImportItinerary(View view) {
-        JSONObject obj = null;
         try {
-            obj = new JSONObject(loadJSONFile());
+            JSONArray obj = new JSONArray(loadJSONFile());
+            if (obj != null) {
+                Log.i(TAG, obj.toString());
+                for (int i = 0; i < obj.length(); i++) {
+                    itineraryList.add(new Itinerary(obj.getJSONObject(i)));
+                }
+                listAdapter.notifyDataSetChanged();
+                // SKET SAVE IN DATA BASE
+            }
         } catch (JSONException e) {
             e.printStackTrace();
-        }
-        if (obj != null) {
-            Log.i(TAG, obj.toString());
         }
     }
 
     private String loadJSONFile() {
+        Log.i("----","1");
         String json = null;
         try {
-            InputStream is = getAssets().open(FOLDER_PATH + "/" + FILE_NAME + FILE_EXTENSION);
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            json = new String(buffer, "UTF-8");
+            if (isExternalStorageWritable()) {
+                String path = Environment.getExternalStorageDirectory().toString();
+                File dir = new File(path + FOLDER_PATH);
+                File file = new File(dir, FILE_NAME + FILE_EXTENSION);
+                FileInputStream in = new FileInputStream(file);
+                int size = in.available();
+                byte[] buffer = new byte[size];
+                in.read(buffer);
+                in.close();
+                json = new String(buffer, "UTF-8");
+            }
         } catch (IOException ex) {
             ex.printStackTrace();
             return null;
@@ -176,7 +186,7 @@ public class ItineraryActivity extends AppCompatActivity {
                 out = new FileOutputStream(file);
                 out.write(content.getBytes());
                 out.close();
-                Toast.makeText(this, ITIENRARIES_SAVED, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, ITINERARIES_SAVED, Toast.LENGTH_SHORT).show();
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -27,7 +27,19 @@ public class Itinerary implements Parcelable {
     public Itinerary(Parcel in) {
         this.name = in.readString();
         this.points = new ArrayList<>();
-        in.readList(points,LatLng.class.getClassLoader());
+        in.readList(points,Point.class.getClassLoader());
+    }
+    public Itinerary(JSONObject obj) {
+        try {
+            this.name = obj.getString("name");
+            List pointsList = new ArrayList();
+            JSONArray array = obj.getJSONArray("points");
+            for (int i = 0; i < array.length(); i++) {
+                pointsList.add(new Point(array.getJSONObject(0)));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public String getName() {
