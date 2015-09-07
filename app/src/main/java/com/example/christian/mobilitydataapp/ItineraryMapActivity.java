@@ -213,15 +213,12 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
         db.create(itinerary);
         db.close();
 
-//        Bundle bundle = new Bundle();
-//        bundle.putParcelable(EXTRA_TAB, itinerary);
-//        intent.putExtra(EXTRA_TAB, bundle);
         startActivity(intent);
     }
 
     public String getAddress(double latitude, double longitude) {
         List<Address> addresses = null;
-        String output = null;
+        String output;
 
         try {
             // We need only one result

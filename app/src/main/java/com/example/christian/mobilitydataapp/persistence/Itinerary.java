@@ -37,10 +37,10 @@ public class Itinerary implements Parcelable {
     public Itinerary(JSONObject obj) {
         try {
             this.name = obj.getString("name");
-            List pointsList = new ArrayList();
+            this.points = new ArrayList();
             JSONArray array = obj.getJSONArray("points");
             for (int i = 0; i < array.length(); i++) {
-                pointsList.add(new Point(array.getJSONObject(0)));
+                this.points.add(new Point(array.getJSONObject(0)));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -104,15 +104,15 @@ public class Itinerary implements Parcelable {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("name", name);
-            List<JSONObject> points = new ArrayList<>();
+            List<JSONObject> pointList = new ArrayList<>();
             for (Object p : points) {
                 JSONObject jsonPoint = new JSONObject();
                 jsonPoint.put("latitude", ((Point) p).getLatitude());
                 jsonPoint.put("longitude", ((Point) p).getLongitude());
                 jsonPoint.put("address", ((Point) p).getAddress());
-                points.add(jsonPoint);
+                pointList.add(jsonPoint);
             }
-            jsonObject.put("points", new JSONArray(points));
+            jsonObject.put("points", new JSONArray(pointList));
         } catch (JSONException e) {
             e.printStackTrace();
         }

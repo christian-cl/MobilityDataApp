@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +35,14 @@ public class ItineraryDAO {
 
     public void create(Itinerary itinerary) {
         ContentValues values = new ContentValues();
-        for(Point p : (List<Point>) itinerary.getPoints()) {
-            values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_NAME, itinerary.getName());
-            values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_LATITUDE, p.getLatitude());
-            values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_LONGITUDE, p.getLongitude());
-            values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_ADDRESS, p.getAddress());
-            db.insert(MySQLiteOpenHelper.TableItinerary.TABLE_NAME, null, values);
+        values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_NAME, itinerary.getName());
+        Log.i("--------", itinerary.toString());
+        for(Object p : itinerary.getPoints()) {
+            values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_LATITUDE, ((Point) p).getLatitude());
+            values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_LONGITUDE, ((Point) p).getLongitude());
+            values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_ADDRESS, ((Point) p).getAddress());
         }
+        db.insert(MySQLiteOpenHelper.TableItinerary.TABLE_NAME, null, values);
     }
 
     public List<Itinerary> getAll() {

@@ -12,7 +12,6 @@ import android.view.Window;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
-import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
 import com.example.christian.mobilitydataapp.persistence.Itinerary;
 import com.example.christian.mobilitydataapp.persistence.ItineraryDAO;
 import com.example.christian.mobilitydataapp.services.ExpandableListAdapter;
@@ -55,18 +54,9 @@ public class ItineraryActivity extends AppCompatActivity {
 
         // get the listview
         expListView = (ExpandableListView) findViewById(R.id.expandableListView_itineraries);
-        // preparing list data
-//        prepareListData();
         listAdapter = new ExpandableListAdapter(this, itineraryList);
         // setting list adapter
         expListView.setAdapter(listAdapter);
-
-//        Bundle newItinerary = getIntent().getParcelableExtra(EXTRA_TAB);
-//        if(newItinerary != null) {
-//            Log.i(TAG, newItinerary.getParcelable(EXTRA_TAB).toString());
-//            itineraryList.add((Itinerary) newItinerary.getParcelable(EXTRA_TAB));
-//            listAdapter.notifyDataSetChanged();
-//        }
 
         loadItinerariesFromDB();
     }
@@ -143,27 +133,24 @@ public class ItineraryActivity extends AppCompatActivity {
     public void sendMessageImportItinerary(View view) {
         try {
             JSONArray obj = new JSONArray(loadJSONFile());
-            if (obj != null) {
-                Log.i(TAG, obj.toString());
-                // SKET SAVE IN DATA BASE
-                db = new ItineraryDAO(ItineraryActivity.this);
-                db.open();
-                for (int i = 0; i < obj.length(); i++) {
-                    Itinerary itinerary = new Itinerary(obj.getJSONObject(i));
-                    itineraryList.add(itinerary);
-                    db.create(itinerary);
-                }
-                db.close();
-
-                listAdapter.notifyDataSetChanged();
+            Log.i(TAG, obj.toString());
+            // SKET SAVE IN DATA BASE
+            db = new ItineraryDAO(ItineraryActivity.this);
+            db.open();
+            for (int i = 0; i < obj.length(); i++) {
+                Itinerary itinerary = new Itinerary(obj.getJSONObject(i));
+                itineraryList.add(itinerary);
+                db.create(itinerary);
             }
+            db.close();
+
+            listAdapter.notifyDataSetChanged();
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
     private String loadJSONFile() {
-        Log.i("----","1");
         String json = null;
         try {
             if (isExternalStorageWritable()) {
@@ -226,51 +213,6 @@ public class ItineraryActivity extends AppCompatActivity {
         }
     }
 
-
-
-
-
-    /*
-     * Preparing the list data
-     */
-//    private void prepareListData() {
-//        listDataHeader = new ArrayList<>();
-//        listDataChild = new HashMap<>();
-//
-//        // Adding child data
-//        listDataHeader.add("Top 250");
-//        listDataHeader.add("Now Showing");
-//        listDataHeader.add("Coming Soon..");
-//
-//        // Adding child data
-//        List<String> top250 = new ArrayList<>();
-//        top250.add("The Shawshank Redemption");
-//        top250.add("The Godfather");
-//        top250.add("The Godfather: Part II");
-//        top250.add("Pulp Fiction");
-//        top250.add("The Good, the Bad and the Ugly");
-//        top250.add("The Dark Knight");
-//        top250.add("12 Angry Men");
-//
-//        List<String> nowShowing = new ArrayList<>();
-//        nowShowing.add("The Conjuring");
-//        nowShowing.add("Despicable Me 2");
-//        nowShowing.add("Turbo");
-//        nowShowing.add("Grown Ups 2");
-//        nowShowing.add("Red 2");
-//        nowShowing.add("The Wolverine");
-//
-//        List<String> comingSoon = new ArrayList<>();
-//        comingSoon.add("2 Guns");
-//        comingSoon.add("The Smurfs 2");
-//        comingSoon.add("The Spectacular Now");
-//        comingSoon.add("The Canyons");
-//        comingSoon.add("Europa Report");
-//
-//        listDataChild.put(listDataHeader.get(0), top250); // Header, Child data
-//        listDataChild.put(listDataHeader.get(1), nowShowing);
-//        listDataChild.put(listDataHeader.get(2), comingSoon);
-//    }
 }
 
 
