@@ -1,5 +1,6 @@
 package com.example.christian.mobilitydataapp;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.location.Geocoder;
@@ -40,6 +41,9 @@ import com.example.christian.mobilitydataapp.fragments.MapTabFragment;
 import com.example.christian.mobilitydataapp.fragments.TrackFragment;
 import com.example.christian.mobilitydataapp.persistence.DataCapture;
 import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
+import com.example.christian.mobilitydataapp.persistence.Itinerary;
+import com.example.christian.mobilitydataapp.persistence.ItineraryDAO;
+import com.example.christian.mobilitydataapp.persistence.Point;
 import com.example.christian.mobilitydataapp.persistence.StreetTrack;
 import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
 import com.example.christian.mobilitydataapp.services.FetchAddressIntentService;
@@ -48,6 +52,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -223,6 +229,24 @@ public class MapTabActivity extends AppCompatActivity implements
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void displayItineraries(View view) {
+        ItineraryDAO db = new ItineraryDAO(MapTabActivity.this);
+        db.open();
+        ArrayList<Itinerary> itineraryList = new ArrayList<>();
+        itineraryList.addAll(db.getAll());
+        db.close();
+
+        List<String> list = new ArrayList<>();
+        for(Itinerary i : itineraryList) {
+            list.add(i.getName());
+        }
+
+        String title = "Elija un itinerario";
+        CharSequence[] array = list.toArray(new CharSequence[list.size()]);
+        Dialog dialog = onCreateDialogSingleChoice(title, array, itineraryList);
+        dialog.show();
     }
 
     public void sendSettings() {
@@ -901,4 +925,67 @@ public class MapTabActivity extends AppCompatActivity implements
         ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.STOP, title, loc);
     }
 
+    public Dialog onCreateDialogSingleChoice(String title, CharSequence[] array, final List dataList) {
+
+        int index = -1;
+        //Initialize the Alert Dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Set the dialog title
+        builder.setTitle(title)
+        // Specify the list array, the items to be selected by default (null for none),
+        // and the listener through which to receive callbacks when items are selected
+                .setSingleChoiceItems(array, 1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // TODO Auto-generated method stub
+//                        index = which;
+                    }
+                })
+                // Set the action buttons
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User clicked OK, so save the result somewhere
+                        // or return them to the component that opened the dialog
+                        int selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
+                        displayItineraySelected((Itinerary) dataList.get(selectedPosition));
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+
+        return builder.create();
+    }
+
+    private void displayItineraySelected(Itinerary itinerary) {
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        for(Object point : itinerary.getPoints()) {
+            Log.i("----", point.toString());
+            Location location = new Location("Test");
+            location.setLatitude(((Point) point).getLatitude());
+            location.setLongitude(((Point) point).getLongitude());
+            ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.ITINERARY,
+                    ((Point) point).getAddress(), location);
+        }
+    }
 }

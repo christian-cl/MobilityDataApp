@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MobilityDataApp.iml" filepath="$PROJECT_DIR$/MobilityDataApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NEOTrack.iml" filepath="$PROJECT_DIR$/NEOTrack.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
 </project>
-

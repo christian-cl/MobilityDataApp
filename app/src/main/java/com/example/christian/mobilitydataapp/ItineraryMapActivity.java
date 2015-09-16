@@ -1,18 +1,25 @@
 package com.example.christian.mobilitydataapp;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.christian.mobilitydataapp.persistence.Itinerary;
@@ -24,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -70,19 +78,22 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
         Bundle newItinerary = getIntent().getParcelableExtra(EXTRA_TAB);
         if(newItinerary != null) {
             Log.i(TAG, newItinerary.getParcelable(EXTRA_TAB).toString());
-            loadEditData((Itinerary) newItinerary.getParcelable(EXTRA_TAB));
+            loadEditableData((Itinerary) newItinerary.getParcelable(EXTRA_TAB));
         }
 
         geocoder = new Geocoder(this, Locale.getDefault());
     }
 
-    private void loadEditData(Itinerary itinerary) {
+    private void loadEditableData(Itinerary itinerary) {
         TextView textViewName = (TextView) this.findViewById(R.id.editText_itinerary_name);
         textViewName.setText(itinerary.getName());
-        for(Point point : (List<Point>) itinerary.getPoints()) {
+        Log.i("------", "itinerary.....");
+        Log.i("------", itinerary.toString());
+        for(Object point : itinerary.getPoints()) {
+            Log.i("------", point.toString());
             Marker marker = map.addMarker(new MarkerOptions().position(
-                    new LatLng(point.getLatitude(), point.getLongitude())));
-            marker.setTitle(point.getAddress());
+                    new LatLng(((Point) point).getLatitude(), ((Point) point).getLongitude())));
+            marker.setTitle(((Point) point).getAddress());
             points.add(marker);
         }
         arrayAdapter.notifyDataSetChanged();
@@ -97,7 +108,6 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {}
         });
     }
-
 
     private void configureMapActions() {
         //Behavior OnClick map - create mark with number
@@ -131,9 +141,17 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
         map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
-                Marker marker = map.addMarker(new MarkerOptions().position(latLng));
+                View markerView =
+                        ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                        .inflate(R.layout.custom_marker_layout, null);
+                TextView numTxt = (TextView) markerView.findViewById(R.id.num_txt);
+//                numTxt.setText(points.size());
+                Marker marker = map.addMarker(new MarkerOptions().position(latLng)
+//                                .icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(ItineraryMapActivity.this, markerView)))
+                );
                 marker.setTitle(getAddress(latLng.latitude, latLng.longitude));
                 points.add(marker);
+
                 arrayAdapter.notifyDataSetChanged();
             }
         });
@@ -198,22 +216,44 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
     }
 
     public void sendMessageSaveItinerary(View view) {
-        Intent intent = new Intent(this, ItineraryActivity.class);
-        List latLngList = new ArrayList();
+        List<Point> latLngList = new ArrayList<Point>();
         for(Marker m : points) {
             latLngList.add(new Point(m.getPosition().latitude, m.getPosition().longitude, m.getTitle()));
         }
         TextView textViewName = (TextView) this.findViewById(R.id.editText_itinerary_name);
         String name = textViewName.getText().length() == 0 ? DEFAULT_ITINERARY_NAME
                 : textViewName.getText().toString();
+
         Itinerary itinerary = new Itinerary(name, latLngList);
+        Log.i("+++++++++", "sendMessageSaveItinerary");
+        Log.i("+++++++++", itinerary.toString());
 
         ItineraryDAO db = new ItineraryDAO(ItineraryMapActivity.this);
         db.open();
         db.create(itinerary);
         db.close();
 
+        Intent intent = new Intent(this, ItineraryActivity.class);
         startActivity(intent);
+    }
+
+    // Convert a view to bitmap
+    public static Bitmap createDrawableFromView(Context context, View view) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        view.setLayoutParams(new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT)
+        );
+        view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels);
+        view.layout(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels);
+        view.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
+                Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bitmap);
+        view.draw(canvas);
+
+        return bitmap;
     }
 
     public String getAddress(double latitude, double longitude) {
@@ -233,7 +273,7 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
             output = ADDRESS_NOT_FOUND;
         } else {
             Address address = addresses.get(0);
-            ArrayList<String> addressFragments = new ArrayList<String>();
+            ArrayList<String> addressFragments = new ArrayList<>();
 
             // Fetch the address lines using getAddressLine,
             // join them, and send them to the thread.
@@ -245,6 +285,7 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
 
         return output;
     }
+
 }
 
 

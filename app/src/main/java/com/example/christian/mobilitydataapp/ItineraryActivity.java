@@ -65,6 +65,7 @@ public class ItineraryActivity extends AppCompatActivity {
         db = new ItineraryDAO(ItineraryActivity.this);
         db.open();
         itineraryList.addAll(db.getAll());
+        Log.i("========", itineraryList.toString());
         db.close();
 
         listAdapter.notifyDataSetChanged();
@@ -95,6 +96,8 @@ public class ItineraryActivity extends AppCompatActivity {
         Log.i("ItineraryActivity", "editing itinerary...");
         Intent intent = new Intent(this, ItineraryMapActivity.class);
         Bundle bundle = new Bundle();
+        Log.i("_____", "Cargando el itinerario para pasar...");
+        Log.i("______", itineraryList.get(index).toString());
         bundle.putParcelable(EXTRA_TAB, itineraryList.get(index));
         intent.putExtra(EXTRA_TAB, bundle);
         startActivity(intent);

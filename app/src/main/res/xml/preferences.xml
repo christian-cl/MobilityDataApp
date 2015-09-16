@@ -6,7 +6,7 @@
             android:key="pref_key_interval_time"
             android:summary="@string/setting_interval_summary"
             android:title="@string/setting_interval_title"
-            android:defaultValue="1"
+            android:defaultValue="10"
             android:inputType="number"/>
         <EditTextPreference
             android:key="pref_key_min_distance"

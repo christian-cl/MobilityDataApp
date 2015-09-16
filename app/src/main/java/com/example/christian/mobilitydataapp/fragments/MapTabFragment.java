@@ -48,7 +48,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private final static int REQ_CODE_SPEECH_INPUT = 100;
     private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
 
-    public static enum Marker_Type {GPS, STOP, POSITION}
+    public static enum Marker_Type {GPS, STOP, POSITION, ITINERARY}
 
     private Context context;
     private View view;
@@ -206,6 +206,11 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 currentMarker = map.addMarker(new MarkerOptions().position(coordinates)
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
                 break;
+            case ITINERARY:
+                map.addMarker(new MarkerOptions().position(coordinates)
+                        .icon(BitmapDescriptorFactory
+                                .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                );
             default: Log.e("MAP", "Marker type is not valid");
         }
     }

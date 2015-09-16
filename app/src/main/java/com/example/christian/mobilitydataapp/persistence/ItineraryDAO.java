@@ -34,25 +34,29 @@ public class ItineraryDAO {
     }
 
     public void create(Itinerary itinerary) {
-        ContentValues values = new ContentValues();
-        values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_NAME, itinerary.getName());
-        Log.i("--------", itinerary.toString());
+        Log.i("dbdbdbdb", "create");
         for(Object p : itinerary.getPoints()) {
+            ContentValues values = new ContentValues();
+            values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_NAME, itinerary.getName());
+            Log.i("--------", itinerary.toString());
             values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_LATITUDE, ((Point) p).getLatitude());
             values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_LONGITUDE, ((Point) p).getLongitude());
             values.put(MySQLiteOpenHelper.TableItinerary.COLUMN_ADDRESS, ((Point) p).getAddress());
+            db.insert(MySQLiteOpenHelper.TableItinerary.TABLE_NAME, null, values);
         }
-        db.insert(MySQLiteOpenHelper.TableItinerary.TABLE_NAME, null, values);
     }
 
     public List<Itinerary> getAll() {
+        Log.i("dbdbdbdb", "getAll");
         List<Itinerary> listItinerary = new ArrayList<>();
 
         Cursor cursor = db.query(MySQLiteOpenHelper.TableItinerary.TABLE_NAME, columns, null, null,
                 null, null, null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
+            Log.i("CURSOR------", cursor.toString());
             Itinerary itinerary = cursorToItinerary(cursor);
+            Log.i("ITINERARY------", itinerary.toString());
             int index = -1;
             for (int i = 0; i < listItinerary.size(); i++) {
                 if(listItinerary.get(i).getName().equals(itinerary.getName())) {
@@ -63,7 +67,7 @@ public class ItineraryDAO {
             if (index == -1) {
                 listItinerary.add(itinerary);
             } else {
-                listItinerary.get(index).getPoints().addAll(itinerary.getPoints());
+                listItinerary.get(index).getPoints().add(itinerary.getPoints().get(0));
             }
             cursor.moveToNext();
         }
