@@ -70,6 +70,7 @@
     <string name="editText_itinerary_name_hint">Introduzca un nombre para el itinerario</string>
     <string name="subtitle_itinerary_list">Lista de Itinerarios</string>
     <string name="add_itinerary">Añadir itinerario</string>
+    <string name="button_settings">Opciones</string>
 
 
 </resources>

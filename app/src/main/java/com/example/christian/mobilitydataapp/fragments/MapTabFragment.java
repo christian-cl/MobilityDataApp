@@ -35,7 +35,9 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -57,6 +59,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
     private GoogleMap map; // Might be null if Google Play services APK is not available.
 
     private SimpleDateFormat sdf;
+    private List<Marker> itineraryMarkers;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState){
@@ -81,6 +84,8 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         bStopSpeak.setOnClickListener(this);
 //        bStart.setOnClickListener(this);
 //        bEnd.setOnClickListener(this);
+
+        itineraryMarkers = new ArrayList<>();
 
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
 
@@ -207,15 +212,20 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_car)));
                 break;
             case ITINERARY:
-                map.addMarker(new MarkerOptions().position(coordinates)
+                itineraryMarkers.add(map.addMarker(new MarkerOptions().position(coordinates)
                         .icon(BitmapDescriptorFactory
                                 .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-                );
+                ));
             default: Log.e("MAP", "Marker type is not valid");
         }
     }
 
-
+    public void clearItineraryMarkers() {
+        for (Marker marker : itineraryMarkers) {
+            marker.remove();
+        }
+        itineraryMarkers = new ArrayList<>();
+    }
 
     @Override
     public void onClick(View v) {

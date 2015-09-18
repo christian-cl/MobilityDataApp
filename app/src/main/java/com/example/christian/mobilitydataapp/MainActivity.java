@@ -97,7 +97,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_settings: sendMessagePreferences(); break;
+            case R.id.action_settings:
+                sendMessagePreferences();
+                break;
         }
         return true;
     }
@@ -122,6 +124,9 @@ public class MainActivity extends AppCompatActivity {
     public void sendMessagePreferences() {
         Intent intent = new Intent(this,SettingsActivity.class);
         startActivity(intent);
+    }
+    public void sendMessagePreferences(View view) {
+        startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
     }
     /** Called when the user clicks the Send button */
     public void sendMessageConsult(View view) {

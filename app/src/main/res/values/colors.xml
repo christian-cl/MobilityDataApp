@@ -10,6 +10,7 @@
     <color name="material_deep_orange_700">#E64A19</color>
     <color name="material_deep_orange_500">#FF5722</color>
     <color name="material_grey_50">#FAFAFA</color>
+    <color name="material_white">#FFFFFF</color>
 
     <color name="normal">#CCCCCC</color>
     <color name="pressed">#FFFFFF</color>

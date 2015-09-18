@@ -52,8 +52,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -156,7 +154,8 @@ public class MapTabActivity extends AppCompatActivity implements
                                 Toast.LENGTH_SHORT).show();
                     }
                 };
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        intervalTimeGPS, minDistance, gpsLocationListener);
             }
         }
     }
@@ -189,7 +188,8 @@ public class MapTabActivity extends AppCompatActivity implements
     public void onResume() {
         super.onResume();
         locationManager.addGpsStatusListener(mGPSStatusListener);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, intervalTimeGPS, minDistance, gpsLocationListener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                intervalTimeGPS, minDistance, gpsLocationListener);
 //        startRepeatingTask();
     }
 
@@ -360,32 +360,40 @@ public class MapTabActivity extends AppCompatActivity implements
         newDateEnd.set(newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH),
                 newCalendar.get(Calendar.DAY_OF_MONTH),23,59,59);
         newDateEnd.set(Calendar.HOUR,23);
-        dateInitDialog = new DatePickerDialog(this,new OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                Log.i("Dialog", "Change datepicker");
-                Calendar newDate = Calendar.getInstance();
-                newDate.set(year, monthOfYear, dayOfMonth);
-                etDateStart.setText(dateFormatter.format(newDate.getTime()));
-            }
-        },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
-        dateInitDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, "Okay", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dlg2, int which) {
-                dlg2.cancel();
-                saveFileDialog.show();
-            }
+        dateInitDialog = new DatePickerDialog(this, new OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                    Log.i("Dialog", "Change datepicker");
+                    Calendar newDate = Calendar.getInstance();
+                    newDate.set(year, monthOfYear, dayOfMonth);
+                    etDateStart.setText(dateFormatter.format(newDate.getTime()));
+                }
+            },
+                newCalendar.get(Calendar.YEAR),
+                newCalendar.get(Calendar.MONTH),
+                newCalendar.get(Calendar.DAY_OF_MONTH)
+        );
+        dateInitDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, B_OK,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dlg2, int which) {
+                        dlg2.cancel();
+                        saveFileDialog.show();
+                    }
         });
         dateInitDialog.getDatePicker().init(newCalendar.get(Calendar.YEAR),
-                newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH), new DatePicker.OnDateChangedListener() {
-            @Override
-            public void onDateChanged(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
-                Log.i("Dialog", "Change datepicker");
-                newDateStart = Calendar.getInstance();
-                newDateStart.set(year, monthOfYear, dayOfMonth,0,0,0);
-                etDateStart.setText(dateFormatter.format(newDateStart.getTime()));
-            }
-        });
+                newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH),
+                new DatePicker.OnDateChangedListener() {
+                    @Override
+                    public void onDateChanged(DatePicker datePicker, int year, int monthOfYear,
+                                              int dayOfMonth) {
+                        Log.i("Dialog", "Change datepicker");
+                        newDateStart = Calendar.getInstance();
+                        newDateStart.set(year, monthOfYear, dayOfMonth,0,0,0);
+                        etDateStart.setText(dateFormatter.format(newDateStart.getTime()));
+                    }
+                }
+        );
 
         dateEndDialog = new DatePickerDialog(this,new OnDateSetListener() {
             @Override
@@ -484,10 +492,10 @@ public class MapTabActivity extends AppCompatActivity implements
      */
 
     private static final String GPS_LOADING = "Iniciando conexión GPS. Por favor, espere.";
-    private static final String DATA_START = "Iniciando la recogida de los datos...";
-    private static final String DATA_END = "Recogida de datos terminada";
-    private static final String NEW_POSITION = "Guardando la siguiente posición: ";
-    private static final String NEW_GPS = "Nueva posición GPS: ";
+//    private static final String DATA_START = "Iniciando la recogida de los datos...";
+//    private static final String DATA_END = "Recogida de datos terminada";
+//    private static final String NEW_POSITION = "Guardando la siguiente posición: ";
+//    private static final String NEW_GPS = "Nueva posición GPS: ";
 
     private long intervalTimeGPS; // milliseconds
     private float minDistance; // meters
@@ -564,7 +572,8 @@ public class MapTabActivity extends AppCompatActivity implements
         setHiddenFragment();
         ((MapTabFragment) mapFragment).setCamera(latLng);
         processTrackData(location); // Global process information
-        ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
+        ((MapTabFragment) mapFragment)
+                .addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
         if(isFirstLocation) {
             ((MapTabFragment) mapFragment).setZoom(ZOOM);
             isFirstLocation = false;
@@ -597,7 +606,8 @@ public class MapTabActivity extends AppCompatActivity implements
 
     private void updateStatus() {
         if (currentLocation != null) {
-            Log.i("Background", "Collecting data in: " + currentLocation.getLatitude() + ", " + currentLocation.getLongitude());
+            Log.i("Background", "Collecting data in: " + currentLocation.getLatitude() + ", "
+                    + currentLocation.getLongitude());
 
             DataCapture dc = new DataCapture();
             dc.setLatitude(currentLocation.getLatitude());
@@ -610,7 +620,8 @@ public class MapTabActivity extends AppCompatActivity implements
             receiver.setIsInserted(true);
             startIntentService(receiver);
 //            db.create(dc);
-            ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.GPS, null, currentLocation);
+            ((MapTabFragment) mapFragment)
+                    .addMarker(MapTabFragment.Marker_Type.GPS, null, currentLocation);
         }
     }
 
@@ -641,8 +652,6 @@ public class MapTabActivity extends AppCompatActivity implements
     }
 
     public void processTrackData(Location location) {
-//        ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog("Hollaaa");
-//        Log.e("TRACK",startTrackPoint.toString());
         if((startTrackPoint != null) && (startTrackPoint.getAddress() != null)) {
             DataCapture dc = new DataCapture();
             dc.setLatitude(location.getLatitude());
@@ -664,7 +673,8 @@ public class MapTabActivity extends AppCompatActivity implements
             receiver.setIsInserted(true);
             startIntentService(receiver);
             currentTrackPoint = startTrackPoint;
-            Log.i("Track","Set start track point in " +startTrackPoint.getLatitude() + " " + startTrackPoint.getLongitude());
+            Log.i("Track","Set start track point in " + startTrackPoint.getLatitude() + " "
+                    + startTrackPoint.getLongitude());
 
             trackDistance = 0;
         }
@@ -729,7 +739,9 @@ public class MapTabActivity extends AppCompatActivity implements
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
-            mAddressOutput.replace("\n", "");
+            if (mAddressOutput != null) {
+                mAddressOutput.replace("\n", "");
+            }
             dataCapture.setAddress(mAddressOutput);
 
             if(isInserted) {
@@ -805,7 +817,6 @@ public class MapTabActivity extends AppCompatActivity implements
                 dbLocalInstanceST.create(st);
                 dbLocalInstanceST.close();
                 // Elapsed
-
                 long time = 0;
                 try {
                     Date dateStart = sdf.parse(st.getStartDateTime());
@@ -823,7 +834,6 @@ public class MapTabActivity extends AppCompatActivity implements
                         + "\t Punto de salida: " + st.getEndLatitude() + " "
                         + st.getEndLongitude() + "\n";
 
-//                    ((TrackFragment) getHiddenFragment(Tab_Type.TrackFragment)).appendLog(line);
                 ((TrackFragment) trackFragment).appendLog(line);
 
                 startTrackPoint = dataCapture;
@@ -871,10 +881,9 @@ public class MapTabActivity extends AppCompatActivity implements
         switch (requestCode) {
             case REQ_CODE_SPEECH_INPUT: {
                 if (resultCode == RESULT_OK && null != data) {
-
                     ArrayList<String> result = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    //// Para debug
+                    // For debug
                     System.out.println(result);
                     String out = "";
                     for(String s : result) {
@@ -925,12 +934,10 @@ public class MapTabActivity extends AppCompatActivity implements
         ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.STOP, title, loc);
     }
 
-    public Dialog onCreateDialogSingleChoice(String title, CharSequence[] array, final List dataList) {
-
+    public Dialog onCreateDialogSingleChoice(String title, CharSequence[] array, final List data) {
         int index = -1;
         //Initialize the Alert Dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
         // Set the dialog title
         builder.setTitle(title)
         // Specify the list array, the items to be selected by default (null for none),
@@ -942,17 +949,14 @@ public class MapTabActivity extends AppCompatActivity implements
 //                        index = which;
                     }
                 })
-                // Set the action buttons
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                .setPositiveButton(B_OK, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        // User clicked OK, so save the result somewhere
-                        // or return them to the component that opened the dialog
-                        int selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
-                        displayItineraySelected((Itinerary) dataList.get(selectedPosition));
+                        int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                        displayItineraySelected((Itinerary) data.get(selectedPosition));
                     }
                 })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                .setNegativeButton(B_CANCEL, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                     }
@@ -962,25 +966,9 @@ public class MapTabActivity extends AppCompatActivity implements
     }
 
     private void displayItineraySelected(Itinerary itinerary) {
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
-        Log.i("-----", "\n\n\n\n\n\n\n\n\n\n---");
+        ((MapTabFragment) mapFragment).clearItineraryMarkers();
+
         for(Object point : itinerary.getPoints()) {
-            Log.i("----", point.toString());
             Location location = new Location("Test");
             location.setLatitude(((Point) point).getLatitude());
             location.setLongitude(((Point) point).getLongitude());

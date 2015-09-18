@@ -37,7 +37,7 @@ public class ItineraryArrayAdapter extends ArrayAdapter<String> {
         textViewIndex.setText(String.valueOf(position));
         Marker m = (Marker) values.get(position);
         String text =
-                m.getTitle() + "\n" + m.getPosition().latitude + " " + m.getPosition().longitude;
+                m.getTitle();// + "\n" + m.getPosition().latitude + " " + m.getPosition().longitude;
         textViewText.setText(text);
 
         return convertView;
