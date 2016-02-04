@@ -76,8 +76,6 @@ public class TrackActivity extends AppCompatActivity implements
     private final static int REQ_CODE_SPEECH_INPUT = 100;
 
     private final static String DIALOG_SAVE_FILE_TITLE = "Guardar archivo";
-    private final static String B_OK = "Aceptar";
-    private final static String B_CANCEL = "Cancelar";
 
     private static final int ZOOM = 20;
 
@@ -102,6 +100,7 @@ public class TrackActivity extends AppCompatActivity implements
     TabsAdapter mTabsAdapter;
     private Fragment mapFragment;
     private Fragment trackFragment;
+    private SharedPreferences pref; // Settings listener
     private String addressPattern = "ZZZZZZZZZZ"; // cadena imposible
 
     // Database connections
@@ -231,6 +230,34 @@ public class TrackActivity extends AppCompatActivity implements
         pref.registerOnSharedPreferenceChangeListener(preferenceListener);
     }
 
+    /**
+     * Handle preferences changes
+     */
+    private class PreferenceChangeListener implements
+            SharedPreferences.OnSharedPreferenceChangeListener {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            Log.i("Settings", "Changed settings");
+            loadSettings();
+        }
+    }
+
+    private void loadSettings() {
+        Log.i("MapActivity","Loading settings...");
+        String syncConnPref = pref.getString("pref_key_interval_time", "0");
+        int intervalTimeSetting = Integer.parseInt(syncConnPref);
+
+        syncConnPref = pref.getString("pref_key_interval_capture", "0");
+        int intervalCaptureSetting = Integer.parseInt(syncConnPref);
+
+        syncConnPref = pref.getString("pref_key_min_distance", "0");
+        int minDistanceSetting = Integer.parseInt(syncConnPref);
+
+        intervalTimeGPS = intervalTimeSetting * 1000;
+        intervalCapture = intervalCaptureSetting * 1000;
+        minDistance = minDistanceSetting;
+    }
+
     private void configureActionBar(Bundle savedInstanceState) {
         final ActionBar bar = getSupportActionBar();
         if (bar != null) {
@@ -262,12 +289,6 @@ public class TrackActivity extends AppCompatActivity implements
                 array, itineraryList).show();
     }
 
-    /* Checks if external storage is available for read and write */
-    public boolean isExternalStorageWritable() {
-        String state = Environment.getExternalStorageState();
-        return Environment.MEDIA_MOUNTED.equals(state);
-    }
-
     public void saveFile(String fileName) {
         Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
         Log.i("DB", "Saving file...");
@@ -284,7 +305,7 @@ public class TrackActivity extends AppCompatActivity implements
         String extension = ".csv";
         String folderName = "/neoTrack";
         try {
-            if(isExternalStorageWritable()) {
+            if(Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
                 String path = Environment.getExternalStorageDirectory().toString();
                 File dir = new File(path + folderName);
                 dir.mkdirs();
@@ -382,7 +403,8 @@ public class TrackActivity extends AppCompatActivity implements
                 newCalendar.get(Calendar.MONTH),
                 newCalendar.get(Calendar.DAY_OF_MONTH)
         );
-        dateInitDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, B_OK,
+        dateInitDialog.setButton(DatePickerDialog.BUTTON_POSITIVE,
+                getResources().getString(R.string.b_ok),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dlg2, int which) {
@@ -435,14 +457,14 @@ public class TrackActivity extends AppCompatActivity implements
         AlertDialog.Builder saveFileDialogBuilder = new AlertDialog.Builder(this)
                 .setCancelable(true)
                 .setMessage(DIALOG_SAVE_FILE_TITLE)
-                .setPositiveButton(B_OK, new DialogInterface.OnClickListener() {
+                .setPositiveButton(getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 //                        dateInitDialog.show();
                         saveFile(etNameSaveFile.getText().toString());
                     }
                 })
-                .setNegativeButton(B_CANCEL, new DialogInterface.OnClickListener() {
+                .setNegativeButton(getResources().getString(R.string.b_cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -472,11 +494,8 @@ public class TrackActivity extends AppCompatActivity implements
         });
         etDateStart.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
         etDateEnd.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
-        etNameSaveFile.setText(getNameSaveFile());
-    }
 
-    private String getNameSaveFile() {
-        return "info_track" + "_" + etDateStart.getText() + "_" + etDateEnd.getText();
+        etNameSaveFile.setText("info_track_" + etDateStart.getText() + "_" + etDateEnd.getText());
     }
 
     @Override
@@ -484,8 +503,6 @@ public class TrackActivity extends AppCompatActivity implements
         super.onSaveInstanceState(outState);
         outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
     }
-
-
 
     private void configureDialogWait() {
         dialogWait = new ProgressDialog(this);
@@ -499,12 +516,6 @@ public class TrackActivity extends AppCompatActivity implements
     /*****
      * GPS
      */
-
-//    private static final String DATA_START = "Iniciando la recogida de los datos...";
-//    private static final String DATA_END = "Recogida de datos terminada";
-//    private static final String NEW_POSITION = "Guardando la siguiente posición: ";
-//    private static final String NEW_GPS = "Nueva posición GPS: ";
-
     private long intervalTimeGPS; // milliseconds
     private float minDistance; // meters
 
@@ -512,9 +523,8 @@ public class TrackActivity extends AppCompatActivity implements
     //GPS periodico
     public LocationManager locationManager;
     private ProgressDialog dialogWait;
-    public DataCaptureDAO db;
+    public DataCaptureDAO dbDataCapture;
 
-    private SharedPreferences pref; // Settings listener
 
     public boolean runningCaptureData;
     private float trackDistance;
@@ -532,21 +542,10 @@ public class TrackActivity extends AppCompatActivity implements
     private GpsStatus.Listener mGPSStatusListener;
 
 
-    private void loadSettings() {
-        Log.i("MapActivity","Loading settings...");
-        String syncConnPref = pref.getString("pref_key_interval_time", "0");
-        int intervalTimeSetting = Integer.parseInt(syncConnPref);
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
-        syncConnPref = pref.getString("pref_key_interval_capture", "0");
-        int intervalCaptureSetting = Integer.parseInt(syncConnPref);
-
-        syncConnPref = pref.getString("pref_key_min_distance", "0");
-        int minDistanceSetting = Integer.parseInt(syncConnPref);
-
-        intervalTimeGPS = intervalTimeSetting * 1000;
-        intervalCapture = intervalCaptureSetting * 1000;
-        minDistance = minDistanceSetting;
-    }
 
     private void myLocationChanged(Location location) {
         currentLocation = location;
@@ -593,7 +592,7 @@ public class TrackActivity extends AppCompatActivity implements
             receiver.setDataCapture(dc);
             receiver.setIsInserted(true);
             startIntentService(receiver);
-//            db.create(dc);
+//            dbDataCapture.create(dc);
             ((MapTabFragment) mapFragment)
                     .addMarker(MapTabFragment.Marker_Type.GPS, null, currentLocation);
         }
@@ -613,17 +612,6 @@ public class TrackActivity extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Handle preferences changes
-     */
-    private class PreferenceChangeListener implements
-            SharedPreferences.OnSharedPreferenceChangeListener {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-            Log.i("Settings", "Changed settings");
-            loadSettings();
-        }
-    }
 
     public void processTrackData(Location location) {
         if((startTrackPoint != null) && (startTrackPoint.getAddress() != null)) {
@@ -719,10 +707,10 @@ public class TrackActivity extends AppCompatActivity implements
             dataCapture.setAddress(mAddressOutput);
 
             if(isInserted) {
-                db = new DataCaptureDAO(TrackActivity.this);
-                db.open();
-                db.create(dataCapture);
-                db.close();
+                dbDataCapture = new DataCaptureDAO(TrackActivity.this);
+                dbDataCapture.open();
+                dbDataCapture.create(dataCapture);
+                dbDataCapture.close();
             } else {
                 callbackTrack(dataCapture);
             }
@@ -923,14 +911,14 @@ public class TrackActivity extends AppCompatActivity implements
 //                        index = which;
                     }
                 })
-                .setPositiveButton(B_OK, new DialogInterface.OnClickListener() {
+                .setPositiveButton(getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
                         displayItineraySelected((Itinerary) data.get(selectedPosition));
                     }
                 })
-                .setNegativeButton(B_CANCEL, new DialogInterface.OnClickListener() {
+                .setNegativeButton(getResources().getString(R.string.b_cancel), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                     }
