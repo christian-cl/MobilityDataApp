@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.neotrack;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -16,11 +16,9 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.christian.mobilitydataapp.fragments.DatePickerFragment;
-import com.example.christian.mobilitydataapp.persistence.DataCapture;
-import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
-import com.example.christian.mobilitydataapp.persistence.StreetTrack;
-import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
+import com.example.christian.neotrack.fragments.DatePickerFragment;
+import com.example.christian.neotrack.persistence.StreetTrack;
+import com.example.christian.neotrack.persistence.StreetTrackDAO;
 
 import java.io.File;
 import java.io.FileOutputStream;

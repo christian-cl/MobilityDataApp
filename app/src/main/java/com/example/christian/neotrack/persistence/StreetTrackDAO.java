@@ -1,6 +1,6 @@
-package com.example.christian.mobilitydataapp.persistence;
+package com.example.christian.neotrack.persistence;
 
-import com.example.christian.mobilitydataapp.persistence.MySQLiteOpenHelper.TableStreetTrack;
+import com.example.christian.neotrack.persistence.MySQLiteOpenHelper.TableStreetTrack;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;

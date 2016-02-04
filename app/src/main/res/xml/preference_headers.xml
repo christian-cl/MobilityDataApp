@@ -2,7 +2,7 @@
 
     <!--android:icon="@drawable/search"-->
     <header
-        android:fragment="com.example.christian.mobilitydataapp.SettingsFragment"
+        android:fragment="com.example.christian.neotrack.SettingsFragment"
         android:title="@string/setting_title" >
         <extra
             android:name="resource"

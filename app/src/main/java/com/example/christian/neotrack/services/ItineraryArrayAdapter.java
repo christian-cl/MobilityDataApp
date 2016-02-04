@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp.services;
+package com.example.christian.neotrack.services;
 
 
 import android.content.Context;
@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.example.christian.mobilitydataapp.R;
+import com.example.christian.neotrack.R;
 import com.google.android.gms.maps.model.Marker;
 
 import java.util.List;

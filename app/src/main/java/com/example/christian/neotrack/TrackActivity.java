@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.neotrack;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -37,17 +37,17 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.christian.mobilitydataapp.fragments.MapTabFragment;
-import com.example.christian.mobilitydataapp.fragments.TrackFragment;
-import com.example.christian.mobilitydataapp.persistence.DataCapture;
-import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
-import com.example.christian.mobilitydataapp.persistence.Itinerary;
-import com.example.christian.mobilitydataapp.persistence.ItineraryDAO;
-import com.example.christian.mobilitydataapp.persistence.Point;
-import com.example.christian.mobilitydataapp.persistence.StreetTrack;
-import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
-import com.example.christian.mobilitydataapp.services.FetchAddressIntentService;
-import com.example.christian.mobilitydataapp.services.TabsAdapter;
+import com.example.christian.neotrack.fragments.MapTabFragment;
+import com.example.christian.neotrack.fragments.TrackFragment;
+import com.example.christian.neotrack.persistence.DataCapture;
+import com.example.christian.neotrack.persistence.DataCaptureDAO;
+import com.example.christian.neotrack.persistence.Itinerary;
+import com.example.christian.neotrack.persistence.ItineraryDAO;
+import com.example.christian.neotrack.persistence.Point;
+import com.example.christian.neotrack.persistence.StreetTrack;
+import com.example.christian.neotrack.persistence.StreetTrackDAO;
+import com.example.christian.neotrack.services.FetchAddressIntentService;
+import com.example.christian.neotrack.services.TabsAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -84,7 +84,10 @@ public class TrackActivity extends AppCompatActivity implements
     private AlertDialog saveFileDialog;
     private DatePickerDialog dateInitDialog;
 
-    private SimpleDateFormat dateFormatter;
+    private final static SimpleDateFormat DATE_FORMATTER_VIEW =
+            new SimpleDateFormat("dd-MM-yyyy", new Locale("es", "ES"));
+    private final static SimpleDateFormat DATE_FORMATTER_SAVE =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", new Locale("es", "ES"));
     private EditText etDateStart;
     private EditText etDateEnd;
     private DatePickerDialog dateEndDialog;
@@ -104,16 +107,12 @@ public class TrackActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Configure Interface
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_tab_map);
         mViewPager = (ViewPager) findViewById(R.id.fragment_container);
-
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        dateFormatter = new SimpleDateFormat("dd-MM-yyyy",Locale.US);
-        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss",Locale.US);
 
         buildGoogleApiClient();
         mHandler = new Handler();
@@ -366,7 +365,7 @@ public class TrackActivity extends AppCompatActivity implements
                     Log.i("Dialog", "Change datepicker");
                     Calendar newDate = Calendar.getInstance();
                     newDate.set(year, monthOfYear, dayOfMonth);
-                    etDateStart.setText(dateFormatter.format(newDate.getTime()));
+                    etDateStart.setText(DATE_FORMATTER_VIEW.format(newDate.getTime()));
                 }
             },
                 newCalendar.get(Calendar.YEAR),
@@ -390,7 +389,7 @@ public class TrackActivity extends AppCompatActivity implements
                         Log.i("Dialog", "Change datepicker");
                         newDateStart = Calendar.getInstance();
                         newDateStart.set(year, monthOfYear, dayOfMonth,0,0,0);
-                        etDateStart.setText(dateFormatter.format(newDateStart.getTime()));
+                        etDateStart.setText(DATE_FORMATTER_VIEW.format(newDateStart.getTime()));
                     }
                 }
         );
@@ -401,7 +400,7 @@ public class TrackActivity extends AppCompatActivity implements
                 Log.i("Dialog", "Change datepicker");
                 Calendar newDate = Calendar.getInstance();
                 newDate.set(year, monthOfYear, dayOfMonth);
-                etDateEnd.setText(dateFormatter.format(newDate.getTime()));
+                etDateEnd.setText(DATE_FORMATTER_VIEW.format(newDate.getTime()));
             }
         },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
         dateEndDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, "Okay", new DialogInterface.OnClickListener() {
@@ -419,7 +418,7 @@ public class TrackActivity extends AppCompatActivity implements
                 newDateEnd = Calendar.getInstance();
                 newDateEnd.set(year, monthOfYear, dayOfMonth,23,59,59);
                 newDateEnd.set(Calendar.HOUR,23);
-                etDateEnd.setText(dateFormatter.format(newDateEnd.getTime()));
+                etDateEnd.setText(DATE_FORMATTER_VIEW.format(newDateEnd.getTime()));
             }
         });
 
@@ -461,8 +460,8 @@ public class TrackActivity extends AppCompatActivity implements
                 dateEndDialog.show();
             }
         });
-        etDateStart.setText(dateFormatter.format(newCalendar.getTime()));
-        etDateEnd.setText(dateFormatter.format(newCalendar.getTime()));
+        etDateStart.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
+        etDateEnd.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
         etNameSaveFile.setText(getNameSaveFile());
     }
 
@@ -500,7 +499,6 @@ public class TrackActivity extends AppCompatActivity implements
     private long intervalTimeGPS; // milliseconds
     private float minDistance; // meters
 
-    private SimpleDateFormat sdf;
 
     //GPS periodico
     public LocationManager locationManager;
@@ -613,7 +611,7 @@ public class TrackActivity extends AppCompatActivity implements
             dc.setLatitude(currentLocation.getLatitude());
             dc.setLongitude(currentLocation.getLongitude());
 //            dc.setAddress(getStreet(currentLocation));
-            dc.setDate(sdf.format(Calendar.getInstance().getTime()));
+            dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
 
             AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
             receiver.setDataCapture(dc);
@@ -656,7 +654,7 @@ public class TrackActivity extends AppCompatActivity implements
             DataCapture dc = new DataCapture();
             dc.setLatitude(location.getLatitude());
             dc.setLongitude(location.getLongitude());
-            dc.setDate(sdf.format(Calendar.getInstance().getTime()));
+            dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
 
             AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
             receiver.setDataCapture(dc);
@@ -667,7 +665,7 @@ public class TrackActivity extends AppCompatActivity implements
             startTrackPoint.setLatitude(location.getLatitude());
             startTrackPoint.setLongitude(location.getLongitude());
 //            startTrackPoint.setAddress(getStreet(location));
-            startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+            startTrackPoint.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
             AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
             receiver.setDataCapture(startTrackPoint);
             receiver.setIsInserted(true);
@@ -774,7 +772,7 @@ public class TrackActivity extends AppCompatActivity implements
 //            startTrackPoint.setLatitude(location.getLatitude());
 //            startTrackPoint.setLongitude(location.getLongitude());
 ////            startTrackPoint.setAddress(getStreet(location));
-//            startTrackPoint.setDate(sdf.format(Calendar.getInstance().getTime()));
+//            startTrackPoint.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
 //            AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
 //            receiver.setDataCapture(startTrackPoint);
 //            receiver.setIsInserted(true);
@@ -819,8 +817,8 @@ public class TrackActivity extends AppCompatActivity implements
                 // Elapsed
                 long time = 0;
                 try {
-                    Date dateStart = sdf.parse(st.getStartDateTime());
-                    Date dateEnd = sdf.parse(st.getEndDateTime());
+                    Date dateStart = DATE_FORMATTER_SAVE.parse(st.getStartDateTime());
+                    Date dateEnd = DATE_FORMATTER_SAVE.parse(st.getEndDateTime());
                     time = (dateEnd.getTime()-dateStart.getTime())/1000;
                 } catch (ParseException e) {
                     e.printStackTrace();
@@ -928,7 +926,7 @@ public class TrackActivity extends AppCompatActivity implements
         dc.setLongitude(loc.getLongitude());
         dc.setStopType(title);
         dc.setComment(text);
-        dc.setDate(sdf.format(Calendar.getInstance().getTime()));
+        dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
         saveData(dc);
 
         ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.STOP, title, loc);

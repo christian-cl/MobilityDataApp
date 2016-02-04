@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp.services;
+package com.example.christian.neotrack.services;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -10,8 +10,8 @@ import android.os.ResultReceiver;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.example.christian.mobilitydataapp.Constants;
-import com.example.christian.mobilitydataapp.R;
+import com.example.christian.neotrack.Constants;
+import com.example.christian.neotrack.R;
 
 import java.io.IOException;
 import java.util.ArrayList;

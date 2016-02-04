@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.neotrack;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;

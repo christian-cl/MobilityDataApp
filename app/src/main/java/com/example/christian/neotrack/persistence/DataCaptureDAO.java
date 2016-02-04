@@ -1,6 +1,5 @@
-package com.example.christian.mobilitydataapp.persistence;
+package com.example.christian.neotrack.persistence;
 
-import com.example.christian.mobilitydataapp.persistence.MySQLiteOpenHelper.TableDataCapture;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -24,10 +23,10 @@ public class DataCaptureDAO {
 
     private SQLiteDatabase db;
     private MySQLiteOpenHelper dbHelper;
-    private String[] columns = {TableDataCapture.COLUMN_ID,
-            TableDataCapture.COLUMN_LATITUDE, TableDataCapture.COLUMN_LONGITUDE,
-            TableDataCapture.COLUMN_ADDRESS, TableDataCapture.COLUMN_STOP_TYPE,
-            TableDataCapture.COLUMN_COMMENT, TableDataCapture.COLUMN_DATE};
+    private String[] columns = {MySQLiteOpenHelper.TableDataCapture.COLUMN_ID,
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_LATITUDE, MySQLiteOpenHelper.TableDataCapture.COLUMN_LONGITUDE,
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_ADDRESS, MySQLiteOpenHelper.TableDataCapture.COLUMN_STOP_TYPE,
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_COMMENT, MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE};
 
     public DataCaptureDAO(Context context) {
         dbHelper = new MySQLiteOpenHelper(context);
@@ -43,23 +42,23 @@ public class DataCaptureDAO {
 
     public void create(DataCapture dataCapture) {
         ContentValues values = new ContentValues();
-        values.put(TableDataCapture.COLUMN_LATITUDE, dataCapture.getLatitude());
-        values.put(TableDataCapture.COLUMN_LONGITUDE, dataCapture.getLongitude());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_LATITUDE, dataCapture.getLatitude());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_LONGITUDE, dataCapture.getLongitude());
         if(dataCapture.getAddress() != null)
-            values.put(TableDataCapture.COLUMN_ADDRESS, dataCapture.getAddress());
+            values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_ADDRESS, dataCapture.getAddress());
         if(dataCapture.getStopType() != null)
-            values.put(TableDataCapture.COLUMN_STOP_TYPE, dataCapture.getStopType());
+            values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_STOP_TYPE, dataCapture.getStopType());
         if(dataCapture.getComment() != null)
-            values.put(TableDataCapture.COLUMN_COMMENT, dataCapture.getComment());
+            values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_COMMENT, dataCapture.getComment());
         if(dataCapture.getDate() != null)
-            values.put(TableDataCapture.COLUMN_DATE, dataCapture.getDate());
-        db.insert(TableDataCapture.TABLE_NAME, null, values);
+            values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE, dataCapture.getDate());
+        db.insert(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME, null, values);
     }
 
     public List<DataCapture> getAll() {
         List<DataCapture> listDataCapture = new ArrayList<>();
 
-        Cursor cursor = db.query(TableDataCapture.TABLE_NAME, columns, null, null,
+        Cursor cursor = db.query(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME, columns, null, null,
                 null, null, null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -85,8 +84,8 @@ public class DataCaptureDAO {
 
         String[] arg = new String[] { dateFormatter.format(dateStart.getTime()),
                 dateFormatter.format(dateEnd.getTime())};
-        String where = TableDataCapture.COLUMN_DATE + ">=? and " + TableDataCapture.COLUMN_DATE + "<=?";
-        Cursor cursor = db.query(TableDataCapture.TABLE_NAME, columns, where,arg, null, null, null, null);
+        String where = MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE + ">=? and " + MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE + "<=?";
+        Cursor cursor = db.query(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME, columns, where,arg, null, null, null, null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -101,7 +100,7 @@ public class DataCaptureDAO {
 
     public void delete(DataCapture dataCapture) {
         long id = dataCapture.getId();
-        db.delete(TableDataCapture.TABLE_NAME, TableDataCapture.COLUMN_ID + " = " + id, null);
+        db.delete(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME, MySQLiteOpenHelper.TableDataCapture.COLUMN_ID + " = " + id, null);
     }
 
     /**
@@ -110,9 +109,9 @@ public class DataCaptureDAO {
      * @param dateEnd finish date
      */
     public void delete(String dateStart, String dateEnd) {
-        String where =  TableDataCapture.COLUMN_DATE + " <= \"" + dateEnd +
-                "\" and " + TableDataCapture.COLUMN_DATE + " >= \"" + dateStart + "\"";
-        db.delete(TableDataCapture.TABLE_NAME,where , null);
+        String where =  MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE + " <= \"" + dateEnd +
+                "\" and " + MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE + " >= \"" + dateStart + "\"";
+        db.delete(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME,where , null);
     }
 
     /**
@@ -127,7 +126,7 @@ public class DataCaptureDAO {
     }
 
     public void deleteAll() {
-        db.delete(TableDataCapture.TABLE_NAME, null, null);
+        db.delete(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME, null, null);
     }
 
     private DataCapture cursorToDataCapture(Cursor cursor) {

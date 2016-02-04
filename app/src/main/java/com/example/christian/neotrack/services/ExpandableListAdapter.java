@@ -1,26 +1,20 @@
-package com.example.christian.mobilitydataapp.services;
+package com.example.christian.neotrack.services;
 
-import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Typeface;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.example.christian.mobilitydataapp.ItineraryActivity;
-import com.example.christian.mobilitydataapp.ItineraryMapActivity;
-import com.example.christian.mobilitydataapp.R;
-import com.example.christian.mobilitydataapp.persistence.Itinerary;
-import com.example.christian.mobilitydataapp.persistence.Point;
-import com.google.android.gms.maps.model.LatLng;
+import com.example.christian.neotrack.ItineraryActivity;
+import com.example.christian.neotrack.R;
+import com.example.christian.neotrack.persistence.Itinerary;
+import com.example.christian.neotrack.persistence.Point;
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
 

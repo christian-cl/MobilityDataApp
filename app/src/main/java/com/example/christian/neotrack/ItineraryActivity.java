@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.neotrack;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,9 +12,9 @@ import android.view.Window;
 import android.widget.ExpandableListView;
 import android.widget.Toast;
 
-import com.example.christian.mobilitydataapp.persistence.Itinerary;
-import com.example.christian.mobilitydataapp.persistence.ItineraryDAO;
-import com.example.christian.mobilitydataapp.services.ExpandableListAdapter;
+import com.example.christian.neotrack.persistence.Itinerary;
+import com.example.christian.neotrack.persistence.ItineraryDAO;
+import com.example.christian.neotrack.services.ExpandableListAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;

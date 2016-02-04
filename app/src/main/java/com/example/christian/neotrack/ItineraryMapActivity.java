@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.neotrack;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -22,16 +22,15 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.example.christian.mobilitydataapp.persistence.Itinerary;
-import com.example.christian.mobilitydataapp.persistence.ItineraryDAO;
-import com.example.christian.mobilitydataapp.persistence.Point;
-import com.example.christian.mobilitydataapp.services.ItineraryArrayAdapter;
+import com.example.christian.neotrack.persistence.Itinerary;
+import com.example.christian.neotrack.persistence.ItineraryDAO;
+import com.example.christian.neotrack.persistence.Point;
+import com.example.christian.neotrack.services.ItineraryArrayAdapter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;

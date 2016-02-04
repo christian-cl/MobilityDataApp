@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp.fragments;
+package com.example.christian.neotrack.fragments;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.widget.DatePicker;
 
-import com.example.christian.mobilitydataapp.ConsultActivity;
+import com.example.christian.neotrack.ConsultActivity;
 
 import java.util.Calendar;
 

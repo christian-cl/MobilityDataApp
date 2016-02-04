@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp.persistence;
+package com.example.christian.neotrack.persistence;
 
 /**
  * Created by Christian Cintrano on 5/05/15.

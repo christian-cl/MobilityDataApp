@@ -4,7 +4,7 @@
  * Default Main Activity
  */
 
-package com.example.christian.mobilitydataapp;
+package com.example.christian.neotrack;
 
 import android.content.Context;
 import android.content.Intent;
@@ -19,8 +19,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.christian.mobilitydataapp.persistence.DataCapture;
-import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
+import com.example.christian.neotrack.persistence.DataCapture;
+import com.example.christian.neotrack.persistence.DataCaptureDAO;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
     public void sendMessageMapTab(View view) {
         // Do something in response to button
         // Activity is a subclass from context
-        Intent intent = new Intent(this, MapTabActivity.class);
+        Intent intent = new Intent(this, TrackActivity.class);
         // Init the activity
         startActivity(intent);
     }

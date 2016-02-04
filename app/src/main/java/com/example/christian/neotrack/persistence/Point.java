@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp.persistence;
+package com.example.christian.neotrack.persistence;
 
 import android.os.Parcel;
 import android.os.Parcelable;

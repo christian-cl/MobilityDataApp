@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp.fragments;
+package com.example.christian.neotrack.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.christian.mobilitydataapp.R;
+import com.example.christian.neotrack.R;
 
 /**
  * Created by Christian Cintrano on 14/05/15.

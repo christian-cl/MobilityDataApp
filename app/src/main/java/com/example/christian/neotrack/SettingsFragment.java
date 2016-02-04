@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp;
+package com.example.christian.neotrack;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -8,8 +8,8 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.util.Log;
 
-import com.example.christian.mobilitydataapp.persistence.DataCaptureDAO;
-import com.example.christian.mobilitydataapp.persistence.StreetTrackDAO;
+import com.example.christian.neotrack.persistence.DataCaptureDAO;
+import com.example.christian.neotrack.persistence.StreetTrackDAO;
 
 /**
  * Created by Christian Cintrano on 29/04/15.

@@ -1,4 +1,4 @@
-package com.example.christian.mobilitydataapp.fragments;
+package com.example.christian.neotrack.fragments;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -17,14 +17,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.example.christian.mobilitydataapp.MapTabActivity;
-import com.example.christian.mobilitydataapp.R;
-import com.example.christian.mobilitydataapp.persistence.DataCapture;
+import com.example.christian.neotrack.TrackActivity;
+import com.example.christian.neotrack.R;
+import com.example.christian.neotrack.persistence.DataCapture;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -147,7 +146,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(title != null) {
-                    Location loc = ((MapTabActivity) context)
+                    Location loc = ((TrackActivity) context)
                             .locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
                     String text = null;
@@ -162,7 +161,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     dc.setComment(text);
                     dc.setDate(sdf.format(Calendar.getInstance().getTime()));
 
-                    ((MapTabActivity) context).saveData(dc);
+                    ((TrackActivity) context).saveData(dc);
                     addMarker(Marker_Type.STOP, title, loc);
                 }
             }
