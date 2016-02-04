@@ -113,83 +113,41 @@ public class TrackActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_tab_map);
         mViewPager = (ViewPager) findViewById(R.id.fragment_container);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        configureActionBar(savedInstanceState);
 
         buildGoogleApiClient();
+
+        //
         mHandler = new Handler();
         addressHandler = new Handler();
-        configureActionBar(savedInstanceState);
-        configurePreference();
-        configureDialogWait();
-        configureLocation();
     }
-
-    private void configureLocation() {
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        boolean isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        if (isGPSEnabled) {
-            if (locationManager != null) {
-                // Register GPSStatus listener for events
-                locationManager.addGpsStatusListener(mGPSStatusListener);
-                gpsLocationListener = new LocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location) {
-                        myLocationChanged(location);
-                        if(!runningCaptureData) {
-                            startRepeatingTask();
-                        }
-                    }
-                    @Override
-                    public void onStatusChanged(String provider, int status, Bundle extras) {
-                        // TODO Auto-generated method stub
-                    }
-                    @Override
-                    public void onProviderEnabled(String provider) {
-                        Toast.makeText(TrackActivity.this, "Enabled new provider " + provider,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                    @Override
-                    public void onProviderDisabled(String provider) {
-                        Toast.makeText(TrackActivity.this, "Disabled provider " + provider,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                };
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                        intervalTimeGPS, minDistance, gpsLocationListener);
-            }
-        }
-    }
-
-    private void configurePreference() {
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        loadSettings();
-        PreferenceChangeListener preferenceListener = new PreferenceChangeListener();
-        pref.registerOnSharedPreferenceChangeListener(preferenceListener);
-    }
-
-    private void configureActionBar(Bundle savedInstanceState) {
-        final ActionBar bar = getSupportActionBar();
-        if (bar != null) {
-            bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-            bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
-
-            mTabsAdapter = new TabsAdapter(this, mViewPager);
-            mTabsAdapter.addTab(bar.newTab().setText("Mapa"), MapTabFragment.class, null);
-            mTabsAdapter.addTab(bar.newTab().setText("Datos"), TrackFragment.class, null);
-
-            if (savedInstanceState != null) {
-                bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
-            }
-        }
-    }
-
-
     @Override
     public void onResume() {
         super.onResume();
-        locationManager.addGpsStatusListener(mGPSStatusListener);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                intervalTimeGPS, minDistance, gpsLocationListener);
-//        startRepeatingTask();
+        mGPSStatusListener = new GpsStatus.Listener() {
+            public void onGpsStatusChanged(int event) {
+                switch (event) {
+                    case GpsStatus.GPS_EVENT_STARTED:
+                        Log.i("GPS", "Searching...");
+                        break;
+                    case GpsStatus.GPS_EVENT_STOPPED:
+                        Log.i("GPS", "STOPPED");
+                        break;
+                    case GpsStatus.GPS_EVENT_FIRST_FIX:
+                        // GPS_EVENT_FIRST_FIX Event is called when GPS is locked
+                        Log.i("GPS", "Locked position");
+                        ((MapTabFragment) mapFragment).setZoom(ZOOM);
+                        dialogWait.dismiss();
+                        break;
+                    case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+                        break;
+                }
+            }
+        };
+
+        configurePreference();
+        configureDialogWait();
+        configureLocation();
     }
 
     @Override
@@ -229,6 +187,71 @@ public class TrackActivity extends AppCompatActivity implements
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    private void configureLocation() {
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (locationManager != null &&
+                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+
+            // Register GPSStatus listener for events
+            locationManager.addGpsStatusListener(mGPSStatusListener);
+            gpsLocationListener = new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    myLocationChanged(location);
+                    if(!runningCaptureData) {
+                        startRepeatingTask();
+                    }
+                }
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {
+                    // TODO Auto-generated method stub
+                }
+                @Override
+                public void onProviderEnabled(String provider) {
+                    Toast.makeText(TrackActivity.this, "Enabled new provider " + provider,
+                            Toast.LENGTH_SHORT).show();
+                }
+                @Override
+                public void onProviderDisabled(String provider) {
+                    Toast.makeText(TrackActivity.this, "Disabled provider " + provider,
+                            Toast.LENGTH_SHORT).show();
+                }
+            };
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    intervalTimeGPS, minDistance, gpsLocationListener);
+        } else {
+            Toast.makeText(this, getResources().getString(R.string.gps_disabled),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void configurePreference() {
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
+        loadSettings();
+        PreferenceChangeListener preferenceListener = new PreferenceChangeListener();
+        pref.registerOnSharedPreferenceChangeListener(preferenceListener);
+    }
+
+    private void configureActionBar(Bundle savedInstanceState) {
+        final ActionBar bar = getSupportActionBar();
+        if (bar != null) {
+            bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+            bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
+
+            mTabsAdapter = new TabsAdapter(this, mViewPager);
+            mTabsAdapter.addTab(bar.newTab().setText(getResources().getString(R.string.map)),
+                    MapTabFragment.class, null);
+            mTabsAdapter.addTab(bar.newTab().setText(getResources().getString(R.string.data)),
+                    TrackFragment.class, null);
+
+            if (savedInstanceState != null) {
+                bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+            }
+        }
+    }
+
+
 
     public void displayItineraries(View view) {
         ItineraryDAO db = new ItineraryDAO(TrackActivity.this);
@@ -480,7 +503,7 @@ public class TrackActivity extends AppCompatActivity implements
     private void configureDialogWait() {
         dialogWait = new ProgressDialog(this);
         dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialogWait.setMessage(GPS_LOADING);
+        dialogWait.setMessage(getResources().getString(R.string.gps_loading));
         dialogWait.setIndeterminate(true);
         dialogWait.setCanceledOnTouchOutside(false);
         dialogWait.show();
@@ -490,7 +513,6 @@ public class TrackActivity extends AppCompatActivity implements
      * GPS
      */
 
-    private static final String GPS_LOADING = "Iniciando conexión GPS. Por favor, espere.";
 //    private static final String DATA_START = "Iniciando la recogida de los datos...";
 //    private static final String DATA_END = "Recogida de datos terminada";
 //    private static final String NEW_POSITION = "Guardando la siguiente posición: ";
@@ -518,34 +540,9 @@ public class TrackActivity extends AppCompatActivity implements
     public Handler mHandler;
     public Handler addressHandler;
     private Location currentLocation;
+    // Location
     private LocationListener gpsLocationListener;
-    public GpsStatus.Listener mGPSStatusListener = new GpsStatus.Listener() {
-        public void onGpsStatusChanged(int event) {
-            switch (event) {
-                case GpsStatus.GPS_EVENT_STARTED:
-                    Log.i("GPS", "Searching...");
-                    break;
-                case GpsStatus.GPS_EVENT_STOPPED:
-                    Log.i("GPS", "STOPPED");
-                    break;
-                case GpsStatus.GPS_EVENT_FIRST_FIX:
-                    // GPS_EVENT_FIRST_FIX Event is called when GPS is locked
-                    Log.i("GPS", "Locked position");
-                    gpsFirstFixed();
-                    break;
-                case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-//                    Log.i("GPS", "GPS_EVENT_SATELLITE_STATUS");
-//                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-//                    System.out.println(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
-//                    if (location != null) {
-//                        myLocationChanged(location);
-//                        String s = location.getLatitude() + ":" + location.getLongitude();
-//                        Log.i("GPS Info", s);
-//                    }
-                    break;
-            }
-        }
-    };
+    private GpsStatus.Listener mGPSStatusListener;
 
 
     private void loadSettings() {
@@ -567,21 +564,13 @@ public class TrackActivity extends AppCompatActivity implements
     private void myLocationChanged(Location location) {
         currentLocation = location;
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        setHiddenFragment();
+        setHiddenFragment(); // visual log
         ((MapTabFragment) mapFragment).setCamera(latLng);
-        processTrackData(location); // Global process information
         ((MapTabFragment) mapFragment)
                 .addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
-        if(isFirstLocation) {
-            ((MapTabFragment) mapFragment).setZoom(ZOOM);
-            isFirstLocation = false;
-        }
+        // save data
+        processTrackData(location); // Global process information
     }
-
-    private void gpsFirstFixed() {
-        dialogWait.dismiss();
-    }
-
 
     // Repeat process for catch information
     public Runnable mStatusChecker = new Runnable() {

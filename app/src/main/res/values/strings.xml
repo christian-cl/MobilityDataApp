@@ -71,6 +71,10 @@
     <string name="subtitle_itinerary_list">Lista de Itinerarios</string>
     <string name="add_itinerary">Añadir itinerario</string>
     <string name="button_settings">Opciones</string>
+    <string name="gps_disabled">GPS Desconectado</string>
+    <string name="map">Mapa</string>
+    <string name="data">Datos</string>
+    <string name="gps_loading">Iniciando conexión GPS. Por favor, espere.</string>
 
 
 </resources>
