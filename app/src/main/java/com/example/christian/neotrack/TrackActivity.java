@@ -102,8 +102,10 @@ public class TrackActivity extends AppCompatActivity implements
     TabsAdapter mTabsAdapter;
     private Fragment mapFragment;
     private Fragment trackFragment;
-    private boolean isFirstLocation = true;
     private String addressPattern = "ZZZZZZZZZZ"; // cadena imposible
+
+    // Database connections
+    private ItineraryDAO dbItinerary;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +150,9 @@ public class TrackActivity extends AppCompatActivity implements
         configurePreference();
         configureDialogWait();
         configureLocation();
+
+        dbItinerary = new ItineraryDAO(TrackActivity.this);
+        dbItinerary.open();
     }
 
     @Override
@@ -156,14 +161,7 @@ public class TrackActivity extends AppCompatActivity implements
         stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
         locationManager.removeGpsStatusListener(mGPSStatusListener);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        stopRepeatingTask();
-        locationManager.removeUpdates(gpsLocationListener);
-        locationManager.removeGpsStatusListener(mGPSStatusListener);
+        dbItinerary.close();
     }
 
     @Override
@@ -178,7 +176,7 @@ public class TrackActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.action_settings:
-                sendSettings();
+                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
                 return true;
             case R.id.action_save_file:
                 displaySaveFile();
@@ -251,28 +249,17 @@ public class TrackActivity extends AppCompatActivity implements
         }
     }
 
-
-
     public void displayItineraries(View view) {
-        ItineraryDAO db = new ItineraryDAO(TrackActivity.this);
-        db.open();
-        ArrayList<Itinerary> itineraryList = new ArrayList<>();
-        itineraryList.addAll(db.getAll());
-        db.close();
+        List<Itinerary> itineraryList = dbItinerary.getAll();
 
         List<String> list = new ArrayList<>();
         for(Itinerary i : itineraryList) {
             list.add(i.getName());
         }
 
-        String title = "Elija un itinerario";
         CharSequence[] array = list.toArray(new CharSequence[list.size()]);
-        Dialog dialog = onCreateDialogSingleChoice(title, array, itineraryList);
-        dialog.show();
-    }
-
-    public void sendSettings() {
-        startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+        onCreateDialogSingleChoice(getResources().getString(R.string.display_itineraries_title),
+                array, itineraryList).show();
     }
 
     /* Checks if external storage is available for read and write */

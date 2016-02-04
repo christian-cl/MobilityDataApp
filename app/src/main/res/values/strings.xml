@@ -75,6 +75,7 @@
     <string name="map">Mapa</string>
     <string name="data">Datos</string>
     <string name="gps_loading">Iniciando conexión GPS. Por favor, espere.</string>
+    <string name="display_itineraries_title">Elija un itinerario</string>
 
 
 </resources>
