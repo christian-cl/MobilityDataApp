@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -31,6 +32,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String BACKUP_DB_NAME = "backup";
@@ -41,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private SimpleDateFormat sdf;
 
     private DataCaptureDAO db;
+
+    private TextToSpeech mTts;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,6 +78,17 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.i("DB", "Now not need save backup");
         }
+
+        mTts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    mTts.setLanguage(new Locale("es", "ES"));
+                    mTts.speak( getResources().getString(R.string.speak_out_welcome), TextToSpeech.QUEUE_ADD, null);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -161,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
         DataCaptureDAO db = new DataCaptureDAO(this);
         db.open();
         List<DataCapture> data = db.get(dateStart, dateEnd);
-        Log.i("DB","Find " + data.size() + " elements");
+        Log.i("DB", "Find " + data.size() + " elements");
         String extension = ".csv";
         String folderName = "/mdaFolder";
         try {
@@ -221,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
     private Calendar getLastBackup() {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 
-        String lastDate = settings.getString(PREF_LAST_DATE_BACKUP,"");
+        String lastDate = settings.getString(PREF_LAST_DATE_BACKUP, "");
         Calendar cMinDate = Calendar.getInstance();
         try {
             cMinDate.setTime(sdf.parse(lastDate));

@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.app.DatePickerDialog;
@@ -104,6 +105,7 @@ public class TrackActivity extends AppCompatActivity implements
     private Fragment trackFragment;
     private boolean isFirstLocation = true;
     private String addressPattern = "ZZZZZZZZZZ"; // cadena imposible
+    private TextToSpeech speakerOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +150,16 @@ public class TrackActivity extends AppCompatActivity implements
         configurePreference();
         configureDialogWait();
         configureLocation();
+
+        speakerOut = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    speakerOut.setLanguage(new Locale("es", "ES"));
+//                    speakerOut.speak( getResources().getString(R.string.speak_out_welcome), TextToSpeech.QUEUE_ADD, null);
+                }
+            }
+        });
     }
 
     @Override
@@ -209,12 +221,14 @@ public class TrackActivity extends AppCompatActivity implements
                 }
                 @Override
                 public void onProviderEnabled(String provider) {
-                    Toast.makeText(TrackActivity.this, "Enabled new provider " + provider,
+                    Toast.makeText(TrackActivity.this,
+                            getResources().getString(R.string.enabled_provider) + provider,
                             Toast.LENGTH_SHORT).show();
                 }
                 @Override
                 public void onProviderDisabled(String provider) {
-                    Toast.makeText(TrackActivity.this, "Disabled provider " + provider,
+                    Toast.makeText(TrackActivity.this,
+                            getResources().getString(R.string.disabled_provider) + provider,
                             Toast.LENGTH_SHORT).show();
                 }
             };
@@ -265,7 +279,7 @@ public class TrackActivity extends AppCompatActivity implements
             list.add(i.getName());
         }
 
-        String title = "Elija un itinerario";
+        String title = getResources().getString(R.string.select_itinerary_title);
         CharSequence[] array = list.toArray(new CharSequence[list.size()]);
         Dialog dialog = onCreateDialogSingleChoice(title, array, itineraryList);
         dialog.show();
@@ -425,7 +439,7 @@ public class TrackActivity extends AppCompatActivity implements
                 newDate.set(year, monthOfYear, dayOfMonth);
                 etDateEnd.setText(DATE_FORMATTER_VIEW.format(newDate.getTime()));
             }
-        },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
+        }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
         dateEndDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, "Okay", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dlg2, int which) {
