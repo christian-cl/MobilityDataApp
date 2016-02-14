@@ -333,8 +333,56 @@ public class TrackActivity extends AppCompatActivity implements
     public void stopTracking(View view) {
         runningTracking = false;
         Log.i(TAG, "Stop capturing points");
+
+        // Display summary
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.tracking_summary)
+                .setMessage(printSummaryTracking(SESSION_ID));
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Reset sessionId
         newSessionId();
-//        Display summary
+    }
+
+    private String printSummaryTracking(String tag) {
+        long time = 0;
+        float distance = 0;
+
+        Log.i(TAG, "Search for sessionId: " + tag);
+        List<DataCapture> results = dbDataCapture.get(tag);
+        Log.i(TAG, "recover " + results.size() + " elements");
+        // time
+        if (results.size() > 0) {
+            Date dateStart = null;
+            Date dateEnd = null;
+            try {
+                dateStart = DATE_FORMATTER_SAVE.parse(results.get(0).getDate());
+                dateEnd = DATE_FORMATTER_SAVE.parse(results.get(results.size() - 1).getDate());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            if (dateStart != null && dateEnd != null) {
+                time = (dateEnd.getTime() - dateStart.getTime()) / 1000;
+            }
+            // distance
+            Location lastLoc = new Location("");
+            lastLoc.setLatitude(results.get(0).getLatitude());
+            lastLoc.setLongitude(results.get(0).getLongitude());
+            for (DataCapture dc : results) {
+                Location newLoc = new Location("");
+                newLoc.setLatitude(dc.getLatitude());
+                newLoc.setLongitude(dc.getLongitude());
+                distance += lastLoc.distanceTo(newLoc);
+                lastLoc = newLoc;
+            }
+        }
+
+        float vel = time == 0 ? distance * 3.6f / time : 0;
+        return "Tiempo del trayecto:\t" + time + "s.\n"
+                + "Distancia recorrida:\t" + distance + "m.\n"
+                + "Velocidad media:\t" + vel + "km/h\n"
+                + "Número de paradas:\t" +  "\n";
     }
 
     public void sendSettings() {
@@ -1082,6 +1130,7 @@ public class TrackActivity extends AppCompatActivity implements
             dc.setLatitude(location.getLatitude());
             dc.setLongitude(location.getLongitude());
             dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
+            dc.setAddress(SESSION_ID);
             dbDataCapture.create(dc);
         }
 
@@ -1091,8 +1140,13 @@ public class TrackActivity extends AppCompatActivity implements
             }
         }
 
-        private double distance(Location location, Point point) {
-            return Math.sqrt(Math.pow(location.getLatitude() - point.getLatitude(), 2) + Math.pow(location.getLongitude() - point.getLongitude(), 2));
-        }
+    }
+
+    private static double distance(Location location, Point point) {
+        return Math.sqrt(Math.pow(location.getLatitude() - point.getLatitude(), 2) + Math.pow(location.getLongitude() - point.getLongitude(), 2));
+    }
+
+    private static double distance(double x0, double y0, double x1, double y1) {
+        return Math.sqrt(Math.pow(x0 - x1, 2) + Math.pow(y0 - y1, 2));
     }
 }

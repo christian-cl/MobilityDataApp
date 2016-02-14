@@ -97,6 +97,29 @@ public class DataCaptureDAO {
         cursor.close();
         return listDataCapture;
     }
+    /**
+     * List of elements of a specific session
+     *
+     * @param sessionId sessionId
+     * @return list of results
+     */
+    public List<DataCapture> get(String sessionId) {
+        List<DataCapture> listDataCapture = new ArrayList<>();
+
+        String[] arg = new String[] {sessionId};
+        String where = MySQLiteOpenHelper.TableDataCapture.COLUMN_ADDRESS + "=?";
+        Cursor cursor = db.query(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME, columns, where,arg, null, null, MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE + " ASC", null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            DataCapture dataCapture = cursorToDataCapture(cursor);
+            listDataCapture.add(dataCapture);
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        return listDataCapture;
+    }
 
     public void delete(DataCapture dataCapture) {
         long id = dataCapture.getId();

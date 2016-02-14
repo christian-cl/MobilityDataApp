@@ -83,6 +83,7 @@
     <string name="speak_out_visit_itinerary_point">punto del itienerario visitado</string>
     <string name="b_start_tracking">Start</string>
     <string name="b_stop_tracking">Stop</string>
+    <string name="tracking_summary">Resumen del trayecto</string>
 
 
 </resources>
