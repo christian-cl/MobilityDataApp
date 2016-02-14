@@ -203,7 +203,7 @@ public class TrackActivity extends AppCompatActivity implements
     @Override
     public void onPause() {
         super.onPause();
-        stopRepeatingTask();
+//        stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
         locationManager.removeGpsStatusListener(mGPSStatusListener);
         dbDataCapture.close();
