@@ -81,6 +81,7 @@
     <string name="speak_out_welcome">Bienvenido a neo Track</string>
     <string name="speak_out_itinerary_added">Se ha añadido un itinerario con</string>
     <string name="speak_out_visit_itinerary_point">punto del itienerario visitado</string>
+    <string name="b_start_tracking">Start</string>
 
 
 </resources>

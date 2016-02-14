@@ -75,6 +75,7 @@ import java.util.Locale;
 public class TrackActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
+    final static private String TAG = "TrackActivity";
     private final static int REQ_CODE_SPEECH_INPUT = 100;
 
     private final static String DIALOG_SAVE_FILE_TITLE = "Guardar archivo";
@@ -109,6 +110,7 @@ public class TrackActivity extends AppCompatActivity implements
     public TextToSpeech speakerOut;
     private boolean speakerOutReady = false;
     private Itinerary visitItinerary;
+    private boolean runningTracking = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -288,6 +290,12 @@ public class TrackActivity extends AppCompatActivity implements
         CharSequence[] array = list.toArray(new CharSequence[list.size()]);
         Dialog dialog = onCreateDialogSingleChoice(title, array, itineraryList);
         dialog.show();
+    }
+
+    public void controlTracking(View view) {
+        runningTracking = !runningTracking;
+        Log.i(TAG, "capturing points: " + runningTracking );
+//        Dysplay stuff
     }
 
     public void sendSettings() {
@@ -581,10 +589,16 @@ public class TrackActivity extends AppCompatActivity implements
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         setHiddenFragment(); // visual log
         ((MapTabFragment) mapFragment).setCamera(latLng);
+        // Print marker car position
         ((MapTabFragment) mapFragment)
                 .addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
 
-        new SavePointTask().execute(new SavePointInput(visitItinerary, location));
+        if (runningTracking) {
+            // Print marker track point
+            ((MapTabFragment) mapFragment)
+                    .addMarker(MapTabFragment.Marker_Type.GPS, null,currentLocation);
+            new SavePointTask().execute(new SavePointInput(visitItinerary, location));
+        }
 //        // save data
 //        processTrackData(location); // Global process information
     }
@@ -1011,7 +1025,8 @@ public class TrackActivity extends AppCompatActivity implements
 
         @Override
         protected Boolean doInBackground(SavePointInput... params) {
-//            savePoint( (Point) params[0].getItinerary().getPoints().get(0));
+//            savePoint(params[0].getLocation());
+            // Check itinerary
             if (params[0].getItinerary() != null) {
                 double distance = distance(params[0].getLocation(), (Point) params[0].getItinerary().getPoints().get(0));
                 if (distance < MIN_DISTANCE) {
@@ -1022,10 +1037,10 @@ public class TrackActivity extends AppCompatActivity implements
             return false;
         }
 
-        private void savePoint(Point point) {
+        private void savePoint(Location location) {
             DataCapture dc = new DataCapture();
-            dc.setLatitude(point.getLatitude());
-            dc.setLongitude(point.getLongitude());
+            dc.setLatitude(location.getLatitude());
+            dc.setLongitude(location.getLongitude());
             dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
         }
 
