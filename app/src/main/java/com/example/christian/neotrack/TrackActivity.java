@@ -10,8 +10,10 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.FragmentManager;
@@ -112,6 +114,10 @@ public class TrackActivity extends AppCompatActivity implements
     private Itinerary visitItinerary;
     private boolean runningTracking = false;
 
+    public DataCaptureDAO dbDataCapture;
+    private String SESSION_ID;
+    final static private String TAG_SESSION_ID = "SESSION_ID";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Configure Interface
@@ -125,12 +131,25 @@ public class TrackActivity extends AppCompatActivity implements
         buildGoogleApiClient();
 
         //
-        mHandler = new Handler();
-        addressHandler = new Handler();
+//        mHandler = new Handler();
+//        addressHandler = new Handler();
+        newSessionId();
+        dbDataCapture = new DataCaptureDAO(this);
+
     }
+
+    private void newSessionId() {
+        String android_id = Settings.Secure.getString(this.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+        String timestamp = DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime());
+        SESSION_ID = android_id + "::" + timestamp;
+        Log.i(TAG, "new session ID: "+ SESSION_ID);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+        dbDataCapture.open();
         mGPSStatusListener = new GpsStatus.Listener() {
             public void onGpsStatusChanged(int event) {
                 switch (event) {
@@ -170,20 +189,33 @@ public class TrackActivity extends AppCompatActivity implements
     }
 
     @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        SESSION_ID = savedInstanceState.getString(TAG_SESSION_ID);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        outState.putString(TAG_SESSION_ID, SESSION_ID);
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
         locationManager.removeGpsStatusListener(mGPSStatusListener);
+        dbDataCapture.close();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        stopRepeatingTask();
-        locationManager.removeUpdates(gpsLocationListener);
-        locationManager.removeGpsStatusListener(mGPSStatusListener);
-    }
+//    @Override
+//    public void onDestroy() {
+//        super.onDestroy();
+//        stopRepeatingTask();
+//        locationManager.removeUpdates(gpsLocationListener);
+//        locationManager.removeGpsStatusListener(mGPSStatusListener);
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -294,8 +326,15 @@ public class TrackActivity extends AppCompatActivity implements
 
     public void controlTracking(View view) {
         runningTracking = !runningTracking;
-        Log.i(TAG, "capturing points: " + runningTracking );
-//        Dysplay stuff
+        Log.i(TAG, "capturing points: " + runningTracking);
+//        Display stuff (change play icon to pause icon)
+    }
+
+    public void stopTracking(View view) {
+        runningTracking = false;
+        Log.i(TAG, "Stop capturing points");
+        newSessionId();
+//        Display summary
     }
 
     public void sendSettings() {
@@ -1025,7 +1064,8 @@ public class TrackActivity extends AppCompatActivity implements
 
         @Override
         protected Boolean doInBackground(SavePointInput... params) {
-//            savePoint(params[0].getLocation());
+            // Save point
+            savePoint(params[0].getLocation());
             // Check itinerary
             if (params[0].getItinerary() != null) {
                 double distance = distance(params[0].getLocation(), (Point) params[0].getItinerary().getPoints().get(0));
@@ -1042,6 +1082,7 @@ public class TrackActivity extends AppCompatActivity implements
             dc.setLatitude(location.getLatitude());
             dc.setLongitude(location.getLongitude());
             dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
+            dbDataCapture.create(dc);
         }
 
         protected void onPostExecute(Boolean wasItineraryPoint) {

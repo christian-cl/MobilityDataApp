@@ -35,6 +35,19 @@
         android:background="@android:color/transparent"
         android:tint="#ff3128"
         android:onClick="controlTracking"/>
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/b_stop_tracking"
+        android:text="@string/b_stop_tracking"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/b_start_tracking"
+        android:layout_toEndOf="@+id/b_start_tracking"
+        android:foregroundTint="#ff3128"
+        android:foregroundTintMode="multiply"
+        android:background="@android:color/transparent"
+        android:tint="#ff3128"
+        android:onClick="stopTracking"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -71,8 +84,8 @@
         android:src="@mipmap/ic_add_white"
         android:contentDescription="@string/description"
         android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/b_start_tracking"
-        android:layout_toEndOf="@+id/b_start_tracking" />
+        android:layout_toRightOf="@+id/b_stop_tracking"
+        android:layout_toEndOf="@+id/b_stop_tracking" />
 
     <!--<LinearLayout-->
         <!--android:layout_width="match_parent"-->

@@ -82,6 +82,7 @@
     <string name="speak_out_itinerary_added">Se ha añadido un itinerario con</string>
     <string name="speak_out_visit_itinerary_point">punto del itienerario visitado</string>
     <string name="b_start_tracking">Start</string>
+    <string name="b_stop_tracking">Stop</string>
 
 
 </resources>
