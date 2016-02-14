@@ -74,7 +74,7 @@
             android:layout_margin="@dimen/abc_button_inset_vertical_material"
             android:elevation="@dimen/abc_action_bar_content_inset_material"
             android:background="@color/material_amber_A200"
-            android:drawableTop="@drawable/ic_settings_white_48dp"
+            android:drawableTop="@drawable/ic_action_save"
             android:textColor="@color/material_white"
             style="?android:attr/buttonBarButtonStyle"
             android:padding="@dimen/abc_button_inset_vertical_material" />

@@ -8,6 +8,7 @@ import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
@@ -105,7 +106,9 @@ public class TrackActivity extends AppCompatActivity implements
     private Fragment trackFragment;
     private boolean isFirstLocation = true;
     private String addressPattern = "ZZZZZZZZZZ"; // cadena imposible
-    private TextToSpeech speakerOut;
+    public TextToSpeech speakerOut;
+    private boolean speakerOutReady = false;
+    private Itinerary visitItinerary;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +141,7 @@ public class TrackActivity extends AppCompatActivity implements
                     case GpsStatus.GPS_EVENT_FIRST_FIX:
                         // GPS_EVENT_FIRST_FIX Event is called when GPS is locked
                         Log.i("GPS", "Locked position");
+                        setHiddenFragment(); // visual log
                         ((MapTabFragment) mapFragment).setZoom(ZOOM);
                         dialogWait.dismiss();
                         break;
@@ -157,6 +161,7 @@ public class TrackActivity extends AppCompatActivity implements
                 if(status != TextToSpeech.ERROR) {
                     speakerOut.setLanguage(new Locale("es", "ES"));
 //                    speakerOut.speak( getResources().getString(R.string.speak_out_welcome), TextToSpeech.QUEUE_ADD, null);
+                    speakerOutReady = true;
                 }
             }
         });
@@ -211,9 +216,9 @@ public class TrackActivity extends AppCompatActivity implements
                 @Override
                 public void onLocationChanged(Location location) {
                     myLocationChanged(location);
-                    if(!runningCaptureData) {
-                        startRepeatingTask();
-                    }
+//                    if(!runningCaptureData) {
+//                        startRepeatingTask();
+//                    }
                 }
                 @Override
                 public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -306,8 +311,8 @@ public class TrackActivity extends AppCompatActivity implements
         dbST.open();
         List<DataCapture> data = db.get(newDateStart, newDateEnd);
         List<StreetTrack> dataST = dbST.getAll();
-        Log.i("DB","Find " + data.size() + " DataCapture elements");
-        Log.i("DB","Find " + dataST.size() + " StreetTrack elements");
+        Log.i("DB", "Find " + data.size() + " DataCapture elements");
+        Log.i("DB", "Find " + dataST.size() + " StreetTrack elements");
         String extension = ".csv";
         String folderName = "/neoTrack";
         try {
@@ -499,11 +504,7 @@ public class TrackActivity extends AppCompatActivity implements
         });
         etDateStart.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
         etDateEnd.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
-        etNameSaveFile.setText(getNameSaveFile());
-    }
-
-    private String getNameSaveFile() {
-        return "info_track" + "_" + etDateStart.getText() + "_" + etDateEnd.getText();
+        etNameSaveFile.setText("info_track_" + etDateStart.getText() + "_" + etDateEnd.getText());
     }
 
     @Override
@@ -582,9 +583,31 @@ public class TrackActivity extends AppCompatActivity implements
         ((MapTabFragment) mapFragment).setCamera(latLng);
         ((MapTabFragment) mapFragment)
                 .addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
-        // save data
-        processTrackData(location); // Global process information
+
+        new SavePointTask().execute(new SavePointInput(visitItinerary, location));
+//        // save data
+//        processTrackData(location); // Global process information
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Repeat process for catch information
     public Runnable mStatusChecker = new Runnable() {
@@ -968,6 +991,8 @@ public class TrackActivity extends AppCompatActivity implements
 
     private void displayItineraySelected(Itinerary itinerary) {
         ((MapTabFragment) mapFragment).clearItineraryMarkers();
+        if(speakerOutReady)
+            speakerOut.speak(getResources().getString(R.string.speak_out_itinerary_added) + itinerary.getPoints().size() + " puntos", TextToSpeech.QUEUE_ADD, null);
 
         for(Object point : itinerary.getPoints()) {
             Location location = new Location("Test");
@@ -975,6 +1000,43 @@ public class TrackActivity extends AppCompatActivity implements
             location.setLongitude(((Point) point).getLongitude());
             ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.ITINERARY,
                     ((Point) point).getAddress(), location);
+        }
+        visitItinerary = itinerary;
+    }
+
+
+
+    public class SavePointTask extends AsyncTask<SavePointInput, Void, Boolean> {
+        private float MIN_DISTANCE = 0.00015f; // 15 meters
+
+        @Override
+        protected Boolean doInBackground(SavePointInput... params) {
+//            savePoint( (Point) params[0].getItinerary().getPoints().get(0));
+            if (params[0].getItinerary() != null) {
+                double distance = distance(params[0].getLocation(), (Point) params[0].getItinerary().getPoints().get(0));
+                if (distance < MIN_DISTANCE) {
+                    params[0].getItinerary().getPoints().remove(0);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void savePoint(Point point) {
+            DataCapture dc = new DataCapture();
+            dc.setLatitude(point.getLatitude());
+            dc.setLongitude(point.getLongitude());
+            dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
+        }
+
+        protected void onPostExecute(Boolean wasItineraryPoint) {
+            if (wasItineraryPoint && speakerOutReady) {
+                speakerOut.speak( getResources().getString(R.string.speak_out_visit_itinerary_point), TextToSpeech.QUEUE_ADD, null);
+            }
+        }
+
+        private double distance(Location location, Point point) {
+            return Math.sqrt(Math.pow(location.getLatitude() - point.getLatitude(), 2) + Math.pow(location.getLongitude() - point.getLongitude(), 2));
         }
     }
 }

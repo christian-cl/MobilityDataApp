@@ -21,6 +21,7 @@
 
     </LinearLayout>
 
+    <!--android:src="@drawable/ic_pause_circle_filled_white_48dp"-->
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,7 +29,6 @@
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/action_display_itineraries"
         android:layout_toEndOf="@+id/action_display_itineraries"
-        android:src="@drawable/ic_pause_circle_filled_white_48dp"
         android:foregroundTint="#ff3128"
         android:foregroundTintMode="multiply"
         android:background="@android:color/transparent"
@@ -44,6 +44,7 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:onClick="displayItineraries" />
 
+    <!--android:src="@drawable/ic_mic_white_48dp"-->
     <ImageButton
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="wrap_content"
@@ -51,7 +52,6 @@
         android:id="@+id/stop_button_speak"
         android:elevation="30dp"
         android:background="@drawable/circle"
-        android:src="@drawable/ic_mic_white_48dp"
         android:contentDescription="@string/description"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/stop_button"

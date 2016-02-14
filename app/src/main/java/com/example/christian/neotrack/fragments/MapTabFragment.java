@@ -215,6 +215,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                         .icon(BitmapDescriptorFactory
                                 .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 ));
+                break;
             default: Log.e("MAP", "Marker type is not valid");
         }
     }

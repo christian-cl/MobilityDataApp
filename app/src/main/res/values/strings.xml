@@ -75,6 +75,12 @@
     <string name="map">Mapa</string>
     <string name="data">Datos</string>
     <string name="gps_loading">Iniciando conexión GPS. Por favor, espere.</string>
+    <string name="enabled_provider">Enabled provider</string>
+    <string name="disabled_provider">Disabled provider</string>
+    <string name="select_itinerary_title">Seleccione un itinerario</string>
+    <string name="speak_out_welcome">Bienvenido a neo Track</string>
+    <string name="speak_out_itinerary_added">Se ha añadido un itinerario con</string>
+    <string name="speak_out_visit_itinerary_point">punto del itienerario visitado</string>
 
 
 </resources>
