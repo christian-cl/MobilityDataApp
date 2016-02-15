@@ -378,7 +378,7 @@ public class TrackActivity extends AppCompatActivity implements
             }
         }
 
-        float vel = time == 0 ? distance * 3.6f / time : 0;
+        float vel = time != 0 ? distance * 3.6f / time : 1;
         return "Tiempo del trayecto:\t" + time + "s.\n"
                 + "Distancia recorrida:\t" + distance + "m.\n"
                 + "Velocidad media:\t" + vel + "km/h\n"
