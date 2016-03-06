@@ -47,7 +47,7 @@ import java.util.Locale;
 public class MapTabFragment extends Fragment implements View.OnClickListener {
 
     private final static int REQ_CODE_SPEECH_INPUT = 100;
-    private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
+    private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros", "Reanudar"};
 
     public static enum Marker_Type {GPS, STOP, POSITION, ITINERARY}
 
@@ -77,6 +77,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
 
         ImageButton bStop = (ImageButton) view.findViewById(R.id.stop_button);
         ImageButton bStopSpeak = (ImageButton) view.findViewById(R.id.stop_button_speak);
+
 //        Button bStart = (Button) view.findViewById(R.id.start_button);
 //        Button bEnd = (Button) view.findViewById(R.id.end_button);
         bStop.setOnClickListener(this);
@@ -161,7 +162,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     dc.setComment(text);
                     dc.setDate(sdf.format(Calendar.getInstance().getTime()));
 
-                    ((TrackActivity) context).saveData(dc);
+                    ((TrackActivity) context).runSaveData(dc);
                     addMarker(Marker_Type.STOP, title, loc);
                 }
             }
@@ -237,10 +238,10 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 displayStopChoices();
                 break;
 
-            case R.id.stop_button_speak:
-                Log.i("Click", "stop_button_speak");
-                promptSpeechInput();
-                break;
+//            case R.id.stop_button_speak:
+//                Log.i("Click", "stop_button_speak");
+//                promptSpeechInput();
+//                break;
 
 //            case R.id.start_button:
 //                Log.i("Click", "start_button");

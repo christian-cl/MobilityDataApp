@@ -27,19 +27,21 @@
         android:layout_height="wrap_content"
         android:id="@+id/b_start_tracking"
         android:text="@string/b_start_tracking"
+        android:src="@drawable/ic_play_arrow_white_48dp"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/action_display_itineraries"
         android:layout_toEndOf="@+id/action_display_itineraries"
-        android:foregroundTint="#ff3128"
+        android:foregroundTint="#28ff4f"
         android:foregroundTintMode="multiply"
         android:background="@android:color/transparent"
-        android:tint="#ff3128"
+        android:tint="#28fd4f"
         android:onClick="controlTracking"/>
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/b_stop_tracking"
         android:text="@string/b_stop_tracking"
+        android:src="@drawable/ic_stop_white_48dp"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/b_start_tracking"
         android:layout_toEndOf="@+id/b_start_tracking"
@@ -62,17 +64,6 @@
 
     <!-- ADDED MARKERS BUTTONS -->
     <!--android:src="@drawable/ic_mic_white_48dp"-->
-    <ImageButton
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/stop_button_speak"
-        android:elevation="30dp"
-        android:background="@drawable/circle"
-        android:contentDescription="@string/description"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/stop_button"
-        android:layout_toEndOf="@+id/stop_button" />
 
     <ImageButton
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -83,9 +74,21 @@
         android:background="@drawable/circle"
         android:src="@mipmap/ic_add_white"
         android:contentDescription="@string/description"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/b_stop_tracking"
-        android:layout_toEndOf="@+id/b_stop_tracking" />
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+    <ImageButton
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/stop_button_speak"
+        android:elevation="30dp"
+        android:src="@drawable/ic_action_microphone"
+        android:background="@drawable/circle"
+        android:contentDescription="@string/description"
+        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@+id/stop_button"
+        android:layout_toRightOf="@+id/stop_button" />
 
     <!--<LinearLayout-->
         <!--android:layout_width="match_parent"-->
