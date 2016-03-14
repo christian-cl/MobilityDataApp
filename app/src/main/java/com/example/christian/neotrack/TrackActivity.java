@@ -376,6 +376,9 @@ public class TrackActivity extends AppCompatActivity implements
                 distance += lastLoc.distanceTo(newLoc);
                 lastLoc = newLoc;
             }
+
+            // Save data of itinerary automatically
+            saveTrack(results, time, distance);
         }
 
         float vel = time != 0 ? distance * 3.6f / time : 1;
@@ -479,6 +482,70 @@ public class TrackActivity extends AppCompatActivity implements
                 }
                 if(outST != null) {
                     outST.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void saveTrack(List<DataCapture> results, float time, float distance) {
+        Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
+        Log.i("DB", "Saving file...");
+
+        String fileName = "itinerary" + SESSION_ID;
+
+        FileOutputStream out = null;
+        String extension = ".csv";
+        String folderName = "/neoTrack";
+        try {
+            if(isExternalStorageWritable()) {
+                String path = Environment.getExternalStorageDirectory().toString();
+                File dir = new File(path + folderName);
+                dir.mkdirs();
+                File file = new File (dir, fileName + extension);
+                out = new FileOutputStream(file);
+            } else {
+                out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
+            }
+            String head = "ID\ttime\tdistance\n";
+            out.write(head.getBytes());
+            out.write((SESSION_ID + "\t" + time + "\t" + distance + "\n").getBytes());
+            head = "_id\tlatitude\tlongitude\tstreet\tstoptype\tcomment\tdate\n";
+            out.write(head.getBytes());
+            for(DataCapture dc : results) {
+                out.write((String.valueOf(dc.getId()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getLatitude()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + "\t").getBytes());
+                if(dc.getAddress() != null) {
+                    out.write(("\"" + dc.getAddress() + "\"\t").getBytes());
+                } else {
+                    out.write(("null\t").getBytes());
+                }
+                if(dc.getStopType() != null) {
+                    out.write(("\"" + dc.getStopType() + "\"\t").getBytes());
+                } else {
+                    out.write(("null\t").getBytes());
+                }
+                if(dc.getComment() != null) {
+                    out.write(("\"" + dc.getComment() + "\"\t").getBytes());
+                } else {
+                    out.write(("null\t").getBytes());
+                }
+                out.write(("\"" + dc.getDate() + "\"\n").getBytes());
+            }
+            out.flush();
+            out.close();
+
+                       Log.i("DB", "File saved");
+            Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+//                db.close();
+                if (out != null) {
+                    out.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -690,6 +757,9 @@ public class TrackActivity extends AppCompatActivity implements
 //        processTrackData(location); // Global process information
     }
 
+    public void runSaveData(DataCapture dc) {
+        new SavePointTask2().execute(new SavePointInput2(visitItinerary,dc));
+    }
 
 
 
@@ -1028,8 +1098,8 @@ public class TrackActivity extends AppCompatActivity implements
     }
 
     private String getStopType(ArrayList<String> result) {
-        final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
-        final String[] stopChoicesPattern = {"asco", "bra", "ente", "tro"};
+        final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros", "Reanudar"};
+        final String[] stopChoicesPattern = {"asco", "bra", "ente", "tro", "anudar"};
 
         for(String str : result) {
          System.out.println(str);
@@ -1138,6 +1208,41 @@ public class TrackActivity extends AppCompatActivity implements
             if (wasItineraryPoint && speakerOutReady) {
                 speakerOut.speak( getResources().getString(R.string.speak_out_visit_itinerary_point), TextToSpeech.QUEUE_ADD, null);
             }
+        }
+
+    }
+
+    public class SavePointTask2 extends AsyncTask<SavePointInput2, Void, Boolean> {
+        private float MIN_DISTANCE = 0.00015f; // 15 meters
+
+        @Override
+        protected Boolean doInBackground(SavePointInput2... params) {
+            // Save point
+            savePoint(params[0].getLocation());
+            // Check itinerary
+            if (params[0].getItinerary() != null) {
+                Location loc = new Location("");
+                loc.setLatitude(params[0].getLocation().getLatitude());
+                loc.setLongitude(params[0].getLocation().getLongitude());
+                double distance = distance(loc, (Point) params[0].getItinerary().getPoints().get(0));
+                if (distance < MIN_DISTANCE) {
+                    params[0].getItinerary().getPoints().remove(0);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void savePoint(DataCapture location) {
+            DataCapture dc = location;
+            dc.setAddress(SESSION_ID);
+            dbDataCapture.create(dc);
+        }
+
+        protected void onPostExecute(Boolean wasItineraryPoint) {
+//            if (wasItineraryPoint && speakerOutReady) {
+                speakerOut.speak( getResources().getString(R.string.speak_out_stop_added), TextToSpeech.QUEUE_ADD, null);
+//            }
         }
 
     }
