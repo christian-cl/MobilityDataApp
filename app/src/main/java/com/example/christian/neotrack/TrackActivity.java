@@ -1115,7 +1115,7 @@ public class TrackActivity extends AppCompatActivity implements
             // Save point
             savePoint(params[0].getLocation());
             // Check itinerary
-            if (params[0].getItinerary() != null) {
+            if ((params[0].getItinerary() != null) && (params[0].getItinerary().getPoints().size() > 0)) {
                 double distance = distance(params[0].getLocation(), (Point) params[0].getItinerary().getPoints().get(0));
                 if (distance < MIN_DISTANCE) {
                     params[0].getItinerary().getPoints().remove(0);
