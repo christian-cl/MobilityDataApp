@@ -3,18 +3,26 @@ package com.example.christian.neotrack;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.hardware.TriggerEvent;
+import android.hardware.TriggerEventListener;
 import android.location.Geocoder;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.os.PersistableBundle;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
@@ -51,6 +59,7 @@ import com.example.christian.neotrack.persistence.Point;
 import com.example.christian.neotrack.persistence.StreetTrack;
 import com.example.christian.neotrack.persistence.StreetTrackDAO;
 import com.example.christian.neotrack.services.FetchAddressIntentService;
+import com.example.christian.neotrack.services.MyRecognitionListener;
 import com.example.christian.neotrack.services.TabsAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -118,6 +127,15 @@ public class TrackActivity extends AppCompatActivity implements
     private String SESSION_ID;
     final static private String TAG_SESSION_ID = "SESSION_ID";
 
+    public SpeechRecognizer sr;
+
+    private SensorManager mSensorManager;
+    private Sensor mSensor;
+    private TriggerEventListener mTriggerEventListener;
+    public boolean speeching = false;
+    public boolean newSpeech = false;
+    private boolean getNewSpeechReady = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Configure Interface
@@ -135,6 +153,8 @@ public class TrackActivity extends AppCompatActivity implements
 //        addressHandler = new Handler();
         newSessionId();
         dbDataCapture = new DataCaptureDAO(this);
+
+
 
     }
 
@@ -186,6 +206,79 @@ public class TrackActivity extends AppCompatActivity implements
                 }
             }
         });
+
+//        Intent mSpeechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+//        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+//                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+//        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE,
+//                this.getPackageName());
+//        sr.startListening(mSpeechRecognizerIntent);
+
+        sr = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
+        MyRecognitionListener listener = new MyRecognitionListener(this);
+        sr.setRecognitionListener(listener);
+//        sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
+
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+//        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        mSensorManager.registerListener(new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                Sensor mySensor = event.sensor;
+
+                if (mySensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+//                    Log.i("Sensor", event.values[0] + " " + event.values[1] + " " + event.values[2]);
+                    // alpha is calculated as t / (t + dT)
+                    // with t, the low-pass filter's time-constant
+                    // and dT, the event delivery rate
+                    float x = event.values[0];
+                    float y = event.values[1];
+                    float z = event.values[2];
+                    if(Math.sqrt((x * x) + (y * y) + (z * z)) < 1.0f) {
+                        if(getNewSpeechReady && !speeching) {
+                            speeching = true;
+                            getNewSpeechReady = false;
+                            Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
+                            restartSpeech();
+                        }
+                    } else {
+                        getNewSpeechReady = true;
+                    }
+
+                }
+                if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                    float x = event.values[0];
+                    float y = event.values[1];
+                    float z = event.values[2];
+                    if(Math.sqrt((x*x) + (y*y) + (z*z)) > 11.0f)
+                    Log.i("Sensor", Math.sqrt((x*x) + (y*y) + (z*z)) + "\t" + x + "\t" + y + "\t" + z);
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+            }
+        }, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+    }
+
+    public void restartSpeech() {
+//        sr.stopListening();
+//        sr.cancel();
+//        MyRecognitionListener listener = new MyRecognitionListener(this);
+//        sr.setRecognitionListener(listener);
+//        Log.i("test", "test");
+//        MyRecognitionListener listener = new MyRecognitionListener(this);
+//        sr.setRecognitionListener(listener);
+//        sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
+//        sr.stopListening();
+//        sr.cancel();
+//        sr = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
+//        MyRecognitionListener listener = new MyRecognitionListener(this);
+//        sr.setRecognitionListener(listener);
+        sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
     }
 
     @Override
@@ -207,15 +300,17 @@ public class TrackActivity extends AppCompatActivity implements
         locationManager.removeUpdates(gpsLocationListener);
         locationManager.removeGpsStatusListener(mGPSStatusListener);
         dbDataCapture.close();
+
+        sr.stopListening();
     }
 
-//    @Override
-//    public void onDestroy() {
-//        super.onDestroy();
-//        stopRepeatingTask();
-//        locationManager.removeUpdates(gpsLocationListener);
-//        locationManager.removeGpsStatusListener(mGPSStatusListener);
-//    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        sr.stopListening();
+        sr.cancel();
+        sr.destroy();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

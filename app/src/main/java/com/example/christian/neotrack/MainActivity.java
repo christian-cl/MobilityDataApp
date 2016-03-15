@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             public void onInit(int status) {
                 if(status != TextToSpeech.ERROR) {
                     mTts.setLanguage(new Locale("es", "ES"));
-                    mTts.speak( getResources().getString(R.string.speak_out_welcome), TextToSpeech.QUEUE_ADD, null);
+//                    mTts.speak( getResources().getString(R.string.speak_out_welcome), TextToSpeech.QUEUE_ADD, null);
                 }
             }
         });

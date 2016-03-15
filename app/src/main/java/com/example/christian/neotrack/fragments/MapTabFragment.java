@@ -238,10 +238,11 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 displayStopChoices();
                 break;
 
-//            case R.id.stop_button_speak:
-//                Log.i("Click", "stop_button_speak");
+            case R.id.stop_button_speak:
+                Log.i("Click", "stop_button_speak");
 //                promptSpeechInput();
-//                break;
+                ((TrackActivity) context).restartSpeech();
+                break;
 
 //            case R.id.start_button:
 //                Log.i("Click", "start_button");
