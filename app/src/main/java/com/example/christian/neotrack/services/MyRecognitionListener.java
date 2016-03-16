@@ -77,6 +77,7 @@ public class MyRecognitionListener implements RecognitionListener {
         }
         Log.d("Speech", "onError " + text);
 //        recognizeSpeechDi/rectly();
+        context.runningSpeech = false;
     }
 
     @Override
@@ -107,6 +108,7 @@ public class MyRecognitionListener implements RecognitionListener {
         context.speakerOut.speak("Texto introducido " + strlist.get(0), TextToSpeech.QUEUE_ADD, null);
         context.speeching = false;
 //        context.newSpeech = true;
+        context.runningSpeech = false;
     }
 
     @Override

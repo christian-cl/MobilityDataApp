@@ -135,6 +135,9 @@ public class TrackActivity extends AppCompatActivity implements
     public boolean speeching = false;
     public boolean newSpeech = false;
     private boolean getNewSpeechReady = true;
+    public boolean waitToStart = true;
+    public boolean runningSpeech = false;
+    private boolean tStop = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -235,15 +238,43 @@ public class TrackActivity extends AppCompatActivity implements
                     float x = event.values[0];
                     float y = event.values[1];
                     float z = event.values[2];
-                    if(Math.sqrt((x * x) + (y * y) + (z * z)) < 1.0f) {
-                        if(getNewSpeechReady && !speeching) {
-                            speeching = true;
-                            getNewSpeechReady = false;
-                            Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
-                            restartSpeech();
+//                    double a = Math.sqrt((x * x) + (y * y) + (z * z));
+                    double a = z;
+//                    if(a < 1.0f) {
+
+                    if (tStop) {
+                        if(a > 5f || a < -5f) {
+                            tStop = false;
                         }
                     } else {
-                        getNewSpeechReady = true;
+                        if(a < 2.3f && a > -2.3f) {
+                            tStop = true;
+                        }
+                    }
+
+
+//                    if(a < 2.3f && a > -2.3f) {
+                    if(tStop) {
+                        if(!waitToStart) {
+                            waitToStart = true;
+
+                            if (!runningSpeech) {
+                                runningSpeech = true;
+                                restartSpeech();
+                            }
+
+
+
+
+
+//                            speeching = true;
+//                            getNewSpeechReady = false;
+//                            Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
+//                            restartSpeech();
+                        }
+                    } else {
+                        waitToStart = false;
+                        Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
                     }
 
                 }
