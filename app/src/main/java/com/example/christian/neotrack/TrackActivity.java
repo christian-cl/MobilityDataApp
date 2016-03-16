@@ -274,7 +274,7 @@ public class TrackActivity extends AppCompatActivity implements
                         }
                     } else {
                         waitToStart = false;
-                        Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
+//                        Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
                     }
 
                 }
@@ -293,6 +293,12 @@ public class TrackActivity extends AppCompatActivity implements
             }
         }, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
 
+
+
+        List<Sensor> list = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+        for(Sensor sensor: list){
+            Log.i("SensorList", sensor.getName() + " " + sensor.getType() + " " + sensor.toString());
+        }
     }
 
     public void restartSpeech() {
@@ -375,7 +381,8 @@ public class TrackActivity extends AppCompatActivity implements
             gpsLocationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    myLocationChanged(location);
+                    if (!tStop)
+                        myLocationChanged(location);
 //                    if(!runningCaptureData) {
 //                        startRepeatingTask();
 //                    }
