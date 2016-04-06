@@ -139,6 +139,7 @@ public class TrackActivity extends AppCompatActivity implements
     public boolean runningSpeech = false;
     private boolean tStop = true;
     private double acceleration = 0.0;
+    private double sumAcceleration = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -241,14 +242,21 @@ public class TrackActivity extends AppCompatActivity implements
                     float z = event.values[2];
 //                    double a = Math.sqrt((x * x) + (y * y) + (z * z));
                     acceleration = z;
+                    sumAcceleration = sumAcceleration - acceleration;
 //                    if(a < 1.0f) {
 
+                    /////////
+//                    Location location = new Location("");
+//                    location.setLatitude(34.04);
+//                    location.setLongitude(-4.4);
+//                    new SavePointTask().execute(new SavePointInput(visitItinerary, location));
+                    ////////
                     if (tStop) {
-                        if(acceleration > 5f || acceleration < -5f) {
+                        if(sumAcceleration > 100) {
                             tStop = false;
                         }
                     } else {
-                        if(acceleration < 2.3f && acceleration > -2.3f) {
+                        if(sumAcceleration < 75) {
                             tStop = true;
                         }
                     }
@@ -382,11 +390,8 @@ public class TrackActivity extends AppCompatActivity implements
             gpsLocationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-//                    if (!tStop)
+                    if (!tStop)
                         myLocationChanged(location);
-//                    if(!runningCaptureData) {
-//                        startRepeatingTask();
-//                    }
                 }
                 @Override
                 public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -650,7 +655,7 @@ public class TrackActivity extends AppCompatActivity implements
             String head = "ID\ttime\tdistance\n";
             out.write(head.getBytes());
             out.write((SESSION_ID + "\t" + time + "\t" + distance + "\n").getBytes());
-            head = "_id\tsession\tlatitude\tlongitude\tstoptype\tcomment\tdate\n";
+            head = "_id\tsession\tlatitude\tlongitude\tstoptype\tcomment\tdate\tacceleration\tpressure\ttemperature\thumidity\n";
             out.write(head.getBytes());
             for(DataCapture dc : results) {
                 out.write((String.valueOf(dc.getId()) + "\t").getBytes());
@@ -671,7 +676,11 @@ public class TrackActivity extends AppCompatActivity implements
                 } else {
                     out.write(("null\t").getBytes());
                 }
-                out.write(("\"" + dc.getDate() + "\"\n").getBytes());
+                out.write(("\"" + dc.getDate() + "\"\t").getBytes());
+                out.write((String.valueOf(dc.getSensorAcceleration()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getSensorPressure()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getSensorTemperature()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getSensorHumidity()) + "\n").getBytes());
             }
             out.flush();
             out.close();
@@ -897,6 +906,7 @@ public class TrackActivity extends AppCompatActivity implements
     }
 
     public void runSaveData(DataCapture dc) {
+        dc.setSensorAcceleration(acceleration);
         new SavePointTask2().execute(new SavePointInput2(visitItinerary,dc));
     }
 

@@ -46,10 +46,6 @@ public class DataCaptureDAO {
         ContentValues values = new ContentValues();
         values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_LATITUDE, dataCapture.getLatitude());
         values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_LONGITUDE, dataCapture.getLongitude());
-        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_ACCELERATION, dataCapture.getSensorAcceleration());
-        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_PRESSURE, dataCapture.getSensorPressure());
-        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_TEMPERATURE, dataCapture.getSensorTemperature());
-        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_HUMIDITY, dataCapture.getSensorHumidity());
         if(dataCapture.getSession() != null)
             values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SESSION, dataCapture.getSession());
         if(dataCapture.getStopType() != null)
@@ -58,6 +54,10 @@ public class DataCaptureDAO {
             values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_COMMENT, dataCapture.getComment());
         if(dataCapture.getDate() != null)
             values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE, dataCapture.getDate());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_ACCELERATION, dataCapture.getSensorAcceleration());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_PRESSURE, dataCapture.getSensorPressure());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_TEMPERATURE, dataCapture.getSensorTemperature());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_HUMIDITY, dataCapture.getSensorHumidity());
         db.insert(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME, null, values);
     }
 
