@@ -138,6 +138,7 @@ public class TrackActivity extends AppCompatActivity implements
     public boolean waitToStart = true;
     public boolean runningSpeech = false;
     private boolean tStop = true;
+    private double acceleration = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -239,15 +240,15 @@ public class TrackActivity extends AppCompatActivity implements
                     float y = event.values[1];
                     float z = event.values[2];
 //                    double a = Math.sqrt((x * x) + (y * y) + (z * z));
-                    double a = z;
+                    acceleration = z;
 //                    if(a < 1.0f) {
 
                     if (tStop) {
-                        if(a > 5f || a < -5f) {
+                        if(acceleration > 5f || acceleration < -5f) {
                             tStop = false;
                         }
                     } else {
-                        if(a < 2.3f && a > -2.3f) {
+                        if(acceleration < 2.3f && acceleration > -2.3f) {
                             tStop = true;
                         }
                     }
@@ -381,7 +382,7 @@ public class TrackActivity extends AppCompatActivity implements
             gpsLocationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    if (!tStop)
+//                    if (!tStop)
                         myLocationChanged(location);
 //                    if(!runningCaptureData) {
 //                        startRepeatingTask();
@@ -554,12 +555,12 @@ public class TrackActivity extends AppCompatActivity implements
                 File file = new File (dir, fileName + extension);
                 File fileST = new File (dir, "ST" + fileName + extension);
                 out = new FileOutputStream(file);
-                outST = new FileOutputStream(fileST);
+//                outST = new FileOutputStream(fileST);
             } else {
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
-                outST = openFileOutput("ST" + fileName + extension, Context.MODE_PRIVATE);
+//                outST = openFileOutput("ST" + fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date\n";
+            String head = "_id,latitude,longitude,street,stoptype,comment,date,acceleration,pressure,temperature,humidity\n";
             out.write(head.getBytes());
             for(DataCapture dc : data) {
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
@@ -580,7 +581,11 @@ public class TrackActivity extends AppCompatActivity implements
                 } else {
                     out.write(("null,").getBytes());
                 }
-                out.write(("\"" + dc.getDate() + "\"\n").getBytes());
+                out.write(("\"" + dc.getDate() + "\",").getBytes());
+                out.write((String.valueOf(dc.getSensorAcceleration()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorPressure()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorTemperature()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorHumidity()) + "\n").getBytes());
             }
             out.flush();
             out.close();
@@ -1337,6 +1342,7 @@ public class TrackActivity extends AppCompatActivity implements
             dc.setLongitude(location.getLongitude());
             dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
             dc.setSession(SESSION_ID);
+            dc.setSensorAcceleration(acceleration);
             dbDataCapture.create(dc);
         }
 
