@@ -537,13 +537,13 @@ public class TrackActivity extends AppCompatActivity implements
         FileOutputStream out = null;
         FileOutputStream outST = null;
         DataCaptureDAO db = new DataCaptureDAO(this);
-        StreetTrackDAO dbST = new StreetTrackDAO(this);
+        //StreetTrackDAO dbST = new StreetTrackDAO(this);
         db.open();
-        dbST.open();
+        //dbST.open();
         List<DataCapture> data = db.get(newDateStart, newDateEnd);
-        List<StreetTrack> dataST = dbST.getAll();
+        //List<StreetTrack> dataST = dbST.getAll();
         Log.i("DB", "Find " + data.size() + " DataCapture elements");
-        Log.i("DB", "Find " + dataST.size() + " StreetTrack elements");
+       // Log.i("DB", "Find " + dataST.size() + " StreetTrack elements");
         String extension = ".csv";
         String folderName = "/neoTrack";
         try {
@@ -563,13 +563,13 @@ public class TrackActivity extends AppCompatActivity implements
             out.write(head.getBytes());
             for(DataCapture dc : data) {
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
-                if(dc.getAddress() != null) {
-                    out.write(("\"" + dc.getAddress() + "\",").getBytes());
+                if(dc.getSession() != null) {
+                    out.write(("\"" + dc.getSession() + "\",").getBytes());
                 } else {
                     out.write(("null,").getBytes());
                 }
+                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
                 if(dc.getStopType() != null) {
                     out.write(("\"" + dc.getStopType() + "\",").getBytes());
                 } else {
@@ -584,7 +584,7 @@ public class TrackActivity extends AppCompatActivity implements
             }
             out.flush();
             out.close();
-
+/*
             String headST = "_id,address,latitude start,longitude start," +
                     "latitude end,longitude end,datetime start,datetime end,distance\n";
             outST.write(headST.getBytes());
@@ -601,7 +601,7 @@ public class TrackActivity extends AppCompatActivity implements
             }
             outST.flush();
             outST.close();
-
+*/
             Log.i("DB", "File saved");
             Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
@@ -609,17 +609,18 @@ public class TrackActivity extends AppCompatActivity implements
         } finally {
             try {
                 db.close();
-                dbST.close();
+//                dbST.close();
                 if (out != null) {
                     out.close();
                 }
-                if(outST != null) {
-                    outST.close();
-                }
+//                if(outST != null) {
+//                    outST.close();
+//                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
     }
 
     public void saveTrack(List<DataCapture> results, float time, float distance) {
@@ -644,17 +645,17 @@ public class TrackActivity extends AppCompatActivity implements
             String head = "ID\ttime\tdistance\n";
             out.write(head.getBytes());
             out.write((SESSION_ID + "\t" + time + "\t" + distance + "\n").getBytes());
-            head = "_id\tlatitude\tlongitude\tstreet\tstoptype\tcomment\tdate\n";
+            head = "_id\tsession\tlatitude\tlongitude\tstoptype\tcomment\tdate\n";
             out.write(head.getBytes());
             for(DataCapture dc : results) {
                 out.write((String.valueOf(dc.getId()) + "\t").getBytes());
-                out.write((String.valueOf(dc.getLatitude()) + "\t").getBytes());
-                out.write((String.valueOf(dc.getLongitude()) + "\t").getBytes());
-                if(dc.getAddress() != null) {
-                    out.write(("\"" + dc.getAddress() + "\"\t").getBytes());
+                if(dc.getSession() != null) {
+                    out.write(("\"" + dc.getSession() + "\"\t").getBytes());
                 } else {
                     out.write(("null\t").getBytes());
                 }
+                out.write((String.valueOf(dc.getLatitude()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + "\t").getBytes());
                 if(dc.getStopType() != null) {
                     out.write(("\"" + dc.getStopType() + "\"\t").getBytes());
                 } else {
@@ -912,7 +913,7 @@ public class TrackActivity extends AppCompatActivity implements
 
 
 
-
+/*
     // Repeat process for catch information
     public Runnable mStatusChecker = new Runnable() {
         @Override
@@ -931,7 +932,8 @@ public class TrackActivity extends AppCompatActivity implements
         mHandler.removeCallbacks(mStatusChecker);
         runningCaptureData = false;
     }
-
+    */
+/*
     private void updateStatus() {
         if (currentLocation != null) {
             Log.i("Background", "Collecting data in: " + currentLocation.getLatitude() + ", "
@@ -952,7 +954,7 @@ public class TrackActivity extends AppCompatActivity implements
                     .addMarker(MapTabFragment.Marker_Type.GPS, null, currentLocation);
         }
     }
-
+*/
     public void setHiddenFragment(){
         FragmentManager fragmentManager = getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
@@ -978,7 +980,7 @@ public class TrackActivity extends AppCompatActivity implements
             loadSettings();
         }
     }
-
+/*
     public void processTrackData(Location location) {
         if((startTrackPoint != null) && (startTrackPoint.getAddress() != null)) {
             DataCapture dc = new DataCapture();
@@ -1007,7 +1009,7 @@ public class TrackActivity extends AppCompatActivity implements
             trackDistance = 0;
         }
     }
-
+*/
 
     /**
      * GEOCODER
@@ -1042,19 +1044,19 @@ public class TrackActivity extends AppCompatActivity implements
 
 
     protected Location mLastLocation;
-
+/*
     protected void startIntentService(AddressResultReceiver mResultReceiver) {
         Intent intent = new Intent(this, FetchAddressIntentService.class);
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
         intent.putExtra(Constants.LOCATION_DATA_EXTRA, currentLocation);
         startService(intent);
     }
-
+*/
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
-
+/*
     public class AddressResultReceiver extends ResultReceiver {
         private String mAddressOutput;
         private DataCapture dataCapture;
@@ -1176,7 +1178,7 @@ public class TrackActivity extends AppCompatActivity implements
             }
         }
     }
-
+*/
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -1185,14 +1187,14 @@ public class TrackActivity extends AppCompatActivity implements
                 .build();
     }
 
-
+/*
     public void saveData(DataCapture dc) {
         AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
         receiver.setDataCapture(dc);
         receiver.setIsInserted(true);
         startIntentService(receiver);
     }
-
+*/
 
 
 
@@ -1202,6 +1204,7 @@ public class TrackActivity extends AppCompatActivity implements
     /**
      * Receiving speech input
      * */
+    /*
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -1229,7 +1232,7 @@ public class TrackActivity extends AppCompatActivity implements
 
         }
     }
-
+*/
     private String getStopType(ArrayList<String> result) {
         final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros", "Reanudar"};
         final String[] stopChoicesPattern = {"asco", "bra", "ente", "tro", "anudar"};
@@ -1247,7 +1250,7 @@ public class TrackActivity extends AppCompatActivity implements
         }
         return null;
     }
-
+/*
     public void processStopChoice(String title, String text) {
         Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
@@ -1261,7 +1264,7 @@ public class TrackActivity extends AppCompatActivity implements
 
         ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.STOP, title, loc);
     }
-
+*/
     public Dialog onCreateDialogSingleChoice(String title, CharSequence[] array, final List data) {
         int index = -1;
         //Initialize the Alert Dialog
@@ -1333,7 +1336,7 @@ public class TrackActivity extends AppCompatActivity implements
             dc.setLatitude(location.getLatitude());
             dc.setLongitude(location.getLongitude());
             dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
-            dc.setAddress(SESSION_ID);
+            dc.setSession(SESSION_ID);
             dbDataCapture.create(dc);
         }
 
@@ -1368,7 +1371,7 @@ public class TrackActivity extends AppCompatActivity implements
 
         private void savePoint(DataCapture location) {
             DataCapture dc = location;
-            dc.setAddress(SESSION_ID);
+            dc.setSession(SESSION_ID);
             dbDataCapture.create(dc);
         }
 

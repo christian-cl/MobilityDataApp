@@ -17,12 +17,16 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     public static class TableDataCapture{
         public static String TABLE_NAME = "datacapture";
         public static String COLUMN_ID = "_id";
+        public static String COLUMN_SESSION = "session";
         public static String COLUMN_LATITUDE = "latitude";
         public static String COLUMN_LONGITUDE = "longitude";
-        public static String COLUMN_ADDRESS = "address";
         public static String COLUMN_STOP_TYPE = "stoptype";
         public static String COLUMN_COMMENT = "comment";
         public static String COLUMN_DATE = "date";
+        public static String COLUMN_SENSOR_ACCELERATION = "acceleration";
+        public static String COLUMN_SENSOR_PRESSURE = "pressure";
+        public static String COLUMN_SENSOR_TEMPERATURE = "temperature";
+        public static String COLUMN_SENSOR_HUMIDITY = "humidity";
     }
 
     public static class TableStreetTrack {
@@ -50,12 +54,16 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_DATA_CAPTURE =
             "create table " + TableDataCapture.TABLE_NAME + "(" +
             TableDataCapture.COLUMN_ID + " integer primary key autoincrement, " +
+            TableDataCapture.COLUMN_SESSION + " text, " +
             TableDataCapture.COLUMN_LATITUDE + " real not null, " +
             TableDataCapture.COLUMN_LONGITUDE + " real not null, " +
-            TableDataCapture.COLUMN_ADDRESS + " text, " +
             TableDataCapture.COLUMN_STOP_TYPE + " text, " +
             TableDataCapture.COLUMN_COMMENT + " text, " +
-            TableDataCapture.COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP" +
+            TableDataCapture.COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+            TableDataCapture.COLUMN_SENSOR_ACCELERATION + " real, " +
+            TableDataCapture.COLUMN_SENSOR_PRESSURE + " real, " +
+            TableDataCapture.COLUMN_SENSOR_TEMPERATURE + " real, " +
+            TableDataCapture.COLUMN_SENSOR_HUMIDITY + " real" +
             ");";
 
     private static final String CREATE_TABLE_STREET_TRACK =

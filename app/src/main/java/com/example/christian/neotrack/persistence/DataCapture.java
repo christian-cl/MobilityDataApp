@@ -7,12 +7,16 @@ package com.example.christian.neotrack.persistence;
  */
 public class DataCapture {
     private long id;
+    private String session;
     private double latitude;
     private double longitude;
-    private String address;
     private String stopType;
     private String comment;
     private String date;
+    private double sensorAcceleration;
+    private double sensorPressure;
+    private double sensorTemperature;
+    private double sensorHumidity;
 
     public DataCapture() {
         super();
@@ -42,12 +46,12 @@ public class DataCapture {
         this.longitude = longitude;
     }
 
-    public String getAddress() {
-        return address;
+    public String getSession() {
+        return session;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setSession(String address) {
+        this.session = address;
     }
 
     public String getStopType() {
@@ -72,5 +76,37 @@ public class DataCapture {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public double getSensorAcceleration() {
+        return sensorAcceleration;
+    }
+
+    public void setSensorAcceleration(double sensorAcceleration) {
+        this.sensorAcceleration = sensorAcceleration;
+    }
+
+    public double getSensorPressure() {
+        return sensorPressure;
+    }
+
+    public void setSensorPressure(double sensorPressure) {
+        this.sensorPressure = sensorPressure;
+    }
+
+    public double getSensorTemperature() {
+        return sensorTemperature;
+    }
+
+    public void setSensorTemperature(double sensorTemperature) {
+        this.sensorTemperature = sensorTemperature;
+    }
+
+    public double getSensorHumidity() {
+        return sensorHumidity;
+    }
+
+    public void setSensorHumidity(double sensorHumidity) {
+        this.sensorHumidity = sensorHumidity;
     }
 }

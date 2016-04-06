@@ -24,9 +24,11 @@ public class DataCaptureDAO {
     private SQLiteDatabase db;
     private MySQLiteOpenHelper dbHelper;
     private String[] columns = {MySQLiteOpenHelper.TableDataCapture.COLUMN_ID,
-            MySQLiteOpenHelper.TableDataCapture.COLUMN_LATITUDE, MySQLiteOpenHelper.TableDataCapture.COLUMN_LONGITUDE,
-            MySQLiteOpenHelper.TableDataCapture.COLUMN_ADDRESS, MySQLiteOpenHelper.TableDataCapture.COLUMN_STOP_TYPE,
-            MySQLiteOpenHelper.TableDataCapture.COLUMN_COMMENT, MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE};
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_SESSION, MySQLiteOpenHelper.TableDataCapture.COLUMN_LATITUDE,
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_LONGITUDE, MySQLiteOpenHelper.TableDataCapture.COLUMN_STOP_TYPE,
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_COMMENT, MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE,
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_ACCELERATION, MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_PRESSURE,
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_TEMPERATURE, MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_HUMIDITY};
 
     public DataCaptureDAO(Context context) {
         dbHelper = new MySQLiteOpenHelper(context);
@@ -44,8 +46,12 @@ public class DataCaptureDAO {
         ContentValues values = new ContentValues();
         values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_LATITUDE, dataCapture.getLatitude());
         values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_LONGITUDE, dataCapture.getLongitude());
-        if(dataCapture.getAddress() != null)
-            values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_ADDRESS, dataCapture.getAddress());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_ACCELERATION, dataCapture.getSensorAcceleration());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_PRESSURE, dataCapture.getSensorPressure());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_TEMPERATURE, dataCapture.getSensorTemperature());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_HUMIDITY, dataCapture.getSensorHumidity());
+        if(dataCapture.getSession() != null)
+            values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SESSION, dataCapture.getSession());
         if(dataCapture.getStopType() != null)
             values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_STOP_TYPE, dataCapture.getStopType());
         if(dataCapture.getComment() != null)
@@ -107,7 +113,7 @@ public class DataCaptureDAO {
         List<DataCapture> listDataCapture = new ArrayList<>();
 
         String[] arg = new String[] {sessionId};
-        String where = MySQLiteOpenHelper.TableDataCapture.COLUMN_ADDRESS + "=?";
+        String where = MySQLiteOpenHelper.TableDataCapture.COLUMN_SESSION + "=?";
         Cursor cursor = db.query(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME, columns, where,arg, null, null, MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE + " ASC", null);
 
         cursor.moveToFirst();
@@ -155,12 +161,16 @@ public class DataCaptureDAO {
     private DataCapture cursorToDataCapture(Cursor cursor) {
         DataCapture dataCapture = new DataCapture();
         dataCapture.setId(cursor.getLong(0));
-        dataCapture.setLatitude(cursor.getDouble(1));
-        dataCapture.setLongitude(cursor.getDouble(2));
-        dataCapture.setAddress(cursor.getString(3));
+        dataCapture.setSession(cursor.getString(1));
+        dataCapture.setLatitude(cursor.getDouble(2));
+        dataCapture.setLongitude(cursor.getDouble(3));
         dataCapture.setStopType(cursor.getString(4));
         dataCapture.setComment(cursor.getString(5));
         dataCapture.setDate(cursor.getString(6));
+        dataCapture.setSensorAcceleration(cursor.getDouble(7));
+        dataCapture.setSensorPressure(cursor.getDouble(8));
+        dataCapture.setSensorTemperature(cursor.getDouble(9));
+        dataCapture.setSensorHumidity(cursor.getDouble(10));
         return dataCapture;
     }
 }
