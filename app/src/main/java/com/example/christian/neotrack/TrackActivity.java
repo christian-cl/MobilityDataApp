@@ -967,9 +967,10 @@ public class TrackActivity extends AppCompatActivity implements
         Log.i("Activity","Num of fragments: " + fragments.size());
         for(Fragment fragment : fragments){
             if(fragment != null) {
-                if (fragment instanceof MapTabFragment)//!fragment.isVisible())
+                if (fragment instanceof MapTabFragment) {//!fragment.isVisible())
                     mapFragment = fragment;
-                else if (fragment instanceof TrackFragment)//!fragment.isVisible())
+                    ((MapTabFragment) mapFragment).setZoom(10.0f);
+                } else if (fragment instanceof TrackFragment)//!fragment.isVisible())
                     trackFragment = fragment;
             }
         }
