@@ -1,5 +1,7 @@
 package com.example.christian.neotrack.services;
 
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.RecognitionListener;
@@ -10,8 +12,10 @@ import android.util.Log;
 
 import com.example.christian.neotrack.R;
 import com.example.christian.neotrack.TrackActivity;
+import com.example.christian.neotrack.persistence.DataCapture;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  * Created by christian on 14/03/16.
@@ -109,7 +113,9 @@ public class MyRecognitionListener implements RecognitionListener {
         context.speeching = false;
 //        context.newSpeech = true;
         context.runningSpeech = false;
-
+        // Save input
+        Location location = context.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        context.myLocationChanged(location);
     }
 
     @Override

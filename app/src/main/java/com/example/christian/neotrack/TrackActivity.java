@@ -877,7 +877,7 @@ public class TrackActivity extends AppCompatActivity implements
         minDistance = minDistanceSetting;
     }
 
-    private void myLocationChanged(Location location) {
+    public void myLocationChanged(Location location) {
         currentLocation = location;
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         setHiddenFragment(); // visual log

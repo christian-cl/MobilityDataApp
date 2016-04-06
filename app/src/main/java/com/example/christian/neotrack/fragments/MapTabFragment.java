@@ -137,7 +137,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     editText.getText().clear();
                 }
                 title = stopChoices[item];
-                String text = "Haz elegido la opcion: " + stopChoices[item];
+                String text = "Has elegido la opcion: " + stopChoices[item];
                 Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
                 toast.show();
             }
