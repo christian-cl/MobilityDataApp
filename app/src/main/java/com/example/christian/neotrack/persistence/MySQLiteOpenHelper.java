@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class MySQLiteOpenHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "mobilityDB";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
 
     public static class TableDataCapture{
         public static String TABLE_NAME = "datacapture";

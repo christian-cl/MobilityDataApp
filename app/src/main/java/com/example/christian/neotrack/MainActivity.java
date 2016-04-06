@@ -189,18 +189,18 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date\n";
+            String head = "_id,latitude,longitude,session,stoptype,comment,date\n";
             out.write(head.getBytes());
             for(DataCapture dc : data) {
                 System.out.print(dc);
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
-                if(dc.getAddress() != null) {
-                    out.write(("\"" + dc.getAddress() + "\",").getBytes());
+                if(dc.getSession() != null) {
+                    out.write(("\"" + dc.getSession() + "\",").getBytes());
                 } else {
                     out.write(("null,").getBytes());
                 }
+                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
                 if(dc.getStopType() != null) {
                     out.write(("\"" + dc.getStopType() + "\",").getBytes());
                 } else {
@@ -211,7 +211,11 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     out.write(("null,").getBytes());
                 }
-                out.write(("\"" + dc.getDate() + "\"\n").getBytes());
+                out.write(("\"" + dc.getDate() + "\",").getBytes());
+                out.write((String.valueOf(dc.getSensorAcceleration()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorPressure()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorTemperature()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorHumidity()) + "\n").getBytes());
             }
             out.flush();
             out.close();
