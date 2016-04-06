@@ -72,7 +72,7 @@ public class MyRecognitionListener implements RecognitionListener {
 //                context.sr.startListening(RecognizerIntent.getVoiceDetailsIntent(context.getApplicationContext()));
 //                context.restartSpeech();
 
-                context.speakerOut.speak("Error " + text, TextToSpeech.QUEUE_ADD, null);
+                context.speakerOut.speak("No texto ", TextToSpeech.QUEUE_ADD, null);
                 break;
         }
         Log.d("Speech", "onError " + text);
@@ -109,6 +109,7 @@ public class MyRecognitionListener implements RecognitionListener {
         context.speeching = false;
 //        context.newSpeech = true;
         context.runningSpeech = false;
+
     }
 
     @Override

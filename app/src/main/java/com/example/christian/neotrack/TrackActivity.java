@@ -7,7 +7,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.hardware.TriggerEvent;
 import android.hardware.TriggerEventListener;
 import android.location.Geocoder;
 import android.location.GpsStatus;
@@ -15,10 +14,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.os.PersistableBundle;
-import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.speech.RecognizerIntent;
@@ -56,9 +53,6 @@ import com.example.christian.neotrack.persistence.DataCaptureDAO;
 import com.example.christian.neotrack.persistence.Itinerary;
 import com.example.christian.neotrack.persistence.ItineraryDAO;
 import com.example.christian.neotrack.persistence.Point;
-import com.example.christian.neotrack.persistence.StreetTrack;
-import com.example.christian.neotrack.persistence.StreetTrackDAO;
-import com.example.christian.neotrack.services.FetchAddressIntentService;
 import com.example.christian.neotrack.services.MyRecognitionListener;
 import com.example.christian.neotrack.services.TabsAdapter;
 import com.google.android.gms.common.ConnectionResult;
@@ -133,8 +127,6 @@ public class TrackActivity extends AppCompatActivity implements
     private Sensor mSensor;
     private TriggerEventListener mTriggerEventListener;
     public boolean speeching = false;
-    public boolean newSpeech = false;
-    private boolean getNewSpeechReady = true;
     public boolean waitToStart = true;
     public boolean runningSpeech = false;
     private boolean tStop = true;
@@ -153,14 +145,8 @@ public class TrackActivity extends AppCompatActivity implements
 
         buildGoogleApiClient();
 
-        //
-//        mHandler = new Handler();
-//        addressHandler = new Handler();
         newSessionId();
         dbDataCapture = new DataCaptureDAO(this);
-
-
-
     }
 
     private void newSessionId() {
@@ -491,8 +477,9 @@ public class TrackActivity extends AppCompatActivity implements
         Log.i(TAG, "Search for sessionId: " + tag);
         List<DataCapture> results = dbDataCapture.get(tag);
         Log.i(TAG, "recover " + results.size() + " elements");
-        // time
+        int stops = 0;
         if (results.size() > 0) {
+            // time
             Date dateStart = null;
             Date dateEnd = null;
             try {
@@ -514,6 +501,10 @@ public class TrackActivity extends AppCompatActivity implements
                 newLoc.setLongitude(dc.getLongitude());
                 distance += lastLoc.distanceTo(newLoc);
                 lastLoc = newLoc;
+                // number of stops
+                if (dc.getStopType() != null) {
+                    stops++;
+                }
             }
 
             // Save data of itinerary automatically
@@ -524,7 +515,7 @@ public class TrackActivity extends AppCompatActivity implements
         return "Tiempo del trayecto:\t" + time + "s.\n"
                 + "Distancia recorrida:\t" + distance + "m.\n"
                 + "Velocidad media:\t" + vel + "km/h\n"
-                + "Número de paradas:\t" +  "\n";
+                + "Número de paradas:\t" + stops + "\n";
     }
 
     public void sendSettings() {
