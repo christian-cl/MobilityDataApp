@@ -15,6 +15,7 @@ public class DataCapture {
     private String date;
     private double sensorAcceleration;
     private double sensorPressure;
+    private double sensorLight;
     private double sensorTemperature;
     private double sensorHumidity;
 
@@ -93,6 +94,15 @@ public class DataCapture {
     public void setSensorPressure(double sensorPressure) {
         this.sensorPressure = sensorPressure;
     }
+
+    public double getSensorLight() {
+        return sensorLight;
+    }
+
+    public void setSensorLight(double sensorLight) {
+        this.sensorLight = sensorLight;
+    }
+
 
     public double getSensorTemperature() {
         return sensorTemperature;

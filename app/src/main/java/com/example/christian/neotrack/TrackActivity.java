@@ -131,7 +131,16 @@ public class TrackActivity extends AppCompatActivity implements
     public boolean runningSpeech = false;
     private boolean tStop = true;
     private double acceleration = 0.0;
+    private double pressure = 0.0;
+    private double light = 0.0;
+    private double temperature = 0.0;
+    private double humidity = 0.0;
     private double sumAcceleration = 0.0;
+    private SensorEventListener mSensorListener;
+    private double[] accelerationVector;
+    private long trackTime;
+    private double[] speed;
+    private double vel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,6 +156,18 @@ public class TrackActivity extends AppCompatActivity implements
 
         newSessionId();
         dbDataCapture = new DataCaptureDAO(this);
+
+        // reset sensors variables
+        acceleration = 0.0;
+        pressure = 0.0;
+        light = 0.0;
+        temperature = 0.0;
+        humidity = 0.0;
+        sumAcceleration = 0.0;
+        trackTime = System.nanoTime();
+        accelerationVector = new double[]{0,0,0};
+        speed = new double[]{0,0,0};
+        vel = 0;
     }
 
     private void newSessionId() {
@@ -212,8 +233,8 @@ public class TrackActivity extends AppCompatActivity implements
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 //        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        mSensorManager.registerListener(new SensorEventListener() {
+//        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+                mSensorListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 Sensor mySensor = event.sensor;
@@ -223,26 +244,59 @@ public class TrackActivity extends AppCompatActivity implements
                     // alpha is calculated as t / (t + dT)
                     // with t, the low-pass filter's time-constant
                     // and dT, the event delivery rate
-                    float x = event.values[0];
-                    float y = event.values[1];
-                    float z = event.values[2];
+                    double x = accelerationVector[0];
+                    double y = accelerationVector[1];
+                    double z = accelerationVector[2];
 //                    double a = Math.sqrt((x * x) + (y * y) + (z * z));
                     acceleration = z;
                     sumAcceleration = sumAcceleration - acceleration;
-//                    if(a < 1.0f) {
+//                    Log.i("Accelerometer", "Sum: " + sumAcceleration);
 
-                    /////////
-//                    Location location = new Location("");
-//                    location.setLatitude(34.04);
-//                    location.setLongitude(-4.4);
-//                    new SavePointTask().execute(new SavePointInput(visitItinerary, location));
-                    ////////
+                    long oldTime = trackTime;
+                    trackTime = System.nanoTime();
+
+//                    final float alpha = 0.8f;
+//                    float alpha = trackTime / (float) (trackTime + (trackTime - oldTime));
+                    final float alpha = 0.99f;
+
+                    double factor = 1000000000.0;
+                    double preaccel = Math.sqrt(accelerationVector[0] * accelerationVector[0] + accelerationVector[1] * accelerationVector[1] + accelerationVector[2] * accelerationVector[2])/factor;
+                    // Isolate the force of gravity with the low-pass filter.
+                    accelerationVector[0] = alpha * accelerationVector[0] + (1 - alpha) * event.values[0];
+                    accelerationVector[1] = alpha * accelerationVector[1] + (1 - alpha) * event.values[1];
+                    accelerationVector[2] = alpha * accelerationVector[2] + (1 - alpha) * event.values[2];
+
+                    // Integration
+                    speed[0] = ((trackTime - oldTime) / 6.0) * (x + 4 * ((accelerationVector[0] - x)/2.0)  + accelerationVector[0]);
+                    speed[1] = ((trackTime - oldTime) / 6.0) * (y + 4 * ((accelerationVector[1] - y)/2.0)  + accelerationVector[1]);
+                    speed[2] = ((trackTime - oldTime) / 6.0) * (z + 4 * ((accelerationVector[2] - z)/2.0)  + accelerationVector[2]);
+
+                    // nano to seconds
+//                    speed[0] = speed[0] / factor;
+//                    speed[1] = speed[1] / factor;
+//                    speed[2] = speed[2] / factor;
+
+                    double accel = Math.sqrt(accelerationVector[0] * accelerationVector[0] + accelerationVector[1] * accelerationVector[1] + accelerationVector[2] * accelerationVector[2])/factor;
+                    vel += (trackTime - oldTime) * (preaccel - accel) / 2;
+//                    Log.i("Speed", "[" + speed[0] + " " + speed[1] + " " + speed[2] + "]\t\t" + Math.sqrt(speed[0] * speed[0] + speed[1] * speed[1] + speed[2] * speed[2]) + "  " + alpha);
+//                    Log.i("Speed", "[" + ((trackTime - oldTime) / 6.0) * (preaccel + (4.0 * ((accel - preaccel)/2.0))  + accel) + "]");
+                    Log.i("Speed", "[" + vel+ "]\t" + accel + "\t" + preaccel + "\t" + (trackTime - oldTime));
+//                    Log.i("Accel", "[" + accelerationVector[0] + " " + accelerationVector[1] + " " + accelerationVector[2] + "]\t\t" + Math.sqrt(accelerationVector[0] * accelerationVector[0] + accelerationVector[1] * accelerationVector[1] + accelerationVector[2] * accelerationVector[2]) + "  " + alpha);
+
+                    acceleration = vel;
+                    Location loc = new Location("");
+
+                    loc.setLongitude(-4.4);
+                    loc.setLatitude(3.33);
+                    myLocationChanged(loc);
                     if (tStop) {
-                        if(sumAcceleration > 100) {
+                        if(vel > 0.0083) {
+                            speakerOut.speak("Andando", TextToSpeech.QUEUE_ADD, null);
                             tStop = false;
                         }
                     } else {
-                        if(sumAcceleration < 75) {
+                        if(vel < 0.0004) {
+                            speakerOut.speak("no", TextToSpeech.QUEUE_ADD, null);
                             tStop = true;
                         }
                     }
@@ -257,11 +311,6 @@ public class TrackActivity extends AppCompatActivity implements
                                 runningSpeech = true;
                                 restartSpeech();
                             }
-
-
-
-
-
 //                            speeching = true;
 //                            getNewSpeechReady = false;
 //                            Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
@@ -273,12 +322,25 @@ public class TrackActivity extends AppCompatActivity implements
                     }
 
                 }
-                if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                    float x = event.values[0];
-                    float y = event.values[1];
-                    float z = event.values[2];
-                    if(Math.sqrt((x*x) + (y*y) + (z*z)) > 11.0f)
-                    Log.i("Sensor", Math.sqrt((x*x) + (y*y) + (z*z)) + "\t" + x + "\t" + y + "\t" + z);
+//                if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+//                    float x = event.values[0];
+//                    float y = event.values[1];
+//                    float z = event.values[2];
+//                    if(Math.sqrt((x*x) + (y*y) + (z*z)) > 11.0f)
+//                    Log.i("Sensor", Math.sqrt((x*x) + (y*y) + (z*z)) + "\t" + x + "\t" + y + "\t" + z);
+//                }
+
+                if (mySensor.getType() == Sensor.TYPE_PRESSURE) {
+                    pressure = event.values[0];
+                }
+                if (mySensor.getType() == Sensor.TYPE_LIGHT) {
+                    light = event.values[0];
+                }
+                if (mySensor.getType() == Sensor.TYPE_AMBIENT_TEMPERATURE) {
+                    temperature = event.values[0];
+                }
+                if (mySensor.getType() == Sensor.TYPE_RELATIVE_HUMIDITY) {
+                    humidity = event.values[0];
                 }
             }
 
@@ -286,7 +348,13 @@ public class TrackActivity extends AppCompatActivity implements
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
             }
-        }, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        };
+
+        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE), SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT), SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE), SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY), SensorManager.SENSOR_DELAY_NORMAL);
 
 
 
@@ -310,6 +378,7 @@ public class TrackActivity extends AppCompatActivity implements
 //        sr = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
 //        MyRecognitionListener listener = new MyRecognitionListener(this);
 //        sr.setRecognitionListener(listener);
+        speakerOut.speak("Parada", TextToSpeech.QUEUE_ADD, null);
         sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
     }
 
@@ -556,7 +625,7 @@ public class TrackActivity extends AppCompatActivity implements
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
 //                outST = openFileOutput("ST" + fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date,acceleration,pressure,temperature,humidity\n";
+            String head = "_id,latitude,longitude,street,stoptype,comment,date,acceleration,pressure,light,temperature,humidity\n";
             out.write(head.getBytes());
             for(DataCapture dc : data) {
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
@@ -580,6 +649,7 @@ public class TrackActivity extends AppCompatActivity implements
                 out.write(("\"" + dc.getDate() + "\",").getBytes());
                 out.write((String.valueOf(dc.getSensorAcceleration()) + ",").getBytes());
                 out.write((String.valueOf(dc.getSensorPressure()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorLight()) + ",").getBytes());
                 out.write((String.valueOf(dc.getSensorTemperature()) + ",").getBytes());
                 out.write((String.valueOf(dc.getSensorHumidity()) + "\n").getBytes());
             }
@@ -646,7 +716,7 @@ public class TrackActivity extends AppCompatActivity implements
             String head = "ID\ttime\tdistance\n";
             out.write(head.getBytes());
             out.write((SESSION_ID + "\t" + time + "\t" + distance + "\n").getBytes());
-            head = "_id\tsession\tlatitude\tlongitude\tstoptype\tcomment\tdate\tacceleration\tpressure\ttemperature\thumidity\n";
+            head = "_id\tsession\tlatitude\tlongitude\tstoptype\tcomment\tdate\tacceleration\tpressure\tlight\ttemperature\thumidity\n";
             out.write(head.getBytes());
             for(DataCapture dc : results) {
                 out.write((String.valueOf(dc.getId()) + "\t").getBytes());
@@ -670,6 +740,7 @@ public class TrackActivity extends AppCompatActivity implements
                 out.write(("\"" + dc.getDate() + "\"\t").getBytes());
                 out.write((String.valueOf(dc.getSensorAcceleration()) + "\t").getBytes());
                 out.write((String.valueOf(dc.getSensorPressure()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getSensorLight()) + "\t").getBytes());
                 out.write((String.valueOf(dc.getSensorTemperature()) + "\t").getBytes());
                 out.write((String.valueOf(dc.getSensorHumidity()) + "\n").getBytes());
             }
@@ -896,8 +967,31 @@ public class TrackActivity extends AppCompatActivity implements
 //        processTrackData(location); // Global process information
     }
 
+    public void myLocationChanged(Location location, String cause) {
+        currentLocation = location;
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        setHiddenFragment(); // visual log
+        ((MapTabFragment) mapFragment).setCamera(latLng);
+        // Print marker car position
+        ((MapTabFragment) mapFragment)
+                .addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
+
+        if (runningTracking) {
+            // Print marker track point
+            ((MapTabFragment) mapFragment)
+                    .addMarker(MapTabFragment.Marker_Type.GPS, null,currentLocation);
+            new SavePointTask().execute(new SavePointInput(visitItinerary, location, cause));
+        }
+//        // save data
+//        processTrackData(location); // Global process information
+    }
+
     public void runSaveData(DataCapture dc) {
         dc.setSensorAcceleration(acceleration);
+        dc.setSensorPressure(pressure);
+        dc.setSensorLight(light);
+        dc.setSensorTemperature(temperature);
+        dc.setSensorHumidity(humidity);
         new SavePointTask2().execute(new SavePointInput2(visitItinerary,dc));
     }
 
@@ -969,7 +1063,7 @@ public class TrackActivity extends AppCompatActivity implements
             if(fragment != null) {
                 if (fragment instanceof MapTabFragment) {//!fragment.isVisible())
                     mapFragment = fragment;
-                    ((MapTabFragment) mapFragment).setZoom(10.0f);
+//                    ((MapTabFragment) mapFragment).setZoom(10.0f);
                 } else if (fragment instanceof TrackFragment)//!fragment.isVisible())
                     trackFragment = fragment;
             }
@@ -1326,7 +1420,7 @@ public class TrackActivity extends AppCompatActivity implements
         @Override
         protected Boolean doInBackground(SavePointInput... params) {
             // Save point
-            savePoint(params[0].getLocation());
+            savePoint(params[0].getLocation(), params[0].getCause());
             // Check itinerary
             if ((params[0].getItinerary() != null) && (params[0].getItinerary().getPoints().size() > 0)) {
                 double distance = distance(params[0].getLocation(), (Point) params[0].getItinerary().getPoints().get(0));
@@ -1338,13 +1432,18 @@ public class TrackActivity extends AppCompatActivity implements
             return false;
         }
 
-        private void savePoint(Location location) {
+        private void savePoint(Location location, String cause) {
             DataCapture dc = new DataCapture();
             dc.setLatitude(location.getLatitude());
             dc.setLongitude(location.getLongitude());
+            dc.setStopType(cause);
             dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
             dc.setSession(SESSION_ID);
             dc.setSensorAcceleration(acceleration);
+            dc.setSensorPressure(pressure);
+            dc.setSensorLight(light);
+            dc.setSensorTemperature(temperature);
+            dc.setSensorHumidity(humidity);
             dbDataCapture.create(dc);
         }
 

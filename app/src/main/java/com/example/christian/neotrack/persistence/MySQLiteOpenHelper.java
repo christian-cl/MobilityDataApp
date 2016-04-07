@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class MySQLiteOpenHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "mobilityDB";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
 
     public static class TableDataCapture{
         public static String TABLE_NAME = "datacapture";
@@ -25,6 +25,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
         public static String COLUMN_DATE = "date";
         public static String COLUMN_SENSOR_ACCELERATION = "acceleration";
         public static String COLUMN_SENSOR_PRESSURE = "pressure";
+        public static String COLUMN_SENSOR_LIGHT = "light";
         public static String COLUMN_SENSOR_TEMPERATURE = "temperature";
         public static String COLUMN_SENSOR_HUMIDITY = "humidity";
     }
@@ -62,6 +63,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
             TableDataCapture.COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
             TableDataCapture.COLUMN_SENSOR_ACCELERATION + " real, " +
             TableDataCapture.COLUMN_SENSOR_PRESSURE + " real, " +
+            TableDataCapture.COLUMN_SENSOR_LIGHT + " real, " +
             TableDataCapture.COLUMN_SENSOR_TEMPERATURE + " real, " +
             TableDataCapture.COLUMN_SENSOR_HUMIDITY + " real" +
             ");";

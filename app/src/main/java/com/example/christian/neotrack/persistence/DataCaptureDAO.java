@@ -28,7 +28,8 @@ public class DataCaptureDAO {
             MySQLiteOpenHelper.TableDataCapture.COLUMN_LONGITUDE, MySQLiteOpenHelper.TableDataCapture.COLUMN_STOP_TYPE,
             MySQLiteOpenHelper.TableDataCapture.COLUMN_COMMENT, MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE,
             MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_ACCELERATION, MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_PRESSURE,
-            MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_TEMPERATURE, MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_HUMIDITY};
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_LIGHT, MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_TEMPERATURE,
+            MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_HUMIDITY};
 
     public DataCaptureDAO(Context context) {
         dbHelper = new MySQLiteOpenHelper(context);
@@ -56,6 +57,7 @@ public class DataCaptureDAO {
             values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_DATE, dataCapture.getDate());
         values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_ACCELERATION, dataCapture.getSensorAcceleration());
         values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_PRESSURE, dataCapture.getSensorPressure());
+        values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_LIGHT, dataCapture.getSensorLight());
         values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_TEMPERATURE, dataCapture.getSensorTemperature());
         values.put(MySQLiteOpenHelper.TableDataCapture.COLUMN_SENSOR_HUMIDITY, dataCapture.getSensorHumidity());
         db.insert(MySQLiteOpenHelper.TableDataCapture.TABLE_NAME, null, values);
@@ -169,8 +171,9 @@ public class DataCaptureDAO {
         dataCapture.setDate(cursor.getString(6));
         dataCapture.setSensorAcceleration(cursor.getDouble(7));
         dataCapture.setSensorPressure(cursor.getDouble(8));
-        dataCapture.setSensorTemperature(cursor.getDouble(9));
-        dataCapture.setSensorHumidity(cursor.getDouble(10));
+        dataCapture.setSensorLight(cursor.getDouble(9));
+        dataCapture.setSensorTemperature(cursor.getDouble(10));
+        dataCapture.setSensorHumidity(cursor.getDouble(11));
         return dataCapture;
     }
 }

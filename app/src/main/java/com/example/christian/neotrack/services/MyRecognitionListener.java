@@ -76,7 +76,10 @@ public class MyRecognitionListener implements RecognitionListener {
 //                context.sr.startListening(RecognizerIntent.getVoiceDetailsIntent(context.getApplicationContext()));
 //                context.restartSpeech();
 
-                context.speakerOut.speak("No texto ", TextToSpeech.QUEUE_ADD, null);
+                context.speakerOut.speak("No texto", TextToSpeech.QUEUE_ADD, null);
+                // Save input
+                Location location = context.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                context.myLocationChanged(location, "STOP");
                 break;
         }
         Log.d("Speech", "onError " + text);
@@ -115,7 +118,7 @@ public class MyRecognitionListener implements RecognitionListener {
         context.runningSpeech = false;
         // Save input
         Location location = context.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        context.myLocationChanged(location);
+        context.myLocationChanged(location,"STOP");
     }
 
     @Override

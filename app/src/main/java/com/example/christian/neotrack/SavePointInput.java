@@ -11,13 +11,20 @@ public class SavePointInput {
 
     private Itinerary itinerary;
     private Location location;
-
+    private String cause;
     public SavePointInput() {
     }
 
     public SavePointInput(Itinerary itinerary, Location location) {
         this.itinerary = itinerary;
         this.location = location;
+        this.cause = null;
+    }
+
+    public SavePointInput(Itinerary itinerary, Location location, String cause) {
+        this.itinerary = itinerary;
+        this.location = location;
+        this.cause = cause;
     }
 
     public Itinerary getItinerary() {
@@ -35,4 +42,13 @@ public class SavePointInput {
     public void setLocation(Location location) {
         this.location = location;
     }
+
+    public String getCause() {
+        return cause;
+    }
+
+    public void setCause(String cause) {
+        this.cause = cause;
+    }
+
 }
