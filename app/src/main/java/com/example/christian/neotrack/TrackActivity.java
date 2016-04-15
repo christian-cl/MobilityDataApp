@@ -138,7 +138,8 @@ public class TrackActivity extends AppCompatActivity implements
     private double sumAcceleration = 0.0;
     private SensorEventListener mSensorListener;
     private double[] accelerationVector;
-    private long trackTime;
+    private double[] preaccelerationVector;
+    private long oldTime;
     private double[] speed;
     private double vel;
 
@@ -164,8 +165,9 @@ public class TrackActivity extends AppCompatActivity implements
         temperature = 0.0;
         humidity = 0.0;
         sumAcceleration = 0.0;
-        trackTime = System.nanoTime();
+        oldTime = System.currentTimeMillis();
         accelerationVector = new double[]{0,0,0};
+        preaccelerationVector = new double[]{0,0,0};
         speed = new double[]{0,0,0};
         vel = 0;
     }
@@ -252,73 +254,124 @@ public class TrackActivity extends AppCompatActivity implements
                     sumAcceleration = sumAcceleration - acceleration;
 //                    Log.i("Accelerometer", "Sum: " + sumAcceleration);
 
-                    long oldTime = trackTime;
-                    trackTime = System.nanoTime();
+                    long trackTime = System.currentTimeMillis();
+                    if(trackTime - oldTime > 100) {
+                        long diffTime = trackTime - oldTime;
+                        oldTime = trackTime;
 
 //                    final float alpha = 0.8f;
 //                    float alpha = trackTime / (float) (trackTime + (trackTime - oldTime));
-                    final float alpha = 0.99f;
 
-                    double factor = 1000000000.0;
-                    double preaccel = Math.sqrt(accelerationVector[0] * accelerationVector[0] + accelerationVector[1] * accelerationVector[1] + accelerationVector[2] * accelerationVector[2])/factor;
-                    // Isolate the force of gravity with the low-pass filter.
-                    accelerationVector[0] = alpha * accelerationVector[0] + (1 - alpha) * event.values[0];
-                    accelerationVector[1] = alpha * accelerationVector[1] + (1 - alpha) * event.values[1];
-                    accelerationVector[2] = alpha * accelerationVector[2] + (1 - alpha) * event.values[2];
+                        final float alpha = 0.99f;
 
-                    // Integration
-                    speed[0] = ((trackTime - oldTime) / 6.0) * (x + 4 * ((accelerationVector[0] - x)/2.0)  + accelerationVector[0]);
-                    speed[1] = ((trackTime - oldTime) / 6.0) * (y + 4 * ((accelerationVector[1] - y)/2.0)  + accelerationVector[1]);
-                    speed[2] = ((trackTime - oldTime) / 6.0) * (z + 4 * ((accelerationVector[2] - z)/2.0)  + accelerationVector[2]);
+                        double factor = 1000000000.0;
+                        double preaccel = Math.sqrt((accelerationVector[0] * accelerationVector[0]) + (accelerationVector[1] * accelerationVector[1]) + (accelerationVector[2] * accelerationVector[2]));
+                        preaccelerationVector[0] = accelerationVector[0];
+                        preaccelerationVector[1] = accelerationVector[1];
+                        preaccelerationVector[2] = accelerationVector[2];
+                        // Isolate the force of gravity with the low-pass filter.
+                        accelerationVector[0] = alpha * accelerationVector[0] + (1 - alpha) * event.values[0];
+                        accelerationVector[1] = alpha * accelerationVector[1] + (1 - alpha) * event.values[1];
+                        accelerationVector[2] = alpha * accelerationVector[2] + (1 - alpha) * event.values[2];
 
-                    // nano to seconds
+//                        if (accelerationVector[0] < 0.09) {
+//                            accelerationVector[0] = 0.0;
+//                        }
+//                        if (accelerationVector[1] < 0.09) {
+//                            accelerationVector[1] = 0.0;
+//                        }
+//                        if (accelerationVector[2] < 0.09) {
+//                            accelerationVector[2] = 0.0;
+//                        }
+//                        accelerationVector[0] = (accelerationVector[0] / 0.078) -1.0;
+//                        accelerationVector[1] = (accelerationVector[1] / 0.078) -1.0;
+//                        accelerationVector[2] = (accelerationVector[2] / 0.078) -1.0;
+
+                        // Integration
+                        speed[0] = ((trackTime - oldTime) / 6.0) * (x + 4 * ((accelerationVector[0] - x) / 2.0) + accelerationVector[0]) / factor;
+                        speed[1] = ((trackTime - oldTime) / 6.0) * (y + 4 * ((accelerationVector[1] - y) / 2.0) + accelerationVector[1]) / factor;
+                        speed[2] = ((trackTime - oldTime) / 6.0) * (z + 4 * ((accelerationVector[2] - z) / 2.0) + accelerationVector[2]) / factor;
+
+//                        speed[0] = (trackTime - oldTime) / factor * (accelerationVector[0]);
+//                        speed[1] = (trackTime - oldTime) / factor * (accelerationVector[1]);
+//                        speed[2] = (trackTime - oldTime) / factor * (accelerationVector[2]);
+
+//                        if(preaccelerationVector[0] * accelerationVector[0]>0) {
+//                            speed[0] = ((trackTime - oldTime) / (factor * 2.0)) * (preaccelerationVector[0] + accelerationVector[0]);
+//                        } else {
+//                            speed[0] = ((trackTime - oldTime) / (factor * 4.0)) * (preaccelerationVector[0] + accelerationVector[0]);
+//                        }
+//                        if(preaccelerationVector[1] * accelerationVector[1]>0) {
+//                            speed[1] = ((trackTime - oldTime) / (factor * 2.0)) * preaccelerationVector[1] + (accelerationVector[1]);
+//                        } else {
+//                            speed[1] = ((trackTime - oldTime) / (factor * 4.0)) * preaccelerationVector[1] + (accelerationVector[1]);
+//                        }
+//                            if(preaccelerationVector[2] * accelerationVector[2]>0) {
+//                                speed[2] = ((trackTime - oldTime) / (factor * 2.0)) * (preaccelerationVector[2] + accelerationVector[2]);
+//                            } else {
+//                                speed[2] = ((trackTime - oldTime) / (factor * 4.0)) * (preaccelerationVector[2] + accelerationVector[2]);
+//                            }
+                        double v = Math.abs(accelerationVector[0] + accelerationVector[1] + accelerationVector[2] - preaccelerationVector[0] - preaccelerationVector[1] - preaccelerationVector[2])/ diffTime * 10000;//Math.sqrt((speed[0] * speed[0]) + (speed[1] * speed[1]) + (speed[2] * speed[2]));
+
+                        // nano to seconds
 //                    speed[0] = speed[0] / factor;
 //                    speed[1] = speed[1] / factor;
 //                    speed[2] = speed[2] / factor;
 
-                    double accel = Math.sqrt(accelerationVector[0] * accelerationVector[0] + accelerationVector[1] * accelerationVector[1] + accelerationVector[2] * accelerationVector[2])/factor;
-                    vel += (trackTime - oldTime) * (preaccel - accel) / 2;
+                        double accel = Math.sqrt((accelerationVector[0] * accelerationVector[0]) + (accelerationVector[1] * accelerationVector[1]) + (accelerationVector[2] * accelerationVector[2]));
+                        double dot = (preaccelerationVector[0] * accelerationVector[0] +
+                                preaccelerationVector[1] * accelerationVector[1] +
+                                preaccelerationVector[2] * accelerationVector[2]) /
+                                (preaccel * accel);
+                        vel += (trackTime - oldTime) * (preaccel - accel) / 2;
 //                    Log.i("Speed", "[" + speed[0] + " " + speed[1] + " " + speed[2] + "]\t\t" + Math.sqrt(speed[0] * speed[0] + speed[1] * speed[1] + speed[2] * speed[2]) + "  " + alpha);
 //                    Log.i("Speed", "[" + ((trackTime - oldTime) / 6.0) * (preaccel + (4.0 * ((accel - preaccel)/2.0))  + accel) + "]");
-                    Log.i("Speed", "[" + vel+ "]\t" + accel + "\t" + preaccel + "\t" + (trackTime - oldTime));
+//                    Log.i("Speed", "[" + vel+ "]\t" + accel + "\t" + preaccel + "\t" + (trackTime - oldTime));
 //                    Log.i("Accel", "[" + accelerationVector[0] + " " + accelerationVector[1] + " " + accelerationVector[2] + "]\t\t" + Math.sqrt(accelerationVector[0] * accelerationVector[0] + accelerationVector[1] * accelerationVector[1] + accelerationVector[2] * accelerationVector[2]) + "  " + alpha);
-
-                    acceleration = vel;
-                    Location loc = new Location("");
-
+                        Log.i("Speed", "[" + dot + "]\t" + v + "\t" + accel + "\t" + preaccel + "\t[" + accelerationVector[0] + " " + accelerationVector[1] + " " + accelerationVector[2] + "]");
+//                        if (dot < 0.5) {
+//                            Log.i("dot", dot + "\t" + accel + "\t" + preaccel);
+//                        }
+                        acceleration = vel;
+                        Location loc = new Location("");
+                        temperature = v;
+                        light = accelerationVector[0];
+                        humidity = accelerationVector[1];
+                        pressure = accelerationVector[2];
                     loc.setLongitude(-4.4);
                     loc.setLatitude(3.33);
                     myLocationChanged(loc);
-                    if (tStop) {
-                        if(vel > 0.0083) {
-                            speakerOut.speak("Andando", TextToSpeech.QUEUE_ADD, null);
-                            tStop = false;
+                        if (tStop) {
+                            if (v > 2) {
+                                speakerOut.speak("Andando", TextToSpeech.QUEUE_ADD, null);
+                                tStop = false;
+                            }
+                        } else {
+                            if (v < 0.06) {
+                                speakerOut.speak("no", TextToSpeech.QUEUE_ADD, null);
+                                tStop = true;
+                            }
                         }
-                    } else {
-                        if(vel < 0.0004) {
-                            speakerOut.speak("no", TextToSpeech.QUEUE_ADD, null);
-                            tStop = true;
-                        }
-                    }
 
 
 //                    if(a < 2.3f && a > -2.3f) {
-                    if(tStop) {
-                        if(!waitToStart) {
-                            waitToStart = true;
+                        if (tStop) {
+                            if (!waitToStart) {
+                                waitToStart = true;
 
-                            if (!runningSpeech) {
-                                runningSpeech = true;
-                                restartSpeech();
-                            }
+                                if (!runningSpeech) {
+                                    runningSpeech = true;
+                                    restartSpeech();
+                                }
 //                            speeching = true;
 //                            getNewSpeechReady = false;
 //                            Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
 //                            restartSpeech();
-                        }
-                    } else {
-                        waitToStart = false;
+                            }
+                        } else {
+                            waitToStart = false;
 //                        Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
+                        }
                     }
 
                 }
