@@ -84,7 +84,7 @@
     <string name="b_start_tracking">Start</string>
     <string name="b_stop_tracking">Stop</string>
     <string name="tracking_summary">Resumen del trayecto</string>
-    <string name="speak_out_stop_added">Nueva parada</string>
+    <string name="speak_out_stop_added">Parada</string>
 
 
 </resources>

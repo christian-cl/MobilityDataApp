@@ -12,6 +12,7 @@ public class SavePointInput {
     private Itinerary itinerary;
     private Location location;
     private String cause;
+
     public SavePointInput() {
     }
 
