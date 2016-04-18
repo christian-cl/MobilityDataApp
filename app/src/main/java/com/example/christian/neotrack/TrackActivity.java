@@ -89,6 +89,9 @@ public class TrackActivity extends AppCompatActivity implements
 
     private static final int ZOOM = 20;
 
+    private static final double[] ACCELERATION_OFFSET = new double[]{-0.0215942828322981,
+            0.0199339222385277,-0.0215942828322981};
+
     private AlertDialog saveFileDialog;
     private DatePickerDialog dateInitDialog;
 
@@ -140,8 +143,9 @@ public class TrackActivity extends AppCompatActivity implements
     private double[] accelerationVector;
     private double[] preaccelerationVector;
     private long oldTime;
-    private double[] speed;
-    private double vel;
+    private double speed;
+    private double[] velocity;
+//    private double vel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,9 +171,9 @@ public class TrackActivity extends AppCompatActivity implements
         sumAcceleration = 0.0;
         oldTime = System.currentTimeMillis();
         accelerationVector = new double[]{0,0,0};
-        preaccelerationVector = new double[]{0,0,0};
-        speed = new double[]{0,0,0};
-        vel = 0;
+//        preaccelerationVector = new double[]{0,0,0};
+        velocity = new double[]{0,0,0};
+        speed = 0;
     }
 
     private void newSessionId() {
@@ -242,146 +246,72 @@ public class TrackActivity extends AppCompatActivity implements
                 Sensor mySensor = event.sensor;
 
                 if (mySensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-//                    Log.i("Sensor", event.values[0] + " " + event.values[1] + " " + event.values[2]);
-                    // alpha is calculated as t / (t + dT)
-                    // with t, the low-pass filter's time-constant
-                    // and dT, the event delivery rate
+                    // Previous data
                     double x = accelerationVector[0];
                     double y = accelerationVector[1];
                     double z = accelerationVector[2];
-//                    double a = Math.sqrt((x * x) + (y * y) + (z * z));
-                    acceleration = z;
-                    sumAcceleration = sumAcceleration - acceleration;
-//                    Log.i("Accelerometer", "Sum: " + sumAcceleration);
 
                     long trackTime = System.currentTimeMillis();
                     if(trackTime - oldTime > 100) {
                         long diffTime = trackTime - oldTime;
                         oldTime = trackTime;
 
-//                    final float alpha = 0.8f;
-//                    float alpha = trackTime / (float) (trackTime + (trackTime - oldTime));
+                        // Check if have anomalous data
+                        if (event.values[0]< 100 && event.values[0]> -100
+                                && event.values[1]< 100 && event.values[1]> -100
+                                && event.values[2]< 100 && event.values[2]> -100) {
 
-                        final float alpha = 0.99f;
+                            // Reduce noise
+                            accelerationVector[0] = event.values[0]-ACCELERATION_OFFSET[0];
+                            accelerationVector[1] = event.values[1]-ACCELERATION_OFFSET[1];
+                            accelerationVector[2] = event.values[2]-ACCELERATION_OFFSET[2];
 
-                        double factor = 1000000000.0;
-                        double preaccel = Math.sqrt((accelerationVector[0] * accelerationVector[0]) + (accelerationVector[1] * accelerationVector[1]) + (accelerationVector[2] * accelerationVector[2]));
-                        preaccelerationVector[0] = accelerationVector[0];
-                        preaccelerationVector[1] = accelerationVector[1];
-                        preaccelerationVector[2] = accelerationVector[2];
-                        // Isolate the force of gravity with the low-pass filter.
-                        accelerationVector[0] = alpha * accelerationVector[0] + (1 - alpha) * event.values[0];
-                        accelerationVector[1] = alpha * accelerationVector[1] + (1 - alpha) * event.values[1];
-                        accelerationVector[2] = alpha * accelerationVector[2] + (1 - alpha) * event.values[2];
+                            // Low-pass filter.
+                            final float alpha = 0.99f;
+                            accelerationVector[0] = alpha * accelerationVector[0] + (1 - alpha) * event.values[0];
+                            accelerationVector[1] = alpha * accelerationVector[1] + (1 - alpha) * event.values[1];
+                            accelerationVector[2] = alpha * accelerationVector[2] + (1 - alpha) * event.values[2];
 
-//                        if (accelerationVector[0] < 0.09) {
-//                            accelerationVector[0] = 0.0;
-//                        }
-//                        if (accelerationVector[1] < 0.09) {
-//                            accelerationVector[1] = 0.0;
-//                        }
-//                        if (accelerationVector[2] < 0.09) {
-//                            accelerationVector[2] = 0.0;
-//                        }
-//                        accelerationVector[0] = (accelerationVector[0] / 0.078) -1.0;
-//                        accelerationVector[1] = (accelerationVector[1] / 0.078) -1.0;
-//                        accelerationVector[2] = (accelerationVector[2] / 0.078) -1.0;
+                            // Integration
+                            double h = ((double) diffTime) / 6.0f;
+                            velocity[0] = h * (x + 4 * ((accelerationVector[0] - x) / 2.0) + accelerationVector[0]);
+                            velocity[1] = h * (y + 4 * ((accelerationVector[1] - y) / 2.0) + accelerationVector[1]);
+                            velocity[2] = h * (z + 4 * ((accelerationVector[2] - z) / 2.0) + accelerationVector[2]);
 
-                        // Integration
-                        speed[0] = ((trackTime - oldTime) / 6.0) * (x + 4 * ((accelerationVector[0] - x) / 2.0) + accelerationVector[0]) / factor;
-                        speed[1] = ((trackTime - oldTime) / 6.0) * (y + 4 * ((accelerationVector[1] - y) / 2.0) + accelerationVector[1]) / factor;
-                        speed[2] = ((trackTime - oldTime) / 6.0) * (z + 4 * ((accelerationVector[2] - z) / 2.0) + accelerationVector[2]) / factor;
+                            // Module of velocity vector in km/h
+                            speed = Math.sqrt(velocity[0]*velocity[0]
+                                    + velocity[1]*velocity[1]
+                                    + velocity[2]*velocity[2]) * 3.6;
 
-//                        speed[0] = (trackTime - oldTime) / factor * (accelerationVector[0]);
-//                        speed[1] = (trackTime - oldTime) / factor * (accelerationVector[1]);
-//                        speed[2] = (trackTime - oldTime) / factor * (accelerationVector[2]);
-
-//                        if(preaccelerationVector[0] * accelerationVector[0]>0) {
-//                            speed[0] = ((trackTime - oldTime) / (factor * 2.0)) * (preaccelerationVector[0] + accelerationVector[0]);
-//                        } else {
-//                            speed[0] = ((trackTime - oldTime) / (factor * 4.0)) * (preaccelerationVector[0] + accelerationVector[0]);
-//                        }
-//                        if(preaccelerationVector[1] * accelerationVector[1]>0) {
-//                            speed[1] = ((trackTime - oldTime) / (factor * 2.0)) * preaccelerationVector[1] + (accelerationVector[1]);
-//                        } else {
-//                            speed[1] = ((trackTime - oldTime) / (factor * 4.0)) * preaccelerationVector[1] + (accelerationVector[1]);
-//                        }
-//                            if(preaccelerationVector[2] * accelerationVector[2]>0) {
-//                                speed[2] = ((trackTime - oldTime) / (factor * 2.0)) * (preaccelerationVector[2] + accelerationVector[2]);
-//                            } else {
-//                                speed[2] = ((trackTime - oldTime) / (factor * 4.0)) * (preaccelerationVector[2] + accelerationVector[2]);
-//                            }
-                        double v = Math.abs(accelerationVector[0] + accelerationVector[1] + accelerationVector[2] - preaccelerationVector[0] - preaccelerationVector[1] - preaccelerationVector[2])/ diffTime * 10000;//Math.sqrt((speed[0] * speed[0]) + (speed[1] * speed[1]) + (speed[2] * speed[2]));
-
-                        // nano to seconds
-//                    speed[0] = speed[0] / factor;
-//                    speed[1] = speed[1] / factor;
-//                    speed[2] = speed[2] / factor;
-
-                        double accel = Math.sqrt((accelerationVector[0] * accelerationVector[0]) + (accelerationVector[1] * accelerationVector[1]) + (accelerationVector[2] * accelerationVector[2]));
-                        double dot = (preaccelerationVector[0] * accelerationVector[0] +
-                                preaccelerationVector[1] * accelerationVector[1] +
-                                preaccelerationVector[2] * accelerationVector[2]) /
-                                (preaccel * accel);
-                        vel += (trackTime - oldTime) * (preaccel - accel) / 2;
-//                    Log.i("Speed", "[" + speed[0] + " " + speed[1] + " " + speed[2] + "]\t\t" + Math.sqrt(speed[0] * speed[0] + speed[1] * speed[1] + speed[2] * speed[2]) + "  " + alpha);
-//                    Log.i("Speed", "[" + ((trackTime - oldTime) / 6.0) * (preaccel + (4.0 * ((accel - preaccel)/2.0))  + accel) + "]");
-//                    Log.i("Speed", "[" + vel+ "]\t" + accel + "\t" + preaccel + "\t" + (trackTime - oldTime));
-//                    Log.i("Accel", "[" + accelerationVector[0] + " " + accelerationVector[1] + " " + accelerationVector[2] + "]\t\t" + Math.sqrt(accelerationVector[0] * accelerationVector[0] + accelerationVector[1] * accelerationVector[1] + accelerationVector[2] * accelerationVector[2]) + "  " + alpha);
-                        Log.i("Speed", "[" + dot + "]\t" + v + "\t" + accel + "\t" + preaccel + "\t[" + accelerationVector[0] + " " + accelerationVector[1] + " " + accelerationVector[2] + "]");
-//                        if (dot < 0.5) {
-//                            Log.i("dot", dot + "\t" + accel + "\t" + preaccel);
-//                        }
-                        acceleration = vel;
-                        Location loc = new Location("");
-                        temperature = v;
-                        light = accelerationVector[0];
-                        humidity = accelerationVector[1];
-                        pressure = accelerationVector[2];
-                    loc.setLongitude(-4.4);
-                    loc.setLatitude(3.33);
-                    myLocationChanged(loc);
-                        if (tStop) {
-                            if (v > 2) {
-                                speakerOut.speak("Andando", TextToSpeech.QUEUE_ADD, null);
-                                tStop = false;
-                            }
-                        } else {
-                            if (v < 0.06) {
-                                speakerOut.speak("no", TextToSpeech.QUEUE_ADD, null);
-                                tStop = true;
-                            }
-                        }
-
-
-//                    if(a < 2.3f && a > -2.3f) {
-                        if (tStop) {
-                            if (!waitToStart) {
-                                waitToStart = true;
-
-                                if (!runningSpeech) {
-                                    runningSpeech = true;
-                                    restartSpeech();
+                            // Update stop condition
+                            if (tStop) {
+                                if (speed > 15) {
+                                    speakerOut.speak("Andando", TextToSpeech.QUEUE_ADD, null);
+                                    tStop = false;
                                 }
-//                            speeching = true;
-//                            getNewSpeechReady = false;
-//                            Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
-//                            restartSpeech();
+                            } else {
+                                if (speed < 10) {
+                                    speakerOut.speak("no", TextToSpeech.QUEUE_ADD, null);
+                                    tStop = true;
+                                }
                             }
-                        } else {
-                            waitToStart = false;
-//                        Log.i("Sensor", Math.sqrt((x * x) + (y * y) + (z * z)) + "\t" + x + "\t" + y + "\t" + z);
+
+                            // Running recognition speech
+                            if (tStop) {
+                                if (!waitToStart) {
+                                    waitToStart = true;
+                                    if (!runningSpeech) {
+                                        runningSpeech = true;
+                                        restartSpeech();
+                                    }
+                                }
+                            } else {
+                                waitToStart = false;
+                            }
                         }
                     }
 
                 }
-//                if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-//                    float x = event.values[0];
-//                    float y = event.values[1];
-//                    float z = event.values[2];
-//                    if(Math.sqrt((x*x) + (y*y) + (z*z)) > 11.0f)
-//                    Log.i("Sensor", Math.sqrt((x*x) + (y*y) + (z*z)) + "\t" + x + "\t" + y + "\t" + z);
-//                }
 
                 if (mySensor.getType() == Sensor.TYPE_PRESSURE) {
                     pressure = event.values[0];
