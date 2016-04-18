@@ -143,14 +143,6 @@ public class MainActivity extends AppCompatActivity {
     public void sendMessagePreferences(View view) {
         startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
     }
-    /** Called when the user clicks the Send button */
-    public void sendMessageConsult(View view) {
-        // Do something in response to button
-        // Activity is a subclass from context
-        Intent intent = new Intent(this, ConsultActivity.class);
-        // Init the activity
-        startActivity(intent);
-    }
 
     public boolean saveFileAndRemove(String fileName, Calendar dateStart, Calendar dateEnd) {
         if(saveFile(fileName, dateStart, dateEnd)) {

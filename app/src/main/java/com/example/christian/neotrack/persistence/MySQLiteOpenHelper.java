@@ -30,19 +30,6 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
         public static String COLUMN_SENSOR_HUMIDITY = "humidity";
     }
 
-    public static class TableStreetTrack {
-        public static String TABLE_NAME = "streettrack";
-        public static String COLUMN_ID = "_id";
-        public static String COLUMN_ADDRESS = "address";
-        public static String COLUMN_START_LATITUDE = "startLatitude";
-        public static String COLUMN_START_LONGITUDE = "startLongitude";
-        public static String COLUMN_END_LATITUDE = "endLatitude";
-        public static String COLUMN_END_LONGITUDE = "endLongitude";
-        public static String COLUMN_START_DATETIME = "startDateTime";
-        public static String COLUMN_END_DATETIME = "endDateTime";
-        public static String COLUMN_DISTANCE = "distance";
-    }
-
     public static class TableItinerary {
         public static String TABLE_NAME = "itineraries";
         public static String COLUMN_ID = "_id";
@@ -68,19 +55,6 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
             TableDataCapture.COLUMN_SENSOR_HUMIDITY + " real" +
             ");";
 
-    private static final String CREATE_TABLE_STREET_TRACK =
-            "create table " + TableStreetTrack.TABLE_NAME + "(" +
-            TableStreetTrack.COLUMN_ID + " integer primary key autoincrement, " +
-            TableStreetTrack.COLUMN_ADDRESS + " text not null, " +
-            TableStreetTrack.COLUMN_START_LATITUDE + " real not null, " +
-            TableStreetTrack.COLUMN_START_LONGITUDE + " real not null, " +
-            TableStreetTrack.COLUMN_END_LATITUDE + " real not null, " +
-            TableStreetTrack.COLUMN_END_LONGITUDE + " real not null, " +
-            TableStreetTrack.COLUMN_START_DATETIME + " DATETIME not null, " +
-            TableStreetTrack.COLUMN_END_DATETIME + " DATETIME not null, " +
-            TableStreetTrack.COLUMN_DISTANCE + " real not null" +
-            ");";
-
     private static final String CREATE_TABLE_ITINERARY =
             "create table " + TableItinerary.TABLE_NAME + "(" +
             TableItinerary.COLUMN_ID + " integer primary key autoincrement, " +
@@ -92,8 +66,6 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
 
     private static final String DROP_TABLE_DATA_CAPTURE =
             "drop table if exists "+ TableDataCapture.TABLE_NAME + ";";
-    private static final String DROP_CREATE_TABLE_STREET_TRACK =
-            "drop table if exists "+ TableStreetTrack.TABLE_NAME + ";";
     private static final String DROP_CREATE_TABLE_ITINERARY =
             "drop table if exists "+ TableItinerary.TABLE_NAME + ";";
 
@@ -107,7 +79,6 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // TODO Auto-generated method stub
         db.execSQL(CREATE_TABLE_DATA_CAPTURE);
-        db.execSQL(CREATE_TABLE_STREET_TRACK);
         db.execSQL(CREATE_TABLE_ITINERARY);
     }
 
@@ -116,7 +87,6 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
         // TODO Auto-generated method stub
         if(newVersion > oldVersion) {
             db.execSQL(DROP_TABLE_DATA_CAPTURE);
-            db.execSQL(DROP_CREATE_TABLE_STREET_TRACK);
             db.execSQL(DROP_CREATE_TABLE_ITINERARY);
             onCreate(db);
         }
