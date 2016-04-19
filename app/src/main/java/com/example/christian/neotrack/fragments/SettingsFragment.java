@@ -1,4 +1,4 @@
-package com.example.christian.neotrack;
+package com.example.christian.neotrack.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -8,7 +8,8 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.util.Log;
 
-import com.example.christian.neotrack.persistence.DataCaptureDAO;
+import com.example.christian.neotrack.R;
+import com.example.christian.neotrack.persistence.SampleDAO;
 
 /**
  * Created by Christian Cintrano on 29/04/15.
@@ -64,7 +65,7 @@ public class SettingsFragment extends PreferenceFragment
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Log.i("DB", "Deleting all rows");
-                DataCaptureDAO dbLocalInstance = new DataCaptureDAO(getActivity());
+                SampleDAO dbLocalInstance = new SampleDAO(getActivity());
                 dbLocalInstance.open();
                 dbLocalInstance.deleteAll();
                 dbLocalInstance.close();

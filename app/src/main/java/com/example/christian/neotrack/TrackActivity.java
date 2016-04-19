@@ -45,13 +45,15 @@ import android.widget.Toast;
 
 import com.example.christian.neotrack.fragments.MapTabFragment;
 import com.example.christian.neotrack.fragments.TrackFragment;
-import com.example.christian.neotrack.persistence.DataCapture;
-import com.example.christian.neotrack.persistence.DataCaptureDAO;
+import com.example.christian.neotrack.persistence.Sample;
+import com.example.christian.neotrack.persistence.SampleDAO;
 import com.example.christian.neotrack.persistence.Itinerary;
 import com.example.christian.neotrack.persistence.ItineraryDAO;
 import com.example.christian.neotrack.persistence.Point;
-import com.example.christian.neotrack.services.MyRecognitionListener;
-import com.example.christian.neotrack.services.TabsAdapter;
+import com.example.christian.neotrack.adapters.MyRecognitionListener;
+import com.example.christian.neotrack.adapters.TabsAdapter;
+import com.example.christian.neotrack.persistence.SavePointInput;
+import com.example.christian.neotrack.persistence.SavePointInput2;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
@@ -101,7 +103,7 @@ public class TrackActivity extends AppCompatActivity {
     private Itinerary visitItinerary;
     private boolean runningTracking = false;
     // Data base and ids
-    public DataCaptureDAO dbDataCapture;
+    public SampleDAO dbDataCapture;
     private String SESSION_ID;
     final static private String TAG_SESSION_ID = "SESSION_ID";
     // Speech
@@ -138,7 +140,7 @@ public class TrackActivity extends AppCompatActivity {
         configureActionBar(savedInstanceState);
 
         newSessionId();
-        dbDataCapture = new DataCaptureDAO(this);
+        dbDataCapture = new SampleDAO(this);
 
         // reset sensors variables
         speed = 0.0;
@@ -485,11 +487,11 @@ public class TrackActivity extends AppCompatActivity {
     private String printSummaryTracking(String tag) {
         long time = 0;
         float distance = 0;
+        int stops = 0;
 
         Log.i(TAG, "Search for sessionId: " + tag);
-        List<DataCapture> results = dbDataCapture.get(tag);
+        List<Sample> results = dbDataCapture.get(tag);
         Log.i(TAG, "recover " + results.size() + " elements");
-        int stops = 0;
         if (results.size() > 0) {
             // time
             Date dateStart = null;
@@ -507,7 +509,7 @@ public class TrackActivity extends AppCompatActivity {
             Location lastLoc = new Location("");
             lastLoc.setLatitude(results.get(0).getLatitude());
             lastLoc.setLongitude(results.get(0).getLongitude());
-            for (DataCapture dc : results) {
+            for (Sample dc : results) {
                 Location newLoc = new Location("");
                 newLoc.setLatitude(dc.getLatitude());
                 newLoc.setLongitude(dc.getLongitude());
@@ -518,7 +520,6 @@ public class TrackActivity extends AppCompatActivity {
                     stops++;
                 }
             }
-
             // Save data of itinerary automatically
             saveTrack(results, time, distance);
         }
@@ -544,9 +545,9 @@ public class TrackActivity extends AppCompatActivity {
         Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
         Log.i("DB", "Saving file...");
         FileOutputStream out = null;
-        DataCaptureDAO db = new DataCaptureDAO(this);
+        SampleDAO db = new SampleDAO(this);
         db.open();
-        List<DataCapture> data = db.get(newDateStart, newDateEnd);
+        List<Sample> data = db.get(newDateStart, newDateEnd);
         Log.i("DB", "Find " + data.size() + " DataCapture elements");
         String extension = ".csv";
         String folderName = "/neoTrack";
@@ -562,7 +563,7 @@ public class TrackActivity extends AppCompatActivity {
             }
             String head = "_id,latitude,longitude,street,stoptype,comment,date,acceleration,pressure,light,temperature,humidity\n";
             out.write(head.getBytes());
-            for(DataCapture dc : data) {
+            for(Sample dc : data) {
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
                 if(dc.getSession() != null) {
                     out.write(("\"" + dc.getSession() + "\",").getBytes());
@@ -607,7 +608,7 @@ public class TrackActivity extends AppCompatActivity {
 
     }
 
-    public void saveTrack(List<DataCapture> results, float time, float distance) {
+    public void saveTrack(List<Sample> results, float time, float distance) {
         Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
         Log.i("DB", "Saving file...");
 
@@ -631,7 +632,7 @@ public class TrackActivity extends AppCompatActivity {
             out.write((SESSION_ID + "\t" + time + "\t" + distance + "\n").getBytes());
             head = "_id\tsession\tlatitude\tlongitude\tstoptype\tcomment\tdate\tacceleration\tpressure\tlight\ttemperature\thumidity\n";
             out.write(head.getBytes());
-            for(DataCapture dc : results) {
+            for(Sample dc : results) {
                 out.write((String.valueOf(dc.getId()) + "\t").getBytes());
                 if(dc.getSession() != null) {
                     out.write(("\"" + dc.getSession() + "\"\t").getBytes());
@@ -816,7 +817,7 @@ public class TrackActivity extends AppCompatActivity {
     //GPS periodico
     public LocationManager locationManager;
     private ProgressDialog dialogWait;
-    public DataCaptureDAO db;
+    public SampleDAO db;
 
     private SharedPreferences pref; // Settings listener
 
@@ -859,7 +860,7 @@ public class TrackActivity extends AppCompatActivity {
      * Method to save data from external fragments
      * @param dc data
      */
-    public void runSaveData(DataCapture dc) {
+    public void runSaveData(Sample dc) {
         dc.setSensorAcceleration(speed);
         dc.setSensorPressure(pressure);
         dc.setSensorLight(light);
@@ -987,7 +988,7 @@ public class TrackActivity extends AppCompatActivity {
         }
 
         private void savePoint(Location location, String cause) {
-            DataCapture dc = new DataCapture();
+            Sample dc = new Sample();
             dc.setLatitude(location.getLatitude());
             dc.setLongitude(location.getLongitude());
             dc.setStopType(cause);
@@ -1031,7 +1032,7 @@ public class TrackActivity extends AppCompatActivity {
             return false;
         }
 
-        private void savePoint(DataCapture location) {
+        private void savePoint(Sample location) {
             location.setSession(SESSION_ID);
             dbDataCapture.create(location);
         }

@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 import com.example.christian.neotrack.persistence.Itinerary;
 import com.example.christian.neotrack.persistence.ItineraryDAO;
-import com.example.christian.neotrack.services.ExpandableListAdapter;
+import com.example.christian.neotrack.adapters.ExpandableListAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;

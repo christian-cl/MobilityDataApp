@@ -1,4 +1,4 @@
-package com.example.christian.neotrack;
+package com.example.christian.neotrack.persistence;
 
 import android.location.Location;
 

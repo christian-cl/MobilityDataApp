@@ -25,7 +25,7 @@ import android.widget.TextView;
 import com.example.christian.neotrack.persistence.Itinerary;
 import com.example.christian.neotrack.persistence.ItineraryDAO;
 import com.example.christian.neotrack.persistence.Point;
-import com.example.christian.neotrack.services.ItineraryArrayAdapter;
+import com.example.christian.neotrack.adapters.ItineraryArrayAdapter;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;

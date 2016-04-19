@@ -1,21 +1,16 @@
-package com.example.christian.neotrack.services;
+package com.example.christian.neotrack.adapters;
 
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 
-import com.example.christian.neotrack.R;
 import com.example.christian.neotrack.TrackActivity;
-import com.example.christian.neotrack.persistence.DataCapture;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 /**
  * Created by christian on 14/03/16.

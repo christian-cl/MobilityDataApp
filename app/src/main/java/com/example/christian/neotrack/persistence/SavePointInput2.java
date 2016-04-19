@@ -1,9 +1,4 @@
-package com.example.christian.neotrack;
-
-import android.location.Location;
-
-import com.example.christian.neotrack.persistence.DataCapture;
-import com.example.christian.neotrack.persistence.Itinerary;
+package com.example.christian.neotrack.persistence;
 
 /**
  * Created by CH on 14/02/2016.
@@ -11,12 +6,12 @@ import com.example.christian.neotrack.persistence.Itinerary;
 public class SavePointInput2 {
 
     private Itinerary itinerary;
-    private DataCapture location;
+    private Sample location;
 
     public SavePointInput2() {
     }
 
-    public SavePointInput2(Itinerary itinerary, DataCapture location) {
+    public SavePointInput2(Itinerary itinerary, Sample location) {
         this.itinerary = itinerary;
         this.location = location;
     }
@@ -29,11 +24,11 @@ public class SavePointInput2 {
         this.itinerary = itinerary;
     }
 
-    public DataCapture getLocation() {
+    public Sample getLocation() {
         return location;
     }
 
-    public void setLocation(DataCapture location) {
+    public void setLocation(Sample location) {
         this.location = location;
     }
 }

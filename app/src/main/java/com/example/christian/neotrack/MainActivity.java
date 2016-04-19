@@ -20,8 +20,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.christian.neotrack.persistence.DataCapture;
-import com.example.christian.neotrack.persistence.DataCaptureDAO;
+import com.example.christian.neotrack.persistence.Sample;
+import com.example.christian.neotrack.persistence.SampleDAO;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     private SimpleDateFormat sdf;
 
-    private DataCaptureDAO db;
+    private SampleDAO db;
 
     private TextToSpeech mTts;
 
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setLogo(R.mipmap.ic_launcher_inv);
         }
 
-        db = new DataCaptureDAO(this);
+        db = new SampleDAO(this);
         db.open();
 
         sdf = new SimpleDateFormat(FORMAT_DATE, Locale.US);
@@ -165,9 +165,9 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
         Log.i("DB", "Saving file...");
         FileOutputStream out = null;
-        DataCaptureDAO db = new DataCaptureDAO(this);
+        SampleDAO db = new SampleDAO(this);
         db.open();
-        List<DataCapture> data = db.get(dateStart, dateEnd);
+        List<Sample> data = db.get(dateStart, dateEnd);
         Log.i("DB", "Find " + data.size() + " elements");
         String extension = ".csv";
         String folderName = "/mdaFolder";
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
             }
             String head = "_id,latitude,longitude,session,stoptype,comment,date\n";
             out.write(head.getBytes());
-            for(DataCapture dc : data) {
+            for(Sample dc : data) {
                 System.out.print(dc);
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
                 if(dc.getSession() != null) {

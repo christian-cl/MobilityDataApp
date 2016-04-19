@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import com.example.christian.neotrack.TrackActivity;
 import com.example.christian.neotrack.R;
-import com.example.christian.neotrack.persistence.DataCapture;
+import com.example.christian.neotrack.persistence.Sample;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -155,7 +155,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                         text = editText.getText().toString();
                     }
 
-                    DataCapture dc = new DataCapture();
+                    Sample dc = new Sample();
                     dc.setLatitude(loc.getLatitude());
                     dc.setLongitude(loc.getLongitude());
                     dc.setStopType(title);

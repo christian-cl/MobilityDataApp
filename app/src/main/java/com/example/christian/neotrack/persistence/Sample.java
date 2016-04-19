@@ -5,7 +5,7 @@ package com.example.christian.neotrack.persistence;
  *
  * DataCapture Entity Class
  */
-public class DataCapture {
+public class Sample {
     private long id;
     private String session;
     private double latitude;
@@ -19,7 +19,7 @@ public class DataCapture {
     private double sensorTemperature;
     private double sensorHumidity;
 
-    public DataCapture() {
+    public Sample() {
         super();
     }
 
