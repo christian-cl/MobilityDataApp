@@ -137,7 +137,7 @@ public class TrackActivity extends AppCompatActivity {
     private SensorEventListener mSensorListener;
     // Velocity
     private static final double[] ACCELERATION_OFFSET = new double[]{
-            -0.0215942828322981, 0.0199339222385277, -0.0215942828322981};
+            0.0215942828322981, 0.0199339222385277, 0.1215942828322981};
     private double[] acceleration;
     private long oldTime;
     private double speed;
@@ -370,32 +370,41 @@ public class TrackActivity extends AppCompatActivity {
                         oldTime = trackTime;
 
                         // Check if have anomalous data
-                        if (event.values[0]< 100 && event.values[0]> -100
-                                && event.values[1]< 100 && event.values[1]> -100
-                                && event.values[2]< 100 && event.values[2]> -100) {
+                        if ((event.values[0]< 100.0) && (event.values[0]> -100.0)
+                                && (event.values[1]< 100.0) && (event.values[1]> -100.0)
+                                && (event.values[2]< 100.0) && (event.values[2]> -100.0)) {
 
                             // Reduce noise
-                            acceleration[0] = event.values[0]-ACCELERATION_OFFSET[0];
-                            acceleration[1] = event.values[1]-ACCELERATION_OFFSET[1];
-                            acceleration[2] = event.values[2]-ACCELERATION_OFFSET[2];
+                            if (event.values[0]>0)
+                                acceleration[0] = event.values[0]-ACCELERATION_OFFSET[0];
+                            else
+                                acceleration[0] = event.values[0]+ACCELERATION_OFFSET[0];
+                            if (event.values[1]>0)
+                                acceleration[1] = event.values[1]-ACCELERATION_OFFSET[1];
+                            else
+                                acceleration[1] = event.values[1]+ACCELERATION_OFFSET[1];
+                            if (event.values[2]>0)
+                                acceleration[2] = event.values[2]-ACCELERATION_OFFSET[2];
+                            else
+                                acceleration[2] = event.values[2]+ACCELERATION_OFFSET[2];
 
                             // Low-pass filter.
                             final float alpha = 0.99f;
-                            acceleration[0] = alpha * acceleration[0] + (1 - alpha) * event.values[0];
-                            acceleration[1] = alpha * acceleration[1] + (1 - alpha) * event.values[1];
-                            acceleration[2] = alpha * acceleration[2] + (1 - alpha) * event.values[2];
+                            acceleration[0] = alpha * acceleration[0] + (1 - alpha) * x;
+                            acceleration[1] = alpha * acceleration[1] + (1 - alpha) * y;
+                            acceleration[2] = alpha * acceleration[2] + (1 - alpha) * z;
 
                             // Integration
                             double h = ((double) diffTime) / 6.0f;
-                            velocity[0] = h * (x + 4 * ((acceleration[0] - x) / 2.0d) + acceleration[0]);
-                            velocity[1] = h * (y + 4 * ((acceleration[1] - y) / 2.0d) + acceleration[1]);
-                            velocity[2] = h * (z + 4 * ((acceleration[2] - z) / 2.0d) + acceleration[2]);
+                            velocity[0] = h * (x + (4.0 * ((acceleration[0] - x) / 2.0d)) + acceleration[0]);
+                            velocity[1] = h * (y + (4.0 * ((acceleration[1] - y) / 2.0d)) + acceleration[1]);
+                            velocity[2] = h * (z + (4.0 * ((acceleration[2] - z) / 2.0d)) + acceleration[2]);
 
                             // Module of velocity vector in km/h
                             speed = Math.sqrt((velocity[0]*velocity[0])
                                     + (velocity[1]*velocity[1])
                                     + (velocity[2]*velocity[2])) * 3.6d;
-                            Log.i("Speed","speed: " + speed + " " + speedMin +" " + speedMax);
+                            Log.i("Speed","speed: " + speed + " " + diffTime + " " + speedMin +" " + speedMax + " " +acceleration[0] + "-"+ acceleration[1] + "-"+ acceleration[2]);
 
                             // Update stop condition
                             if (tStop) {
