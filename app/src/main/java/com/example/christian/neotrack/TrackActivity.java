@@ -99,11 +99,23 @@ public class TrackActivity extends AppCompatActivity {
     ViewPager mViewPager;
     TabsAdapter mTabsAdapter;
     private Fragment mapFragment;
-    //Tracking
+    private ProgressDialog dialogWait;
+
+    // Preferences
+    private SharedPreferences pref; // Settings listener
+    private long intervalTimeGPS; // milliseconds
+    private float minDistance; // meters
+    // Tracking
     private Itinerary visitItinerary;
     private boolean runningTracking = false;
+    // GPS and location
+    public LocationManager locationManager;
+    private Location currentLocation;
+    // Location
+    private LocationListener gpsLocationListener;
+    private GpsStatus.Listener mGPSStatusListener;
     // Data base and ids
-    public SampleDAO dbDataCapture;
+    public SampleDAO dbSample;
     private String SESSION_ID;
     final static private String TAG_SESSION_ID = "SESSION_ID";
     // Speech
@@ -139,8 +151,8 @@ public class TrackActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         configureActionBar(savedInstanceState);
 
-        newSessionId();
-        dbDataCapture = new SampleDAO(this);
+        newSessionId(); // route ID
+        dbSample = new SampleDAO(this); // Data base connector
 
         // reset sensors variables
         speed = 0.0;
@@ -158,13 +170,14 @@ public class TrackActivity extends AppCompatActivity {
                 Settings.Secure.ANDROID_ID);
         String timestamp = DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime());
         SESSION_ID = android_id + "::" + timestamp;
-        Log.i(TAG, "new session ID: "+ SESSION_ID);
+        Log.i(TAG, "new session ID: " + SESSION_ID);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        dbDataCapture.open();
+        dbSample.open();
+        configurePreference();
         mGPSStatusListener = new GpsStatus.Listener() {
             public void onGpsStatusChanged(int event) {
                 switch (event) {
@@ -186,11 +199,10 @@ public class TrackActivity extends AppCompatActivity {
                 }
             }
         };
-        configurePreference();
         configureDialogWait();
         configureLocation();
-        configureSensors();
         configureSpeech();
+        configureSensors();
     }
 
     @Override
@@ -203,15 +215,15 @@ public class TrackActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         outState.putString(TAG_SESSION_ID, SESSION_ID);
+        outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
     }
 
     @Override
     public void onPause() {
         super.onPause();
-//        stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
         locationManager.removeGpsStatusListener(mGPSStatusListener);
-        dbDataCapture.close();
+        dbSample.close();
 
         sr.stopListening();
         mSensorManager.unregisterListener(mSensorListener);
@@ -344,7 +356,6 @@ public class TrackActivity extends AppCompatActivity {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 Sensor mySensor = event.sensor;
-
                 if (mySensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
                     // Previous data
                     double x = acceleration[0];
@@ -490,7 +501,7 @@ public class TrackActivity extends AppCompatActivity {
         int stops = 0;
 
         Log.i(TAG, "Search for sessionId: " + tag);
-        List<Sample> results = dbDataCapture.get(tag);
+        List<Sample> results = dbSample.get(tag);
         Log.i(TAG, "recover " + results.size() + " elements");
         if (results.size() > 0) {
             // time
@@ -605,7 +616,6 @@ public class TrackActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
     }
 
     public void saveTrack(List<Sample> results, float time, float distance) {
@@ -660,8 +670,7 @@ public class TrackActivity extends AppCompatActivity {
             }
             out.flush();
             out.close();
-
-                       Log.i("DB", "File saved");
+            Log.i("DB", "File saved");
             Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -792,51 +801,13 @@ public class TrackActivity extends AppCompatActivity {
         etNameSaveFile.setText("info_track_" + etDateStart.getText() + "_" + etDateEnd.getText());
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
-    }
-
-
-
-
-    /*****
-     * GPS
-     */
-
-//    private static final String DATA_START = "Iniciando la recogida de los datos...";
-//    private static final String DATA_END = "Recogida de datos terminada";
-//    private static final String NEW_POSITION = "Guardando la siguiente posición: ";
-//    private static final String NEW_GPS = "Nueva posición GPS: ";
-
-    private long intervalTimeGPS; // milliseconds
-    private float minDistance; // meters
-
-
-    //GPS periodico
-    public LocationManager locationManager;
-    private ProgressDialog dialogWait;
-    public SampleDAO db;
-
-    private SharedPreferences pref; // Settings listener
-
-    private Location currentLocation;
-    // Location
-    private LocationListener gpsLocationListener;
-    private GpsStatus.Listener mGPSStatusListener;
-
-
     private void loadSettings() {
         Log.i("MapActivity","Loading settings...");
         String syncConnPref = pref.getString("pref_key_interval_time", "0");
-        int intervalTimeSetting = Integer.parseInt(syncConnPref);
+        intervalTimeGPS = Integer.parseInt(syncConnPref) * 1000;
 
         syncConnPref = pref.getString("pref_key_min_distance", "0");
-        int minDistanceSetting = Integer.parseInt(syncConnPref);
-
-        intervalTimeGPS = intervalTimeSetting * 1000;
-        minDistance = minDistanceSetting;
+        minDistance = Integer.parseInt(syncConnPref);
     }
 
     public void myLocationChanged(Location location, String cause) {
@@ -858,17 +829,16 @@ public class TrackActivity extends AppCompatActivity {
 
     /**
      * Method to save data from external fragments
-     * @param dc data
+     * @param sample data
      */
-    public void runSaveData(Sample dc) {
-        dc.setSensorAcceleration(speed);
-        dc.setSensorPressure(pressure);
-        dc.setSensorLight(light);
-        dc.setSensorTemperature(temperature);
-        dc.setSensorHumidity(humidity);
-        new SavePointTask2().execute(new SavePointInput2(visitItinerary, dc));
+    public void runSaveData(Sample sample) {
+        sample.setSensorAcceleration(speed);
+        sample.setSensorPressure(pressure);
+        sample.setSensorLight(light);
+        sample.setSensorTemperature(temperature);
+        sample.setSensorHumidity(humidity);
+        new SavePointTask2().execute(new SavePointInput2(visitItinerary, sample));
     }
-
 
     public void setHiddenFragment(){
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -944,7 +914,6 @@ public class TrackActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                     }
                 });
-
         return builder.create();
     }
 
@@ -962,7 +931,6 @@ public class TrackActivity extends AppCompatActivity {
         }
         visitItinerary = itinerary;
     }
-
 
 
     /*
@@ -988,18 +956,18 @@ public class TrackActivity extends AppCompatActivity {
         }
 
         private void savePoint(Location location, String cause) {
-            Sample dc = new Sample();
-            dc.setLatitude(location.getLatitude());
-            dc.setLongitude(location.getLongitude());
-            dc.setStopType(cause);
-            dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
-            dc.setSession(SESSION_ID);
-            dc.setSensorAcceleration(speed);
-            dc.setSensorPressure(pressure);
-            dc.setSensorLight(light);
-            dc.setSensorTemperature(temperature);
-            dc.setSensorHumidity(humidity);
-            dbDataCapture.create(dc);
+            Sample sample = new Sample();
+            sample.setLatitude(location.getLatitude());
+            sample.setLongitude(location.getLongitude());
+            sample.setStopType(cause);
+            sample.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
+            sample.setSession(SESSION_ID);
+            sample.setSensorAcceleration(speed);
+            sample.setSensorPressure(pressure);
+            sample.setSensorLight(light);
+            sample.setSensorTemperature(temperature);
+            sample.setSensorHumidity(humidity);
+            dbSample.create(sample);
         }
 
         protected void onPostExecute(Boolean wasItineraryPoint) {
@@ -1034,7 +1002,7 @@ public class TrackActivity extends AppCompatActivity {
 
         private void savePoint(Sample location) {
             location.setSession(SESSION_ID);
-            dbDataCapture.create(location);
+            dbSample.create(location);
         }
 
         protected void onPostExecute(Boolean wasItineraryPoint) {
