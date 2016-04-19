@@ -85,6 +85,11 @@
     <string name="b_stop_tracking">Stop</string>
     <string name="tracking_summary">Resumen del trayecto</string>
     <string name="speak_out_stop_added">Parada</string>
+    <string name="setting_speed_title">Velocidades</string>
+    <string name="setting_min_speed_summary">Velocidad mínima para la detección de paradas</string>
+    <string name="setting_max_speed_summary">Velocidad máxima para la detección de paradas</string>
+    <string name="setting_min_max_speed_title">Máxima</string>
+    <string name="setting_min_speed_title">Mínima</string>
 
 
 </resources>
