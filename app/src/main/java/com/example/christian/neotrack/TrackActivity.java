@@ -105,6 +105,8 @@ public class TrackActivity extends AppCompatActivity {
     private SharedPreferences pref; // Settings listener
     private long intervalTimeGPS; // milliseconds
     private float minDistance; // meters
+    private float speedMin; // Km/h
+    private float speedMax; // Km/h
     // Tracking
     private Itinerary visitItinerary;
     private boolean runningTracking = false;
@@ -385,23 +387,24 @@ public class TrackActivity extends AppCompatActivity {
 
                             // Integration
                             double h = ((double) diffTime) / 6.0f;
-                            velocity[0] = h * (x + 4 * ((acceleration[0] - x) / 2.0) + acceleration[0]);
-                            velocity[1] = h * (y + 4 * ((acceleration[1] - y) / 2.0) + acceleration[1]);
-                            velocity[2] = h * (z + 4 * ((acceleration[2] - z) / 2.0) + acceleration[2]);
+                            velocity[0] = h * (x + 4 * ((acceleration[0] - x) / 2.0d) + acceleration[0]);
+                            velocity[1] = h * (y + 4 * ((acceleration[1] - y) / 2.0d) + acceleration[1]);
+                            velocity[2] = h * (z + 4 * ((acceleration[2] - z) / 2.0d) + acceleration[2]);
 
                             // Module of velocity vector in km/h
-                            speed = Math.sqrt(velocity[0]*velocity[0]
-                                    + velocity[1]*velocity[1]
-                                    + velocity[2]*velocity[2]) * 3.6;
+                            speed = Math.sqrt((velocity[0]*velocity[0])
+                                    + (velocity[1]*velocity[1])
+                                    + (velocity[2]*velocity[2])) * 3.6d;
+                            Log.i("Speed","speed: " + speed + " " + speedMin +" " + speedMax);
 
                             // Update stop condition
                             if (tStop) {
-                                if (speed > 15) {
+                                if (speed > speedMax) {
                                     speakerOut.speak("Andando", TextToSpeech.QUEUE_ADD, null);
                                     tStop = false;
                                 }
                             } else {
-                                if (speed < 10) {
+                                if (speed < speedMin) {
                                     speakerOut.speak("no", TextToSpeech.QUEUE_ADD, null);
                                     tStop = true;
                                 }
@@ -808,6 +811,11 @@ public class TrackActivity extends AppCompatActivity {
 
         syncConnPref = pref.getString("pref_key_min_distance", "0");
         minDistance = Integer.parseInt(syncConnPref);
+
+        syncConnPref = pref.getString("pref_key_min_speed", "10");
+        speedMin = Integer.parseInt(syncConnPref);
+        syncConnPref = pref.getString("pref_key_max_speed", "15");
+        speedMax = Integer.parseInt(syncConnPref);
     }
 
     public void myLocationChanged(Location location, String cause) {
