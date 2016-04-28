@@ -90,6 +90,7 @@
     <string name="setting_max_speed_summary">Velocidad máxima para la detección de paradas</string>
     <string name="setting_min_max_speed_title">Máxima</string>
     <string name="setting_min_speed_title">Mínima</string>
+    <string name="info_track">info_track</string>
 
 
 </resources>

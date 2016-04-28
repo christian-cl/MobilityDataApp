@@ -112,7 +112,6 @@ public class TrackActivity extends AppCompatActivity {
     private boolean runningTracking = false;
     // GPS and location
     public LocationManager locationManager;
-    private Location currentLocation;
     // Location
     private LocationListener gpsLocationListener;
     private GpsStatus.Listener mGPSStatusListener;
@@ -217,7 +216,8 @@ public class TrackActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         outState.putString(TAG_SESSION_ID, SESSION_ID);
-        outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
+        if (getSupportActionBar() != null)
+            outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
     }
 
     @Override
@@ -578,7 +578,9 @@ public class TrackActivity extends AppCompatActivity {
             if(isExternalStorageWritable()) {
                 String path = Environment.getExternalStorageDirectory().toString();
                 File dir = new File(path + folderName);
-                dir.mkdirs();
+                boolean ifCreate = dir.mkdirs();
+                if (ifCreate)
+                    Log.i("IO", "Directory create");
                 File file = new File (dir, fileName + extension);
                 out = new FileOutputStream(file);
             } else {
@@ -643,7 +645,9 @@ public class TrackActivity extends AppCompatActivity {
             if(isExternalStorageWritable()) {
                 String path = Environment.getExternalStorageDirectory().toString();
                 File dir = new File(path + folderName);
-                dir.mkdirs();
+                boolean ifCreate = dir.mkdirs();
+                if (ifCreate)
+                    Log.i("IO", "Directory create");
                 File file = new File (dir, fileName + extension);
                 out = new FileOutputStream(file);
             } else {
@@ -810,7 +814,10 @@ public class TrackActivity extends AppCompatActivity {
         });
         etDateStart.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
         etDateEnd.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
-        etNameSaveFile.setText("info_track_" + etDateStart.getText() + "_" + etDateEnd.getText());
+        String name = getResources().getString(R.string.info_track) + "_" + etDateStart.getText()
+                + "_" + etDateEnd.getText();
+        etNameSaveFile.setText(name);
+
     }
 
     private void loadSettings() {
@@ -828,18 +835,17 @@ public class TrackActivity extends AppCompatActivity {
     }
 
     public void myLocationChanged(Location location, String cause) {
-        currentLocation = location;
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         setHiddenFragment(); // visual log
         ((MapTabFragment) mapFragment).setCamera(latLng);
         // Print marker car position
         ((MapTabFragment) mapFragment)
-                .addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
+                .addMarker(MapTabFragment.Marker_Type.POSITION, null, location);
 
         if (runningTracking) {
             // Print marker track point
             ((MapTabFragment) mapFragment)
-                    .addMarker(MapTabFragment.Marker_Type.GPS, null,currentLocation);
+                    .addMarker(MapTabFragment.Marker_Type.GPS, null, location);
             new SavePointTask().execute(new SavePointInput(visitItinerary, location, cause));
         }
     }
@@ -863,12 +869,13 @@ public class TrackActivity extends AppCompatActivity {
         Log.i("Activity","Num of fragments: " + fragments.size());
         for(Fragment fragment : fragments){
             if(fragment != null) {
-                Fragment trackFragment;
+//                Fragment trackFragment;
                 if (fragment instanceof MapTabFragment) {//!fragment.isVisible())
                     mapFragment = fragment;
 //                    ((MapTabFragment) mapFragment).setZoom(10.0f);
-                } else if (fragment instanceof TrackFragment)//!fragment.isVisible())
-                    trackFragment = fragment;
+                }
+//                else if (fragment instanceof TrackFragment)//!fragment.isVisible())
+//                    trackFragment = fragment;
             }
         }
     }
