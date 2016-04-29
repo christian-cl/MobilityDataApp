@@ -13,7 +13,8 @@ import com.example.christian.neotrack.TrackActivity;
 import java.util.ArrayList;
 
 /**
- * Created by christian on 14/03/16.
+ * Created by Christian Cintrano on 14/03/16.
+ * Listener to recognition speech to the device
  */
 public class MyRecognitionListener implements RecognitionListener {
 
@@ -102,12 +103,14 @@ public class MyRecognitionListener implements RecognitionListener {
     public void onResults(Bundle results) {
         Log.d("Speech", "onResults");
         ArrayList strlist = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        for (int i = 0; i < strlist.size();i++ ) {
+        for (int i = 0; i < (strlist != null ? strlist.size() : 0); i++ ) {
             Log.d("Speech", "result=" + strlist.get(i));
         }
 
 //        context.sr.startListening(RecognizerIntent.getVoiceDetailsIntent(context.getApplicationContext()));
-        context.speakerOut.speak("Texto introducido " + strlist.get(0), TextToSpeech.QUEUE_ADD, null);
+        if (strlist != null) {
+            context.speakerOut.speak("Texto introducido " + strlist.get(0), TextToSpeech.QUEUE_ADD, null);
+        }
         context.speeching = false;
 //        context.newSpeech = true;
         context.runningSpeech = false;

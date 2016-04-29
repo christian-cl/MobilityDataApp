@@ -75,11 +75,7 @@ import java.util.Locale;
  */
 public class TrackActivity extends AppCompatActivity {
 
-    final static private String TAG = "TrackActivity";
-
-    private final static String DIALOG_SAVE_FILE_TITLE = "Guardar archivo";
-    private final static String B_OK = "Aceptar";
-    private final static String B_CANCEL = "Cancelar";
+    private static final String TAG = "TrackActivity";
 
     private static final int ZOOM = 20;
 
@@ -341,7 +337,6 @@ public class TrackActivity extends AppCompatActivity {
             public void onInit(int status) {
                 if(status != TextToSpeech.ERROR) {
                     speakerOut.setLanguage(new Locale("es", "ES"));
-//                    speakerOut.speak( getResources().getString(R.string.speak_out_welcome), TextToSpeech.QUEUE_ADD, null);
                     speakerOutReady = true;
                 }
             }
@@ -396,15 +391,20 @@ public class TrackActivity extends AppCompatActivity {
 
                             // Integration
                             double h = ((double) diffTime) / 6.0f;
-                            velocity[0] = h * (x + (4.0 * ((acceleration[0] - x) / 2.0d)) + acceleration[0]);
-                            velocity[1] = h * (y + (4.0 * ((acceleration[1] - y) / 2.0d)) + acceleration[1]);
-                            velocity[2] = h * (z + (4.0 * ((acceleration[2] - z) / 2.0d)) + acceleration[2]);
+                            velocity[0] =
+                                    h * (x + (4.0 * ((acceleration[0]-x)/2.0d)) + acceleration[0]);
+                            velocity[1] =
+                                    h * (y + (4.0 * ((acceleration[1]-y)/2.0d)) + acceleration[1]);
+                            velocity[2] =
+                                    h * (z + (4.0 * ((acceleration[2]-z)/2.0d)) + acceleration[2]);
 
                             // Module of velocity vector in km/h
                             speed = Math.sqrt((velocity[0]*velocity[0])
                                     + (velocity[1]*velocity[1])
                                     + (velocity[2]*velocity[2])) * 3.6d;
-                            Log.i("Speed","speed: " + speed + " " + diffTime + " " + speedMin +" " + speedMax + " " +acceleration[0] + "-"+ acceleration[1] + "-"+ acceleration[2]);
+                            Log.i("Speed","speed: " + speed + " " + diffTime + " " + speedMin
+                                    + " " + speedMax + " " +acceleration[0] + "-"+ acceleration[1]
+                                    + "-" + acceleration[2]);
 
                             // Update stop condition
                             if (tStop) {
@@ -456,11 +456,21 @@ public class TrackActivity extends AppCompatActivity {
             }
         };
 
-        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
-        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE), SensorManager.SENSOR_DELAY_NORMAL);
-        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT), SensorManager.SENSOR_DELAY_NORMAL);
-        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE), SensorManager.SENSOR_DELAY_NORMAL);
-        mSensorManager.registerListener(mSensorListener, mSensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY), SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY),
+                SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     public void restartSpeech() {
@@ -586,7 +596,8 @@ public class TrackActivity extends AppCompatActivity {
             } else {
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date,acceleration,pressure,light,temperature,humidity\n";
+            String head = "_id,latitude,longitude,street,stoptype,comment,date," +
+                    "acceleration,pressure,light,temperature,humidity\n";
             out.write(head.getBytes());
             for(Sample dc : data) {
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
@@ -656,7 +667,8 @@ public class TrackActivity extends AppCompatActivity {
             String head = "ID\ttime\tdistance\n";
             out.write(head.getBytes());
             out.write((SESSION_ID + "\t" + time + "\t" + distance + "\n").getBytes());
-            head = "_id\tsession\tlatitude\tlongitude\tstoptype\tcomment\tdate\tacceleration\tpressure\tlight\ttemperature\thumidity\n";
+            head = "_id\tsession\tlatitude\tlongitude\tstoptype\tcomment\tdate" +
+                    "\tacceleration\tpressure\tlight\ttemperature\thumidity\n";
             out.write(head.getBytes());
             for(Sample dc : results) {
                 out.write((String.valueOf(dc.getId()) + "\t").getBytes());
@@ -714,7 +726,7 @@ public class TrackActivity extends AppCompatActivity {
         dateInitDialog = new DatePickerDialog(this, new OnDateSetListener() {
                 @Override
                 public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                    Log.i("Dialog", "Change datepicker");
+                    Log.i("Dialog", "Change date picker");
                     Calendar newDate = Calendar.getInstance();
                     newDate.set(year, monthOfYear, dayOfMonth);
                     etDateStart.setText(DATE_FORMATTER_VIEW.format(newDate.getTime()));
@@ -724,8 +736,8 @@ public class TrackActivity extends AppCompatActivity {
                 newCalendar.get(Calendar.MONTH),
                 newCalendar.get(Calendar.DAY_OF_MONTH)
         );
-        dateInitDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, B_OK,
-                new DialogInterface.OnClickListener() {
+        dateInitDialog.setButton(DatePickerDialog.BUTTON_POSITIVE,
+                getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dlg2, int which) {
                         dlg2.cancel();
@@ -738,7 +750,7 @@ public class TrackActivity extends AppCompatActivity {
                     @Override
                     public void onDateChanged(DatePicker datePicker, int year, int monthOfYear,
                                               int dayOfMonth) {
-                        Log.i("Dialog", "Change datepicker");
+                        Log.i("Dialog", "Change date picker");
                         newDateStart = Calendar.getInstance();
                         newDateStart.set(year, monthOfYear, dayOfMonth,0,0,0);
                         etDateStart.setText(DATE_FORMATTER_VIEW.format(newDateStart.getTime()));
@@ -754,21 +766,24 @@ public class TrackActivity extends AppCompatActivity {
                 newDate.set(year, monthOfYear, dayOfMonth);
                 etDateEnd.setText(DATE_FORMATTER_VIEW.format(newDate.getTime()));
             }
-        }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
-        dateEndDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, "Okay", new DialogInterface.OnClickListener() {
+        }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH),
+                newCalendar.get(Calendar.DAY_OF_MONTH));
+        dateEndDialog.setButton(DatePickerDialog.BUTTON_POSITIVE,
+                getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dlg2, int which) {
                 dlg2.cancel();
                 saveFileDialog.show();
             }
         });
-        dateEndDialog.getDatePicker().init(newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH),
-                newCalendar.get(Calendar.DAY_OF_MONTH), new DatePicker.OnDateChangedListener() {
+        dateEndDialog.getDatePicker().init(newCalendar.get(Calendar.YEAR),
+                newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH),
+                new DatePicker.OnDateChangedListener() {
             @Override
-            public void onDateChanged(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+            public void onDateChanged(DatePicker datePicker, int year, int month, int day) {
                 Log.i("Dialog", "Change datepicker");
                 newDateEnd = Calendar.getInstance();
-                newDateEnd.set(year, monthOfYear, dayOfMonth,23,59,59);
+                newDateEnd.set(year, month, day,23,59,59);
                 newDateEnd.set(Calendar.HOUR,23);
                 etDateEnd.setText(DATE_FORMATTER_VIEW.format(newDateEnd.getTime()));
             }
@@ -776,15 +791,17 @@ public class TrackActivity extends AppCompatActivity {
 
         AlertDialog.Builder saveFileDialogBuilder = new AlertDialog.Builder(this)
                 .setCancelable(true)
-                .setMessage(DIALOG_SAVE_FILE_TITLE)
-                .setPositiveButton(B_OK, new DialogInterface.OnClickListener() {
+                .setMessage(getResources().getString(R.string.dialog_save_file_title))
+                .setPositiveButton(getResources().getString(R.string.b_ok),
+                        new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 //                        dateInitDialog.show();
                         saveFile(etNameSaveFile.getText().toString());
                     }
                 })
-                .setNegativeButton(B_CANCEL, new DialogInterface.OnClickListener() {
+                .setNegativeButton(getResources().getString(R.string.b_cancel),
+                        new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -926,14 +943,17 @@ public class TrackActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 })
-                .setPositiveButton(B_OK, new DialogInterface.OnClickListener() {
+                .setPositiveButton(getResources().getString(R.string.b_ok),
+                        new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                        int selectedPosition = ((AlertDialog) dialog).getListView()
+                                .getCheckedItemPosition();
                         displayItineraySelected((Itinerary) data.get(selectedPosition));
                     }
                 })
-                .setNegativeButton(B_CANCEL, new DialogInterface.OnClickListener() {
+                .setNegativeButton(getResources().getString(R.string.b_cancel),
+                        new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                     }
@@ -944,7 +964,8 @@ public class TrackActivity extends AppCompatActivity {
     private void displayItineraySelected(Itinerary itinerary) {
         ((MapTabFragment) mapFragment).clearItineraryMarkers();
         if(speakerOutReady)
-            speakerOut.speak(getResources().getString(R.string.speak_out_itinerary_added) + itinerary.getPoints().size() + " puntos", TextToSpeech.QUEUE_ADD, null);
+            speakerOut.speak(getResources().getString(R.string.speak_out_itinerary_added) +
+                    itinerary.getPoints().size() + " puntos", TextToSpeech.QUEUE_ADD, null);
 
         for(Object point : itinerary.getPoints()) {
             Location location = new Location("Test");
@@ -960,7 +981,6 @@ public class TrackActivity extends AppCompatActivity {
     /*
      * Background task to save tracking data
      */
-
     public class SavePointTask extends AsyncTask<SavePointInput, Void, Boolean> {
         private float MIN_DISTANCE = 0.00015f; // 15 meters
 
@@ -969,8 +989,10 @@ public class TrackActivity extends AppCompatActivity {
             // Save point
             savePoint(params[0].getLocation(), params[0].getCause());
             // Check if a itinerary is loaded
-            if ((params[0].getItinerary() != null) && (params[0].getItinerary().getPoints().size() > 0)) {
-                double distance = distance(params[0].getLocation(), (Point) params[0].getItinerary().getPoints().get(0));
+            if ((params[0].getItinerary() != null) &&
+                    (params[0].getItinerary().getPoints().size() > 0)) {
+                double distance = distance(params[0].getLocation(),
+                        (Point) params[0].getItinerary().getPoints().get(0));
                 if (distance < MIN_DISTANCE) {
                     params[0].getItinerary().getPoints().remove(0);
                     return true;

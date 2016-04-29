@@ -91,6 +91,8 @@
     <string name="setting_min_max_speed_title">Máxima</string>
     <string name="setting_min_speed_title">Mínima</string>
     <string name="info_track">info_track</string>
+    <string name="dialog_save_file_title">Guardar archivo</string>
+    <string name="itineraries_saved">Itinerarios guardados</string>
 
 
 </resources>

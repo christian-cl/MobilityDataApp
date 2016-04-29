@@ -33,15 +33,14 @@ import java.util.List;
 public class ItineraryActivity extends AppCompatActivity {
 
     private static final String TAG = "ItineraryActivity";
-    private final String EXTRA_TAB = "newItinerary";
-    private final String FOLDER_PATH = "/neoTrack";
-    private final String FILE_NAME = "itinerarios";
-    private final String FILE_EXTENSION = ".json";
+    private static final String EXTRA_TAB = "newItinerary";
+    private static final String FOLDER_PATH = "/neoTrack";
+    private static final String FILE_NAME = "itineraries";
+    private static final String FILE_EXTENSION = ".json";
 
     ExpandableListAdapter listAdapter;
     ExpandableListView expListView;
     List<Itinerary> itineraryList;
-    private String ITINERARIES_SAVED = "Itinerarios guardados";
     private ItineraryDAO db;
 
     @Override
@@ -52,7 +51,7 @@ public class ItineraryActivity extends AppCompatActivity {
 
         itineraryList = new ArrayList<>();
 
-        // get the listview
+        // get the list view
         expListView = (ExpandableListView) findViewById(R.id.expandableListView_itineraries);
         listAdapter = new ExpandableListAdapter(this, itineraryList);
         // setting list adapter
@@ -164,6 +163,7 @@ public class ItineraryActivity extends AppCompatActivity {
                 int size = in.available();
                 byte[] buffer = new byte[size];
                 in.read(buffer);
+                // Process load itinerary file
                 in.close();
                 json = new String(buffer, "UTF-8");
             }
@@ -196,12 +196,12 @@ public class ItineraryActivity extends AppCompatActivity {
             if (isExternalStorageWritable()) {
                 String path = Environment.getExternalStorageDirectory().toString();
                 File dir = new File(path + FOLDER_PATH);
-                dir.mkdirs();
+                dir.mkdirs()
                 File file = new File (dir, FILE_NAME + FILE_EXTENSION);
                 out = new FileOutputStream(file);
                 out.write(content.getBytes());
                 out.close();
-                Toast.makeText(this, ITINERARIES_SAVED, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getResources().getString(R.string.itineraries_saved), Toast.LENGTH_SHORT).show();
             }
         } catch (IOException e) {
             e.printStackTrace();
