@@ -196,7 +196,7 @@ public class ItineraryActivity extends AppCompatActivity {
             if (isExternalStorageWritable()) {
                 String path = Environment.getExternalStorageDirectory().toString();
                 File dir = new File(path + FOLDER_PATH);
-                dir.mkdirs()
+                dir.mkdirs();
                 File file = new File (dir, FILE_NAME + FILE_EXTENSION);
                 out = new FileOutputStream(file);
                 out.write(content.getBytes());

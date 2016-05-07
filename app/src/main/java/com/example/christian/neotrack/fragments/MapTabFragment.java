@@ -76,12 +76,12 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         }
 
         ImageButton bStop = (ImageButton) view.findViewById(R.id.stop_button);
-        ImageButton bStopSpeak = (ImageButton) view.findViewById(R.id.stop_button_speak);
+//        ImageButton bStopSpeak = (ImageButton) view.findViewById(R.id.stop_button_speak);
 
 //        Button bStart = (Button) view.findViewById(R.id.start_button);
 //        Button bEnd = (Button) view.findViewById(R.id.end_button);
         bStop.setOnClickListener(this);
-        bStopSpeak.setOnClickListener(this);
+//        bStopSpeak.setOnClickListener(this);
 //        bStart.setOnClickListener(this);
 //        bEnd.setOnClickListener(this);
 
@@ -238,11 +238,11 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 displayStopChoices();
                 break;
 
-            case R.id.stop_button_speak:
-                Log.i("Click", "stop_button_speak");
-//                promptSpeechInput();
-                ((TrackActivity) context).restartSpeech();
-                break;
+//            case R.id.stop_button_speak:
+//                Log.i("Click", "stop_button_speak");
+////                promptSpeechInput();
+//                ((TrackActivity) context).restartSpeech();
+//                break;
 
 //            case R.id.start_button:
 //                Log.i("Click", "start_button");

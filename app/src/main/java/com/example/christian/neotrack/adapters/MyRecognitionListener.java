@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.example.christian.neotrack.TrackActivity;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 
 /**
@@ -60,7 +61,7 @@ public class MyRecognitionListener implements RecognitionListener {
                 text = "ERROR_NETWORK";
                 break;
             case SpeechRecognizer.ERROR_NO_MATCH:
-                text = "ERROR_NO_MATCH";
+                text = "ERROR_N O_MATCH";
                 break;
             case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
                 text = "ERROR_SPEECH_TIMEOUT";
@@ -72,7 +73,7 @@ public class MyRecognitionListener implements RecognitionListener {
 //                context.sr.startListening(RecognizerIntent.getVoiceDetailsIntent(context.getApplicationContext()));
 //                context.restartSpeech();
 
-                context.speakerOut.speak("No texto", TextToSpeech.QUEUE_ADD, null);
+                context.speakerOut.speak("Motivo no introducido", TextToSpeech.QUEUE_ADD, null);
                 // Save input
                 Location location = context.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 context.myLocationChanged(location, "STOP");
@@ -109,19 +110,37 @@ public class MyRecognitionListener implements RecognitionListener {
 
 //        context.sr.startListening(RecognizerIntent.getVoiceDetailsIntent(context.getApplicationContext()));
         if (strlist != null) {
-            context.speakerOut.speak("Texto introducido " + strlist.get(0), TextToSpeech.QUEUE_ADD, null);
+            context.speakerOut.speak("Ha introducido " + getStopType(strlist), TextToSpeech.QUEUE_ADD, null);
         }
         context.speeching = false;
 //        context.newSpeech = true;
         context.runningSpeech = false;
         // Save input
         Location location = context.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        context.myLocationChanged(location,"STOP");
+        context.myLocationChanged(location, "STOP");
     }
 
     @Override
     public void onRmsChanged(float rmsdB) {
 //        Log.d("Speech", "onRmsChanged");
+    }
+
+    private String getStopType(ArrayList<String> result) {
+        final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros", "Reanudar", "Rojo"};
+        final String[] stopChoicesPattern = {"asco", "bra", "ente", "tro", "anudar", "ojo"};
+
+        for(String str : result) {
+            System.out.println(str);
+            str = Normalizer.normalize(str, Normalizer.Form.NFD);
+            // remove accents
+            str = str.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+            for(int i = 0; i<stopChoicesPattern.length;i++) {
+                if(str.toLowerCase().contains(stopChoicesPattern[i])) {
+                    return stopChoices[i];
+                }
+            }
+        }
+        return null;
     }
 
 }

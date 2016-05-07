@@ -475,7 +475,7 @@ public class TrackActivity extends AppCompatActivity {
 
     public void restartSpeech() {
         speakerOut.speak("Parada", TextToSpeech.QUEUE_ADD, null);
-        while (speakerOut.isSpeaking()) {}
+//        while (speakerOut.isSpeaking()) {}
         sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
     }
 
