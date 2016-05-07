@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -75,7 +76,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             e.printStackTrace();
         }
 
-        ImageButton bStop = (ImageButton) view.findViewById(R.id.stop_button);
+        Button bStop = (Button) view.findViewById(R.id.stop_button);
 //        ImageButton bStopSpeak = (ImageButton) view.findViewById(R.id.stop_button_speak);
 
 //        Button bStart = (Button) view.findViewById(R.id.start_button);
