@@ -414,7 +414,7 @@ public class TrackActivity extends AppCompatActivity {
                                 }
                             } else {
                                 if (speed < speedMin) {
-                                    speakerOut.speak("no", TextToSpeech.QUEUE_ADD, null);
+//                                    speakerOut.speak("no", TextToSpeech.QUEUE_ADD, null);
                                     tStop = true;
                                 }
                             }
@@ -475,6 +475,7 @@ public class TrackActivity extends AppCompatActivity {
 
     public void restartSpeech() {
         speakerOut.speak("Parada", TextToSpeech.QUEUE_ADD, null);
+        while (speakerOut.isSpeaking()) {}
         sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
     }
 
