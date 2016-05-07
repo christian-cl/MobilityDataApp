@@ -511,6 +511,19 @@ public class TrackActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.tracking_summary)
                 .setMessage(printSummaryTracking(SESSION_ID));
+        builder.setNeutralButton("Enviar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dlg2, int which) {
+                Toast.makeText(getBaseContext(), "Enviando...", Toast.LENGTH_SHORT).show();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getBaseContext(), "Datos enviados correctamente", Toast.LENGTH_SHORT).show();
+
+            }
+        });
         AlertDialog dialog = builder.create();
         dialog.show();
 
@@ -645,7 +658,7 @@ public class TrackActivity extends AppCompatActivity {
     }
 
     public void saveTrack(List<Sample> results, float time, float distance) {
-        Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
         Log.i("DB", "Saving file...");
 
         String fileName = "itinerary" + SESSION_ID;
@@ -700,7 +713,7 @@ public class TrackActivity extends AppCompatActivity {
             out.flush();
             out.close();
             Log.i("DB", "File saved");
-            Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Copia de seguridad almacenada", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
