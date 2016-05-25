@@ -19,9 +19,6 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true">
 
-
-        <!--android:text="@string/add_itinerary"-->
-        <!--android:textAppearance="?android:attr/textAppearanceLarge"-->
         <Button
             android:layout_weight="0.25"
             android:layout_width="0dp"
@@ -32,7 +29,6 @@
             android:drawableTop="@drawable/ic_map_white_48dp"
             android:textColor="@color/material_white" />
 
-        <!--android:text="@string/b_start_tracking"-->
         <Button
             android:layout_weight="0.25"
             android:layout_width="0dp"
@@ -44,7 +40,6 @@
             android:tint="#28fd4f"
             android:onClick="controlTracking"/>
 
-        <!--android:text="@string/b_stop_tracking"-->
         <Button
             android:layout_weight="0.25"
             android:layout_width="0dp"
@@ -55,7 +50,6 @@
             android:background="#ff3128"
             android:onClick="stopTracking"/>
 
-        <!--android:text="@string/b_stop_tracking"-->
         <Button
             android:layout_weight="0.25"
             android:layout_width="0dp"
@@ -63,7 +57,6 @@
             android:id="@+id/stop_button"
             android:drawableTop="@mipmap/ic_add_white"
             android:textColor="@color/material_white"
-            android:background="#FFD740"
-            android:onClick="stopTracking"/>
+            android:background="#FFD740"/>
     </LinearLayout>
 </RelativeLayout>
