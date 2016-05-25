@@ -55,7 +55,6 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
     private List<Marker> points;
     private ProgressDialog dialogWait; // FALTA EL QUITARLO CUANDO EL MAPA TERMINE DE CARGAR
     private GoogleMap map;
-    private ListView listView;
     private ArrayAdapter arrayAdapter;
     private Geocoder geocoder;
 
@@ -76,7 +75,6 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
 
         Bundle newItinerary = getIntent().getParcelableExtra(EXTRA_TAB);
         if(newItinerary != null) {
-            Log.i(TAG, newItinerary.getParcelable(EXTRA_TAB).toString());
             loadEditableData((Itinerary) newItinerary.getParcelable(EXTRA_TAB));
         }
 
@@ -99,7 +97,7 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
     }
 
     private void configureListView() {
-        listView = (ListView) this.findViewById(R.id.points_list);
+        ListView listView = (ListView) this.findViewById(R.id.points_list);
         arrayAdapter = new ItineraryArrayAdapter(this, R.layout.list_marker, points);
         listView.setAdapter(arrayAdapter);
         listView.setTextFilterEnabled(true);
@@ -143,11 +141,7 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
                 View markerView =
                         ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE))
                         .inflate(R.layout.custom_marker_layout, null);
-                TextView numTxt = (TextView) markerView.findViewById(R.id.num_txt);
-//                numTxt.setText(points.size());
-                Marker marker = map.addMarker(new MarkerOptions().position(latLng)
-//                                .icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(ItineraryMapActivity.this, markerView)))
-                );
+                Marker marker = map.addMarker(new MarkerOptions().position(latLng));
                 marker.setTitle(getAddress(latLng.latitude, latLng.longitude));
                 points.add(marker);
 
@@ -203,19 +197,12 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
 
         @Override
         public View getInfoContents(Marker marker) {
-            View v  = getLayoutInflater().inflate(R.layout.infowindow_layout, null);
-
-            Marker myMarker = points.get(points.indexOf(marker));
-//            ImageView markerIcon = (ImageView) v.findViewById(R.id.marker_icon);
-//            TextView markerLabel = (TextView)v.findViewById(R.id.marker_label);
-//            markerIcon.setImageResource(manageMarkerIcon(myMarker.getmIcon()));
-//            markerLabel.setText(myMarker.getmLabel());
-            return v;
+            return getLayoutInflater().inflate(R.layout.infowindow_layout, null);
         }
     }
 
     public void sendMessageSaveItinerary(View view) {
-        List<Point> latLngList = new ArrayList<Point>();
+        List<Point> latLngList = new ArrayList<>();
         for(Marker m : points) {
             latLngList.add(new Point(m.getPosition().latitude, m.getPosition().longitude, m.getTitle()));
         }

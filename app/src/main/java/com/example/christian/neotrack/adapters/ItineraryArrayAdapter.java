@@ -13,11 +13,11 @@ import com.google.android.gms.maps.model.Marker;
 
 import java.util.List;
 
-public class ItineraryArrayAdapter extends ArrayAdapter<String> {
+public class ItineraryArrayAdapter extends ArrayAdapter<Marker> {
     private final Context context;
     private final List values;
 
-    public ItineraryArrayAdapter(Context context, int layoutId, List values) {
+    public ItineraryArrayAdapter(Context context, int layoutId, List<Marker> values) {
         super(context, layoutId, values);
         this.context = context;
         this.values = values;

@@ -27,8 +27,8 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
-    public Object getChild(int groupPosition, int childPosititon) {
-        return listData.get(groupPosition).getPoints().get(childPosititon);
+    public Object getChild(int groupPosition, int childPosition) {
+        return listData.get(groupPosition).getPoints().get(childPosition);
     }
 
     @Override
@@ -43,9 +43,9 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         final String childText = p.getAddress() + "\n" + p.getLatitude() + " " + p.getLongitude();
 
         if (convertView == null) {
-            LayoutInflater infalInflater = (LayoutInflater) this._context
+            LayoutInflater layoutInflater = (LayoutInflater) this._context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = infalInflater.inflate(R.layout.list_item, null);
+            convertView = layoutInflater.inflate(R.layout.list_item, null);
         }
 
         TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);

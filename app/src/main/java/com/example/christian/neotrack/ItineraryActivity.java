@@ -162,7 +162,9 @@ public class ItineraryActivity extends AppCompatActivity {
                 FileInputStream in = new FileInputStream(file);
                 int size = in.available();
                 byte[] buffer = new byte[size];
-                in.read(buffer);
+                int numBytes = in.read(buffer);
+                if (numBytes == -1)
+                    Log.e("IO", "Stream reached");
                 // Process load itinerary file
                 in.close();
                 json = new String(buffer, "UTF-8");
@@ -196,7 +198,9 @@ public class ItineraryActivity extends AppCompatActivity {
             if (isExternalStorageWritable()) {
                 String path = Environment.getExternalStorageDirectory().toString();
                 File dir = new File(path + FOLDER_PATH);
-                dir.mkdirs();
+                boolean ifCreate = dir.mkdirs();
+                if (ifCreate)
+                    Log.i("IO", "Directory create");
                 File file = new File (dir, FILE_NAME + FILE_EXTENSION);
                 out = new FileOutputStream(file);
                 out.write(content.getBytes());
