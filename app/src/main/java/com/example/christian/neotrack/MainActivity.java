@@ -52,10 +52,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setLogo(R.mipmap.ic_launcher_inv);
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             getSupportActionBar().setDisplayUseLogoEnabled(true);
-            getSupportActionBar().setLogo(R.mipmap.ic_launcher_inv);
+            getSupportActionBar().setLogo(R.mipmap.ic_neotrack);
         }
 
         db = new SampleDAO(this);
@@ -181,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,session,stoptype,comment,date\n";
+            String head = "_id,latitude,longitude,session,stopType,comment,date\n";
             out.write(head.getBytes());
             for(Sample dc : data) {
                 System.out.print(dc);

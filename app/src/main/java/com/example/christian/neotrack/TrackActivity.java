@@ -71,7 +71,7 @@ import java.util.Locale;
 /**
  * Created by Christian Cintrano on 8/05/15.
  *
- * Maps Activity with tabs
+ * Track Activity
  */
 public class TrackActivity extends AppCompatActivity {
 

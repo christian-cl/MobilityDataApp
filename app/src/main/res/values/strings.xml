@@ -101,5 +101,8 @@
     <string name="data">Datos</string>
     <string name="info_track">info_track</string>
     <string name="help">Ayuda</string>
+    <string name="confirmation_question">¿Está seguro?</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
 
 </resources>

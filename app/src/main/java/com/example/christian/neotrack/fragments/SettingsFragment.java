@@ -35,8 +35,7 @@ public class SettingsFragment extends PreferenceFragment
         });
     }
 
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-                                          String key) {
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(KEY_PREF_SYNC_CONN)) {
             Preference connectionPref = findPreference(key);
             // Set summary to be the user-description for the selected value
@@ -60,8 +59,9 @@ public class SettingsFragment extends PreferenceFragment
 
     public void displayConfirmationDialog() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Are you sure?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setTitle(getResources().getString(R.string.confirmation_question));
+        builder.setPositiveButton(getResources().getString(R.string.yes),
+                new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Log.i("DB", "Deleting all rows");
@@ -71,7 +71,8 @@ public class SettingsFragment extends PreferenceFragment
                 dbLocalInstance.close();
             }
         });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getResources().getString(R.string.no),
+                new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
