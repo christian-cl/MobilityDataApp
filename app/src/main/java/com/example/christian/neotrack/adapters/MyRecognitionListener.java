@@ -11,7 +11,7 @@ import android.util.Log;
 import com.example.christian.neotrack.TrackActivity;
 
 import java.text.Normalizer;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Christian Cintrano on 14/03/16.
@@ -65,14 +65,6 @@ public class MyRecognitionListener implements RecognitionListener {
                 break;
             case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
                 text = "ERROR_SPEECH_TIMEOUT";
-//                context.sr.stopListening();
-//                context.sr.cancel();
-//                context.sr.startListening(true);
-//                MyRecognitionListener listener = new MyRecognitionListener(context);
-//                context.sr.setRecognitionListener(listener);
-//                context.sr.startListening(RecognizerIntent.getVoiceDetailsIntent(context.getApplicationContext()));
-//                context.restartSpeech();
-
                 context.speakerOut.speak("Motivo no introducido", TextToSpeech.QUEUE_ADD, null);
                 // Save input
                 Location location = context.locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -103,14 +95,14 @@ public class MyRecognitionListener implements RecognitionListener {
     @Override
     public void onResults(Bundle results) {
         Log.d("Speech", "onResults");
-        ArrayList strlist = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        for (int i = 0; i < (strlist != null ? strlist.size() : 0); i++ ) {
-            Log.d("Speech", "result=" + strlist.get(i));
+        List<String> stringList = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+        for (int i = 0; i < (stringList != null ? stringList.size() : 0); i++ ) {
+            Log.d("Speech", "result=" + stringList.get(i));
         }
 
 //        context.sr.startListening(RecognizerIntent.getVoiceDetailsIntent(context.getApplicationContext()));
-        if (strlist != null) {
-            context.speakerOut.speak("Ha introducido " + getStopType(strlist), TextToSpeech.QUEUE_ADD, null);
+        if (stringList != null) {
+            context.speakerOut.speak("Ha introducido " + getStopType(stringList), TextToSpeech.QUEUE_ADD, null);
         }
         context.speeching = false;
 //        context.newSpeech = true;
@@ -125,7 +117,7 @@ public class MyRecognitionListener implements RecognitionListener {
 //        Log.d("Speech", "onRmsChanged");
     }
 
-    private String getStopType(ArrayList<String> result) {
+    private String getStopType(List<String> result) {
         final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros", "Reanudar", "Rojo"};
         final String[] stopChoicesPattern = {"asco", "bra", "ente", "tro", "anudar", "ojo"};
 

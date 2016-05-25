@@ -365,9 +365,9 @@ public class TrackActivity extends AppCompatActivity {
                         oldTime = trackTime;
 
                         // Check if have anomalous data
-                        if ((event.values[0]< 100.0) && (event.values[0]> -100.0)
-                                && (event.values[1]< 100.0) && (event.values[1]> -100.0)
-                                && (event.values[2]< 100.0) && (event.values[2]> -100.0)) {
+                        if ((event.values[0] < 100.0) && (event.values[0] > -100.0)
+                                && (event.values[1] < 100.0) && (event.values[1] > -100.0)
+                                && (event.values[2] < 100.0) && (event.values[2] > -100.0)) {
 
                             // Reduce noise
                             if (event.values[0]>0)
@@ -409,7 +409,7 @@ public class TrackActivity extends AppCompatActivity {
                             // Update stop condition
                             if (tStop) {
                                 if (speed > speedMax) {
-                                    speakerOut.speak("Andando", TextToSpeech.QUEUE_ADD, null);
+//                                    speakerOut.speak("Andando", TextToSpeech.QUEUE_ADD, null);
                                     tStop = false;
                                 }
                             } else {
@@ -491,7 +491,7 @@ public class TrackActivity extends AppCompatActivity {
             list.add(i.getName());
         }
 
-        String title = getResources().getString(R.string.select_itinerary_title);
+        String title = getResources().getString(R.string.itinerary_select_title);
         CharSequence[] array = list.toArray(new CharSequence[list.size()]);
         Dialog dialog = onCreateDialogSingleChoice(title, array, itineraryList);
         dialog.show();
@@ -805,7 +805,7 @@ public class TrackActivity extends AppCompatActivity {
 
         AlertDialog.Builder saveFileDialogBuilder = new AlertDialog.Builder(this)
                 .setCancelable(true)
-                .setMessage(getResources().getString(R.string.dialog_save_file_title))
+                .setMessage(getResources().getString(R.string.save_file))
                 .setPositiveButton(getResources().getString(R.string.b_ok),
                         new DialogInterface.OnClickListener() {
                     @Override
@@ -963,7 +963,7 @@ public class TrackActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         int selectedPosition = ((AlertDialog) dialog).getListView()
                                 .getCheckedItemPosition();
-                        displayItineraySelected((Itinerary) data.get(selectedPosition));
+                        displayItinerarySelected((Itinerary) data.get(selectedPosition));
                     }
                 })
                 .setNegativeButton(getResources().getString(R.string.b_cancel),
@@ -975,7 +975,7 @@ public class TrackActivity extends AppCompatActivity {
         return builder.create();
     }
 
-    private void displayItineraySelected(Itinerary itinerary) {
+    private void displayItinerarySelected(Itinerary itinerary) {
         ((MapTabFragment) mapFragment).clearItineraryMarkers();
         if(speakerOutReady)
             speakerOut.speak(getResources().getString(R.string.speak_out_itinerary_added) +

@@ -6,7 +6,7 @@
         android:icon="@drawable/ic_settings_white"
         yourapp:showAsAction="ifRoom" />
     <item android:id="@+id/action_save_file"
-        android:title="@string/action_save_file"
+        android:title="@string/save_file"
         android:icon="@drawable/ic_action_save"
         yourapp:showAsAction="ifRoom" />
 </menu>

@@ -19,7 +19,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.christian.neotrack.TrackActivity;
@@ -270,7 +269,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
         try {
             ((Activity) context).startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
         } catch (ActivityNotFoundException a) {
-            Toast.makeText(context, R.string.speech_not_supported, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, R.string.error_speech_not_supported, Toast.LENGTH_SHORT).show();
         }
     }
 

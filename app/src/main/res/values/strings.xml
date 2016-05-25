@@ -6,21 +6,23 @@
     <string name="title_activity_log">Detalle</string>
     <string name="title_activity_main">Principal</string>
     <string name="title_activity_debug">Debug</string>
+    <string name="title_activity_itinerary">Itinerarios</string>
 
     <!--Basic Buttons-->
-    <string name="b_cancel">Cancelar</string> <!-- Para eliminar -->
     <string name="button_cancel">Cancelar</string>
-    <string name="b_ok">Aceptar</string> <!-- Para eliminar -->
     <string name="button_ok">Aceptar</string>
-    <string name="b_edit">Editar</string> <!-- Para eliminar -->
     <string name="button_edit">Editar</string>
-    <string name="b_delete">Eliminar</string> <!-- Para eliminar -->
     <string name="button_delete">Eliminar</string>
     <string name="button_start">Iniciar</string>
     <string name="button_stop">Parar</string>
     <string name="button_show">Mostrar</string>
     <string name="button_reset">Reiniciar</string>
     <string name="button_save">Guardar</string>
+    <string name="button_create">Crear</string>
+    <string name="button_import">Importar</string>
+    <string name="button_export">Exportar</string>
+    <string name="button_find">Buscar</string>
+    <string name="button_settings">Opciones</string>
 
     <!--MainActivity Buttons-->
     <string name="button_itinerary">Itinerarios</string>
@@ -29,9 +31,6 @@
 
     <!--Settings-->
     <string name="action_settings">Ajustes</string>
-    <string name="action_save_file">Guardar archivo</string>
-    <string name="help">Ayuda</string>
-
     <string name="setting_title">Ajustes de la aplicación</string>
     <string name="setting_GPS_title">Información del GPS</string>
     <string name="setting_capture_title">Recogida de información</string>
@@ -46,53 +45,61 @@
     <string name="setting_remove_database_summary">Borrar toda la información de puntos almacenada en anteriores muestras</string>
     <string name="setting_delay_backup_database_title">Número de días entre copias de seguridad</string>
     <string name="setting_delay_backup_database_summary">Número de días entre copias de seguridad automáticas de la información almacenada</string>
-    <string name="button_end_collecting">Terminar la recolección automática de datos</string>
-    <string name="button_start_collecting">Iniciar la recolección automática de datos</string>
-    <string name="name_file">Nombre del fichero</string>
-    <string name="date_start">Fecha de inicio</string>
-    <string name="date_end">Fecha de fin</string>
-    <string name="service_not_available">Servicio no disponible</string>
-    <string name="invalid_lat_long_used">Logitud y Latitud inválidos</string>
-    <string name="no_address_found">No se ha encontrado la dirección</string>
-    <string name="address_found">Dirección encontrada</string>
-    <string name="no_geocoder_available">No existe conexión con geocoder disponible</string>
-    <string name="speech_prompt">Indique el tipo de parada</string>
-    <string name="speech_not_supported">Función no soportada</string>
-    <string name="pick_date">Fecha</string>
-    <string name="b_find_data">Buscar</string>
-    <string name="b_clear_fields">Borrar Campos</string>
-    <string name="description">DESCRIPTION</string>
-    <string name="b_change_position">Cambiar posición</string>
-    <string name="button_create">Crear</string>
-    <string name="button_import">Importar</string>
-    <string name="button_export">Exportar</string>
-    <string name="title_activity_itinerary">Itinerarios</string>
-    <string name="editText_itinerary_name_hint">Introduzca un nombre para el itinerario</string>
-    <string name="subtitle_itinerary_list">Lista de Itinerarios</string>
-    <string name="add_itinerary">Añadir itinerario</string>
-    <string name="button_settings">Opciones</string>
-    <string name="gps_disabled">GPS Desconectado</string>
-    <string name="map">Mapa</string>
-    <string name="data">Datos</string>
-    <string name="gps_loading">Iniciando conexión GPS. Por favor, espere.</string>
-    <string name="enabled_provider">Enabled provider</string>
-    <string name="disabled_provider">Disabled provider</string>
-    <string name="select_itinerary_title">Seleccione un itinerario</string>
-    <string name="speak_out_welcome">Bienvenido a neo Track</string>
-    <string name="speak_out_itinerary_added">Se ha añadido un itinerario con</string>
-    <string name="speak_out_visit_itinerary_point">punto del itienerario visitado</string>
-    <string name="b_start_tracking">Start</string>
-    <string name="b_stop_tracking">Stop</string>
-    <string name="tracking_summary">Resumen del trayecto</string>
-    <string name="speak_out_stop_added">Parada</string>
     <string name="setting_speed_title">Velocidades</string>
     <string name="setting_min_speed_summary">Velocidad mínima para la detección de paradas</string>
     <string name="setting_max_speed_summary">Velocidad máxima para la detección de paradas</string>
     <string name="setting_min_max_speed_title">Máxima</string>
     <string name="setting_min_speed_title">Mínima</string>
-    <string name="info_track">info_track</string>
-    <string name="dialog_save_file_title">Guardar archivo</string>
-    <string name="itineraries_saved">Itinerarios guardados</string>
 
+    <!--Files-->
+    <string name="save_file">Guardar archivo</string>
+    <string name="name_file">Nombre del fichero</string>
+
+    <!--Tracking-->
+    <string name="button_end_collecting">Terminar la recolección automática de datos</string>
+    <string name="button_start_collecting">Iniciar la recolección automática de datos</string>
+    <string name="button_tracking_start">Iniciar</string>
+    <string name="button_tracking_stop">Parar</string>
+    <string name="tracking_summary">Resumen del trayecto</string>
+
+    <!--Date-->
+    <string name="date_start">Fecha de inicio</string>
+    <string name="date_end">Fecha de fin</string>
+    <string name="date">Fecha</string>
+    <string name="description">DESCRIPTION</string>
+
+    <!--GPS-->
+    <string name="gps_loading">Iniciando conexión GPS. Por favor, espere.</string>
+    <string name="enabled_provider">Enabled provider</string>
+    <string name="disabled_provider">Disabled provider</string>
+    <string name="gps_disabled">GPS Desconectado</string>
+
+    <!--Itinerary-->
+    <string name="subtitle_itinerary_list">Lista de Itinerarios</string>
+    <string name="add_itinerary">Añadir itinerario</string>
+    <string name="itineraries_saved">Itinerarios guardados</string>
+    <string name="itinerary_select_title">Seleccione un itinerario</string>
+    <string name="editText_itinerary_name_hint">Introduzca un nombre para el itinerario</string>
+
+    <!--Speech out-->
+    <string name="speak_out_welcome">Bienvenido a neo Track</string>
+    <string name="speak_out_itinerary_added">Se ha añadido un itinerario con</string>
+    <string name="speak_out_visit_itinerary_point">Punto del itienerario visitado</string>
+    <string name="speak_out_stop_added">Parada</string>
+    <string name="speech_prompt">Indique el tipo de parada</string>
+
+    <!--Error messages-->
+    <string name="error_service_not_available">Servicio no disponible</string>
+    <string name="error_invalid_lat_long_used">Logitud y Latitud inválidos</string>
+    <string name="error_no_address_found">No se ha encontrado la dirección</string>
+    <string name="error_speech_not_supported">Función no soportada</string>
+
+    <!--Others-->
+    <string name="button_clear_fields">Borrar Campos</string>
+    <string name="button_change_position">Cambiar posición</string>
+    <string name="map">Mapa</string>
+    <string name="data">Datos</string>
+    <string name="info_track">info_track</string>
+    <string name="help">Ayuda</string>
 
 </resources>

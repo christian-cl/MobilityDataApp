@@ -268,7 +268,7 @@ public class ItineraryMapActivity extends AppCompatActivity implements OnMapRead
         }
 
         if (addresses == null || addresses.size()  == 0) {
-            Log.e(TAG, getString(R.string.no_address_found));
+            Log.e(TAG, getString(R.string.error_no_address_found));
             output = ADDRESS_NOT_FOUND;
         } else {
             Address address = addresses.get(0);

@@ -18,7 +18,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/b_change_position"/>
+        android:text="@string/button_change_position"/>
     <!--<TextView-->
         <!--android:id="@+id/marker_label"-->
         <!--android:layout_marginLeft="5dp"-->
