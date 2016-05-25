@@ -47,7 +47,7 @@
             android:clickable="true" />
         <Button
             android:id="@+id/db_save_file_date_start"
-            android:text="@string/b_edit"
+            android:text="@string/button_edit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>
@@ -77,7 +77,7 @@
             android:clickable="true"/>
         <Button
             android:id="@+id/db_save_file_date_end"
-            android:text="@string/b_edit"
+            android:text="@string/button_edit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>
