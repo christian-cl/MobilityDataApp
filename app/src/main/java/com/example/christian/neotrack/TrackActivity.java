@@ -3,15 +3,21 @@ package com.example.christian.neotrack;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
-import android.location.Geocoder;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Handler;
-import android.os.ResultReceiver;
+import android.os.AsyncTask;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.app.DatePickerDialog;
@@ -39,18 +45,15 @@ import android.widget.Toast;
 
 import com.example.christian.neotrack.fragments.MapTabFragment;
 import com.example.christian.neotrack.fragments.TrackFragment;
-import com.example.christian.neotrack.persistence.DataCapture;
-import com.example.christian.neotrack.persistence.DataCaptureDAO;
+import com.example.christian.neotrack.persistence.Sample;
+import com.example.christian.neotrack.persistence.SampleDAO;
 import com.example.christian.neotrack.persistence.Itinerary;
 import com.example.christian.neotrack.persistence.ItineraryDAO;
 import com.example.christian.neotrack.persistence.Point;
-import com.example.christian.neotrack.persistence.StreetTrack;
-import com.example.christian.neotrack.persistence.StreetTrackDAO;
-import com.example.christian.neotrack.services.FetchAddressIntentService;
-import com.example.christian.neotrack.services.TabsAdapter;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
+import com.example.christian.neotrack.adapters.MyRecognitionListener;
+import com.example.christian.neotrack.adapters.TabsAdapter;
+import com.example.christian.neotrack.persistence.SavePointInput;
+import com.example.christian.neotrack.persistence.SavePointInput2;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
@@ -70,18 +73,14 @@ import java.util.Locale;
  *
  * Maps Activity with tabs
  */
-public class TrackActivity extends AppCompatActivity implements
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class TrackActivity extends AppCompatActivity {
 
-    private final static int REQ_CODE_SPEECH_INPUT = 100;
-
-    private final static String DIALOG_SAVE_FILE_TITLE = "Guardar archivo";
+    private static final String TAG = "TrackActivity";
 
     private static final int ZOOM = 20;
 
     private AlertDialog saveFileDialog;
     private DatePickerDialog dateInitDialog;
-
     private final static SimpleDateFormat DATE_FORMATTER_VIEW =
             new SimpleDateFormat("dd-MM-yyyy", new Locale("es", "ES"));
     private final static SimpleDateFormat DATE_FORMATTER_SAVE =
@@ -93,18 +92,51 @@ public class TrackActivity extends AppCompatActivity implements
     private Calendar newDateStart;
     private Calendar newDateEnd;
 
-    private GoogleApiClient mGoogleApiClient;
-    private boolean mAddressRequested;
-
     ViewPager mViewPager;
     TabsAdapter mTabsAdapter;
     private Fragment mapFragment;
-    private Fragment trackFragment;
-    private SharedPreferences pref; // Settings listener
-    private String addressPattern = "ZZZZZZZZZZ"; // cadena imposible
+    private ProgressDialog dialogWait;
 
-    // Database connections
-    private ItineraryDAO dbItinerary;
+    // Preferences
+    private SharedPreferences pref; // Settings listener
+    private long intervalTimeGPS; // milliseconds
+    private float minDistance; // meters
+    private float speedMin; // Km/h
+    private float speedMax; // Km/h
+    // Tracking
+    private Itinerary visitItinerary;
+    private boolean runningTracking = false;
+    // GPS and location
+    public LocationManager locationManager;
+    // Location
+    private LocationListener gpsLocationListener;
+    private GpsStatus.Listener mGPSStatusListener;
+    // Data base and ids
+    public SampleDAO dbSample;
+    private String SESSION_ID;
+    final static private String TAG_SESSION_ID = "SESSION_ID";
+    // Speech
+    public TextToSpeech speakerOut;
+    private boolean speakerOutReady = false;
+    public SpeechRecognizer sr;
+    public boolean speeching = false;
+    public boolean waitToStart = true;
+    public boolean runningSpeech = false;
+    // Sensors
+    private SensorManager mSensorManager;
+    private boolean tStop = true; // if vehicle is stopped
+    private double pressure = 0.0;
+    private double light = 0.0;
+    private double temperature = 0.0;
+    private double humidity = 0.0;
+    private SensorEventListener mSensorListener;
+    // Velocity
+    private static final double[] ACCELERATION_OFFSET = new double[]{
+            0.0215942828322981, 0.0199339222385277, 0.1215942828322981};
+    private double[] acceleration;
+    private long oldTime;
+    private double speed;
+    private double[] velocity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,15 +148,33 @@ public class TrackActivity extends AppCompatActivity implements
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         configureActionBar(savedInstanceState);
 
-        buildGoogleApiClient();
+        newSessionId(); // route ID
+        dbSample = new SampleDAO(this); // Data base connector
 
-        //
-        mHandler = new Handler();
-        addressHandler = new Handler();
+        // reset sensors variables
+        speed = 0.0;
+        pressure = 0.0;
+        light = 0.0;
+        temperature = 0.0;
+        humidity = 0.0;
+        oldTime = System.currentTimeMillis();
+        acceleration = new double[]{0,0,0};
+        velocity = new double[]{0,0,0};
     }
+
+    private void newSessionId() {
+        String android_id = Settings.Secure.getString(this.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+        String timestamp = DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime());
+        SESSION_ID = android_id + "::" + timestamp;
+        Log.i(TAG, "new session ID: " + SESSION_ID);
+    }
+
     @Override
     public void onResume() {
         super.onResume();
+        dbSample.open();
+        configurePreference();
         mGPSStatusListener = new GpsStatus.Listener() {
             public void onGpsStatusChanged(int event) {
                 switch (event) {
@@ -137,6 +187,7 @@ public class TrackActivity extends AppCompatActivity implements
                     case GpsStatus.GPS_EVENT_FIRST_FIX:
                         // GPS_EVENT_FIRST_FIX Event is called when GPS is locked
                         Log.i("GPS", "Locked position");
+                        setHiddenFragment(); // visual log
                         ((MapTabFragment) mapFragment).setZoom(ZOOM);
                         dialogWait.dismiss();
                         break;
@@ -145,22 +196,44 @@ public class TrackActivity extends AppCompatActivity implements
                 }
             }
         };
-
-        configurePreference();
         configureDialogWait();
         configureLocation();
+        configureSpeech();
+        configureSensors();
+    }
 
-        dbItinerary = new ItineraryDAO(TrackActivity.this);
-        dbItinerary.open();
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        SESSION_ID = savedInstanceState.getString(TAG_SESSION_ID);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        outState.putString(TAG_SESSION_ID, SESSION_ID);
+        if (getSupportActionBar() != null)
+            outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        stopRepeatingTask();
         locationManager.removeUpdates(gpsLocationListener);
         locationManager.removeGpsStatusListener(mGPSStatusListener);
-        dbItinerary.close();
+        dbSample.close();
+
+        sr.stopListening();
+        mSensorManager.unregisterListener(mSensorListener);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        sr.stopListening();
+        mSensorManager.unregisterListener(mSensorListener);
+        sr.cancel();
+        sr.destroy();
     }
 
     @Override
@@ -175,7 +248,7 @@ public class TrackActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.action_settings:
-                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+                sendSettings();
                 return true;
             case R.id.action_save_file:
                 displaySaveFile();
@@ -183,6 +256,15 @@ public class TrackActivity extends AppCompatActivity implements
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void configureDialogWait() {
+        dialogWait = new ProgressDialog(this);
+        dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialogWait.setMessage(getResources().getString(R.string.gps_loading));
+        dialogWait.setIndeterminate(true);
+        dialogWait.setCanceledOnTouchOutside(false);
+        dialogWait.show();
     }
 
     private void configureLocation() {
@@ -195,10 +277,8 @@ public class TrackActivity extends AppCompatActivity implements
             gpsLocationListener = new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-                    myLocationChanged(location);
-                    if(!runningCaptureData) {
-                        startRepeatingTask();
-                    }
+                    if (!tStop)
+                        myLocationChanged(location, null);
                 }
                 @Override
                 public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -206,12 +286,14 @@ public class TrackActivity extends AppCompatActivity implements
                 }
                 @Override
                 public void onProviderEnabled(String provider) {
-                    Toast.makeText(TrackActivity.this, "Enabled new provider " + provider,
+                    Toast.makeText(TrackActivity.this,
+                            getResources().getString(R.string.enabled_provider) + provider,
                             Toast.LENGTH_SHORT).show();
                 }
                 @Override
                 public void onProviderDisabled(String provider) {
-                    Toast.makeText(TrackActivity.this, "Disabled provider " + provider,
+                    Toast.makeText(TrackActivity.this,
+                            getResources().getString(R.string.disabled_provider) + provider,
                             Toast.LENGTH_SHORT).show();
                 }
             };
@@ -228,34 +310,6 @@ public class TrackActivity extends AppCompatActivity implements
         loadSettings();
         PreferenceChangeListener preferenceListener = new PreferenceChangeListener();
         pref.registerOnSharedPreferenceChangeListener(preferenceListener);
-    }
-
-    /**
-     * Handle preferences changes
-     */
-    private class PreferenceChangeListener implements
-            SharedPreferences.OnSharedPreferenceChangeListener {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-            Log.i("Settings", "Changed settings");
-            loadSettings();
-        }
-    }
-
-    private void loadSettings() {
-        Log.i("MapActivity","Loading settings...");
-        String syncConnPref = pref.getString("pref_key_interval_time", "0");
-        int intervalTimeSetting = Integer.parseInt(syncConnPref);
-
-        syncConnPref = pref.getString("pref_key_interval_capture", "0");
-        int intervalCaptureSetting = Integer.parseInt(syncConnPref);
-
-        syncConnPref = pref.getString("pref_key_min_distance", "0");
-        int minDistanceSetting = Integer.parseInt(syncConnPref);
-
-        intervalTimeGPS = intervalTimeSetting * 1000;
-        intervalCapture = intervalCaptureSetting * 1000;
-        minDistance = minDistanceSetting;
     }
 
     private void configureActionBar(Bundle savedInstanceState) {
@@ -276,58 +330,298 @@ public class TrackActivity extends AppCompatActivity implements
         }
     }
 
+
+    private void configureSpeech() {
+        speakerOut = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    speakerOut.setLanguage(new Locale("es", "ES"));
+                    speakerOutReady = true;
+                }
+            }
+        });
+
+        sr = SpeechRecognizer.createSpeechRecognizer(getApplicationContext());
+        MyRecognitionListener listener = new MyRecognitionListener(this);
+        sr.setRecognitionListener(listener);
+    }
+
+    private void configureSensors() {
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mSensorListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                Sensor mySensor = event.sensor;
+                if (mySensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+                    // Previous data
+                    double x = acceleration[0];
+                    double y = acceleration[1];
+                    double z = acceleration[2];
+
+                    long trackTime = System.currentTimeMillis();
+                    if(trackTime - oldTime > 100) {
+                        long diffTime = trackTime - oldTime;
+                        oldTime = trackTime;
+
+                        // Check if have anomalous data
+                        if ((event.values[0]< 100.0) && (event.values[0]> -100.0)
+                                && (event.values[1]< 100.0) && (event.values[1]> -100.0)
+                                && (event.values[2]< 100.0) && (event.values[2]> -100.0)) {
+
+                            // Reduce noise
+                            if (event.values[0]>0)
+                                acceleration[0] = event.values[0]-ACCELERATION_OFFSET[0];
+                            else
+                                acceleration[0] = event.values[0]+ACCELERATION_OFFSET[0];
+                            if (event.values[1]>0)
+                                acceleration[1] = event.values[1]-ACCELERATION_OFFSET[1];
+                            else
+                                acceleration[1] = event.values[1]+ACCELERATION_OFFSET[1];
+                            if (event.values[2]>0)
+                                acceleration[2] = event.values[2]-ACCELERATION_OFFSET[2];
+                            else
+                                acceleration[2] = event.values[2]+ACCELERATION_OFFSET[2];
+
+                            // Low-pass filter.
+                            final float alpha = 0.99f;
+                            acceleration[0] = alpha * acceleration[0] + (1 - alpha) * x;
+                            acceleration[1] = alpha * acceleration[1] + (1 - alpha) * y;
+                            acceleration[2] = alpha * acceleration[2] + (1 - alpha) * z;
+
+                            // Integration
+                            double h = ((double) diffTime) / 6.0f;
+                            velocity[0] =
+                                    h * (x + (4.0 * ((acceleration[0]-x)/2.0d)) + acceleration[0]);
+                            velocity[1] =
+                                    h * (y + (4.0 * ((acceleration[1]-y)/2.0d)) + acceleration[1]);
+                            velocity[2] =
+                                    h * (z + (4.0 * ((acceleration[2]-z)/2.0d)) + acceleration[2]);
+
+                            // Module of velocity vector in km/h
+                            speed = Math.sqrt((velocity[0]*velocity[0])
+                                    + (velocity[1]*velocity[1])
+                                    + (velocity[2]*velocity[2])) * 3.6d;
+                            Log.i("Speed","speed: " + speed + " " + diffTime + " " + speedMin
+                                    + " " + speedMax + " " +acceleration[0] + "-"+ acceleration[1]
+                                    + "-" + acceleration[2]);
+
+                            // Update stop condition
+                            if (tStop) {
+                                if (speed > speedMax) {
+                                    speakerOut.speak("Andando", TextToSpeech.QUEUE_ADD, null);
+                                    tStop = false;
+                                }
+                            } else {
+                                if (speed < speedMin) {
+//                                    speakerOut.speak("no", TextToSpeech.QUEUE_ADD, null);
+                                    tStop = true;
+                                }
+                            }
+
+                            // Running recognition speech
+                            if (tStop) {
+                                if (!waitToStart) {
+                                    waitToStart = true;
+                                    if (!runningSpeech) {
+                                        runningSpeech = true;
+                                        restartSpeech();
+                                    }
+                                }
+                            } else {
+                                waitToStart = false;
+                            }
+                        }
+                    }
+
+                }
+
+                if (mySensor.getType() == Sensor.TYPE_PRESSURE) {
+                    pressure = event.values[0];
+                }
+                if (mySensor.getType() == Sensor.TYPE_LIGHT) {
+                    light = event.values[0];
+                }
+                if (mySensor.getType() == Sensor.TYPE_AMBIENT_TEMPERATURE) {
+                    temperature = event.values[0];
+                }
+                if (mySensor.getType() == Sensor.TYPE_RELATIVE_HUMIDITY) {
+                    humidity = event.values[0];
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+            }
+        };
+
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(mSensorListener,
+                mSensorManager.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY),
+                SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    public void restartSpeech() {
+        speakerOut.speak("Parada", TextToSpeech.QUEUE_ADD, null);
+//        while (speakerOut.isSpeaking()) {}
+        sr.startListening(RecognizerIntent.getVoiceDetailsIntent(getApplicationContext()));
+    }
+
     public void displayItineraries(View view) {
-        List<Itinerary> itineraryList = dbItinerary.getAll();
+        ItineraryDAO db = new ItineraryDAO(TrackActivity.this);
+        db.open();
+        ArrayList<Itinerary> itineraryList = new ArrayList<>();
+        itineraryList.addAll(db.getAll());
+        db.close();
 
         List<String> list = new ArrayList<>();
         for(Itinerary i : itineraryList) {
             list.add(i.getName());
         }
 
+        String title = getResources().getString(R.string.select_itinerary_title);
         CharSequence[] array = list.toArray(new CharSequence[list.size()]);
-        onCreateDialogSingleChoice(getResources().getString(R.string.display_itineraries_title),
-                array, itineraryList).show();
+        Dialog dialog = onCreateDialogSingleChoice(title, array, itineraryList);
+        dialog.show();
+    }
+
+    public void controlTracking(View view) {
+        runningTracking = !runningTracking;
+        Log.i(TAG, "capturing points: " + runningTracking);
+//        Display stuff (change play icon to pause icon)
+    }
+
+    public void stopTracking(View view) {
+        runningTracking = false;
+        Log.i(TAG, "Stop capturing points");
+
+        // Display summary
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.tracking_summary)
+                .setMessage(printSummaryTracking(SESSION_ID));
+        builder.setNeutralButton("Enviar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dlg2, int which) {
+                Toast.makeText(getBaseContext(), "Enviando...", Toast.LENGTH_SHORT).show();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(getBaseContext(), "Datos enviados correctamente", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        // Reset sessionId
+        newSessionId();
+    }
+
+    private String printSummaryTracking(String tag) {
+        long time = 0;
+        float distance = 0;
+        int stops = 0;
+
+        Log.i(TAG, "Search for sessionId: " + tag);
+        List<Sample> results = dbSample.get(tag);
+        Log.i(TAG, "recover " + results.size() + " elements");
+        if (results.size() > 0) {
+            // time
+            Date dateStart = null;
+            Date dateEnd = null;
+            try {
+                dateStart = DATE_FORMATTER_SAVE.parse(results.get(0).getDate());
+                dateEnd = DATE_FORMATTER_SAVE.parse(results.get(results.size() - 1).getDate());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            if (dateStart != null && dateEnd != null) {
+                time = (dateEnd.getTime() - dateStart.getTime()) / 1000;
+            }
+            // distance
+            Location lastLoc = new Location("");
+            lastLoc.setLatitude(results.get(0).getLatitude());
+            lastLoc.setLongitude(results.get(0).getLongitude());
+            for (Sample dc : results) {
+                Location newLoc = new Location("");
+                newLoc.setLatitude(dc.getLatitude());
+                newLoc.setLongitude(dc.getLongitude());
+                distance += lastLoc.distanceTo(newLoc);
+                lastLoc = newLoc;
+                // number of stops
+                if (dc.getStopType() != null) {
+                    stops++;
+                }
+            }
+            // Save data of itinerary automatically
+            saveTrack(results, time, distance);
+        }
+
+        float vel = time != 0 ? distance * 3.6f / time : 1;
+        return "Tiempo del trayecto:\t" + time + "s.\n"
+                + "Distancia recorrida:\t" + distance + "m.\n"
+                + "Velocidad media:\t" + vel + "km/h\n"
+                + "Número de paradas:\t" + stops + "\n";
+    }
+
+    public void sendSettings() {
+        startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+    }
+
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals(state);
     }
 
     public void saveFile(String fileName) {
         Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
         Log.i("DB", "Saving file...");
         FileOutputStream out = null;
-        FileOutputStream outST = null;
-        DataCaptureDAO db = new DataCaptureDAO(this);
-        StreetTrackDAO dbST = new StreetTrackDAO(this);
+        SampleDAO db = new SampleDAO(this);
         db.open();
-        dbST.open();
-        List<DataCapture> data = db.get(newDateStart, newDateEnd);
-        List<StreetTrack> dataST = dbST.getAll();
-        Log.i("DB","Find " + data.size() + " DataCapture elements");
-        Log.i("DB","Find " + dataST.size() + " StreetTrack elements");
+        List<Sample> data = db.get(newDateStart, newDateEnd);
+        Log.i("DB", "Find " + data.size() + " DataCapture elements");
         String extension = ".csv";
         String folderName = "/neoTrack";
         try {
-            if(Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            if(isExternalStorageWritable()) {
                 String path = Environment.getExternalStorageDirectory().toString();
                 File dir = new File(path + folderName);
-                dir.mkdirs();
+                boolean ifCreate = dir.mkdirs();
+                if (ifCreate)
+                    Log.i("IO", "Directory create");
                 File file = new File (dir, fileName + extension);
-                File fileST = new File (dir, "ST" + fileName + extension);
                 out = new FileOutputStream(file);
-                outST = new FileOutputStream(fileST);
             } else {
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
-                outST = openFileOutput("ST" + fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date\n";
+            String head = "_id,latitude,longitude,street,stoptype,comment,date," +
+                    "acceleration,pressure,light,temperature,humidity\n";
             out.write(head.getBytes());
-            for(DataCapture dc : data) {
+            for(Sample dc : data) {
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
-                if(dc.getAddress() != null) {
-                    out.write(("\"" + dc.getAddress() + "\",").getBytes());
+                if(dc.getSession() != null) {
+                    out.write(("\"" + dc.getSession() + "\",").getBytes());
                 } else {
                     out.write(("null,").getBytes());
                 }
+                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
                 if(dc.getStopType() != null) {
                     out.write(("\"" + dc.getStopType() + "\",").getBytes());
                 } else {
@@ -338,28 +632,15 @@ public class TrackActivity extends AppCompatActivity implements
                 } else {
                     out.write(("null,").getBytes());
                 }
-                out.write(("\"" + dc.getDate() + "\"\n").getBytes());
+                out.write(("\"" + dc.getDate() + "\",").getBytes());
+                out.write((String.valueOf(dc.getSensorAcceleration()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorPressure()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorLight()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorTemperature()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorHumidity()) + "\n").getBytes());
             }
             out.flush();
             out.close();
-
-            String headST = "_id,address,latitude start,longitude start," +
-                    "latitude end,longitude end,datetime start,datetime end,distance\n";
-            outST.write(headST.getBytes());
-            for(StreetTrack st : dataST) {
-                outST.write((String.valueOf(st.getId()) + ",").getBytes());
-                outST.write(("\"" + st.getAddress() + "\",").getBytes());
-                outST.write((String.valueOf(st.getStartLatitude()) + ",").getBytes());
-                outST.write((String.valueOf(st.getStartLongitude()) + ",").getBytes());
-                outST.write((String.valueOf(st.getEndLatitude()) + ",").getBytes());
-                outST.write((String.valueOf(st.getEndLongitude()) + ",").getBytes());
-                outST.write(("\"" + st.getStartDateTime() + "\",").getBytes());
-                outST.write(("\"" + st.getEndDateTime() + "\",").getBytes());
-                outST.write((String.valueOf(st.getDistance()) + "\n").getBytes());
-            }
-            outST.flush();
-            outST.close();
-
             Log.i("DB", "File saved");
             Toast.makeText(this, "File saved", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
@@ -367,12 +648,78 @@ public class TrackActivity extends AppCompatActivity implements
         } finally {
             try {
                 db.close();
-                dbST.close();
                 if (out != null) {
                     out.close();
                 }
-                if(outST != null) {
-                    outST.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void saveTrack(List<Sample> results, float time, float distance) {
+//        Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
+        Log.i("DB", "Saving file...");
+
+        String fileName = "itinerary" + SESSION_ID;
+
+        FileOutputStream out = null;
+        String extension = ".csv";
+        String folderName = "/neoTrack";
+        try {
+            if(isExternalStorageWritable()) {
+                String path = Environment.getExternalStorageDirectory().toString();
+                File dir = new File(path + folderName);
+                boolean ifCreate = dir.mkdirs();
+                if (ifCreate)
+                    Log.i("IO", "Directory create");
+                File file = new File (dir, fileName + extension);
+                out = new FileOutputStream(file);
+            } else {
+                out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
+            }
+            String head = "ID\ttime\tdistance\n";
+            out.write(head.getBytes());
+            out.write((SESSION_ID + "\t" + time + "\t" + distance + "\n").getBytes());
+            head = "_id\tsession\tlatitude\tlongitude\tstoptype\tcomment\tdate" +
+                    "\tacceleration\tpressure\tlight\ttemperature\thumidity\n";
+            out.write(head.getBytes());
+            for(Sample dc : results) {
+                out.write((String.valueOf(dc.getId()) + "\t").getBytes());
+                if(dc.getSession() != null) {
+                    out.write(("\"" + dc.getSession() + "\"\t").getBytes());
+                } else {
+                    out.write(("null\t").getBytes());
+                }
+                out.write((String.valueOf(dc.getLatitude()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + "\t").getBytes());
+                if(dc.getStopType() != null) {
+                    out.write(("\"" + dc.getStopType() + "\"\t").getBytes());
+                } else {
+                    out.write(("null\t").getBytes());
+                }
+                if(dc.getComment() != null) {
+                    out.write(("\"" + dc.getComment() + "\"\t").getBytes());
+                } else {
+                    out.write(("null\t").getBytes());
+                }
+                out.write(("\"" + dc.getDate() + "\"\t").getBytes());
+                out.write((String.valueOf(dc.getSensorAcceleration()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getSensorPressure()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getSensorLight()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getSensorTemperature()) + "\t").getBytes());
+                out.write((String.valueOf(dc.getSensorHumidity()) + "\n").getBytes());
+            }
+            out.flush();
+            out.close();
+            Log.i("DB", "File saved");
+            Toast.makeText(this, "Copia de seguridad almacenada", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -393,7 +740,7 @@ public class TrackActivity extends AppCompatActivity implements
         dateInitDialog = new DatePickerDialog(this, new OnDateSetListener() {
                 @Override
                 public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                    Log.i("Dialog", "Change datepicker");
+                    Log.i("Dialog", "Change date picker");
                     Calendar newDate = Calendar.getInstance();
                     newDate.set(year, monthOfYear, dayOfMonth);
                     etDateStart.setText(DATE_FORMATTER_VIEW.format(newDate.getTime()));
@@ -404,8 +751,7 @@ public class TrackActivity extends AppCompatActivity implements
                 newCalendar.get(Calendar.DAY_OF_MONTH)
         );
         dateInitDialog.setButton(DatePickerDialog.BUTTON_POSITIVE,
-                getResources().getString(R.string.b_ok),
-                new DialogInterface.OnClickListener() {
+                getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dlg2, int which) {
                         dlg2.cancel();
@@ -418,7 +764,7 @@ public class TrackActivity extends AppCompatActivity implements
                     @Override
                     public void onDateChanged(DatePicker datePicker, int year, int monthOfYear,
                                               int dayOfMonth) {
-                        Log.i("Dialog", "Change datepicker");
+                        Log.i("Dialog", "Change date picker");
                         newDateStart = Calendar.getInstance();
                         newDateStart.set(year, monthOfYear, dayOfMonth,0,0,0);
                         etDateStart.setText(DATE_FORMATTER_VIEW.format(newDateStart.getTime()));
@@ -434,21 +780,24 @@ public class TrackActivity extends AppCompatActivity implements
                 newDate.set(year, monthOfYear, dayOfMonth);
                 etDateEnd.setText(DATE_FORMATTER_VIEW.format(newDate.getTime()));
             }
-        },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
-        dateEndDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, "Okay", new DialogInterface.OnClickListener() {
+        }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH),
+                newCalendar.get(Calendar.DAY_OF_MONTH));
+        dateEndDialog.setButton(DatePickerDialog.BUTTON_POSITIVE,
+                getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dlg2, int which) {
                 dlg2.cancel();
                 saveFileDialog.show();
             }
         });
-        dateEndDialog.getDatePicker().init(newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH),
-                newCalendar.get(Calendar.DAY_OF_MONTH), new DatePicker.OnDateChangedListener() {
+        dateEndDialog.getDatePicker().init(newCalendar.get(Calendar.YEAR),
+                newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH),
+                new DatePicker.OnDateChangedListener() {
             @Override
-            public void onDateChanged(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+            public void onDateChanged(DatePicker datePicker, int year, int month, int day) {
                 Log.i("Dialog", "Change datepicker");
                 newDateEnd = Calendar.getInstance();
-                newDateEnd.set(year, monthOfYear, dayOfMonth,23,59,59);
+                newDateEnd.set(year, month, day,23,59,59);
                 newDateEnd.set(Calendar.HOUR,23);
                 etDateEnd.setText(DATE_FORMATTER_VIEW.format(newDateEnd.getTime()));
             }
@@ -456,15 +805,17 @@ public class TrackActivity extends AppCompatActivity implements
 
         AlertDialog.Builder saveFileDialogBuilder = new AlertDialog.Builder(this)
                 .setCancelable(true)
-                .setMessage(DIALOG_SAVE_FILE_TITLE)
-                .setPositiveButton(getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
+                .setMessage(getResources().getString(R.string.dialog_save_file_title))
+                .setPositiveButton(getResources().getString(R.string.b_ok),
+                        new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 //                        dateInitDialog.show();
                         saveFile(etNameSaveFile.getText().toString());
                     }
                 })
-                .setNegativeButton(getResources().getString(R.string.b_cancel), new DialogInterface.OnClickListener() {
+                .setNegativeButton(getResources().getString(R.string.b_cancel),
+                        new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -494,108 +845,53 @@ public class TrackActivity extends AppCompatActivity implements
         });
         etDateStart.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
         etDateEnd.setText(DATE_FORMATTER_VIEW.format(newCalendar.getTime()));
+        String name = getResources().getString(R.string.info_track) + "_" + etDateStart.getText()
+                + "_" + etDateEnd.getText();
+        etNameSaveFile.setText(name);
 
-        etNameSaveFile.setText("info_track_" + etDateStart.getText() + "_" + etDateEnd.getText());
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt("tab", getSupportActionBar().getSelectedNavigationIndex());
+    private void loadSettings() {
+        Log.i("MapActivity","Loading settings...");
+        String syncConnPref = pref.getString("pref_key_interval_time", "0");
+        intervalTimeGPS = Integer.parseInt(syncConnPref) * 1000;
+
+        syncConnPref = pref.getString("pref_key_min_distance", "0");
+        minDistance = Integer.parseInt(syncConnPref);
+
+        syncConnPref = pref.getString("pref_key_min_speed", "10");
+        speedMin = Integer.parseInt(syncConnPref);
+        syncConnPref = pref.getString("pref_key_max_speed", "15");
+        speedMax = Integer.parseInt(syncConnPref);
     }
 
-    private void configureDialogWait() {
-        dialogWait = new ProgressDialog(this);
-        dialogWait.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        dialogWait.setMessage(getResources().getString(R.string.gps_loading));
-        dialogWait.setIndeterminate(true);
-        dialogWait.setCanceledOnTouchOutside(false);
-        dialogWait.show();
-    }
-
-    /*****
-     * GPS
-     */
-    private long intervalTimeGPS; // milliseconds
-    private float minDistance; // meters
-
-
-    //GPS periodico
-    public LocationManager locationManager;
-    private ProgressDialog dialogWait;
-    public DataCaptureDAO dbDataCapture;
-
-
-    public boolean runningCaptureData;
-    private float trackDistance;
-    private DataCapture currentTrackPoint;
-
-    private DataCapture startTrackPoint;
-
-    // Process to repeat
-    private int intervalCapture;
-    public Handler mHandler;
-    public Handler addressHandler;
-    private Location currentLocation;
-    // Location
-    private LocationListener gpsLocationListener;
-    private GpsStatus.Listener mGPSStatusListener;
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    private void myLocationChanged(Location location) {
-        currentLocation = location;
+    public void myLocationChanged(Location location, String cause) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         setHiddenFragment(); // visual log
         ((MapTabFragment) mapFragment).setCamera(latLng);
+        // Print marker car position
         ((MapTabFragment) mapFragment)
-                .addMarker(MapTabFragment.Marker_Type.POSITION, null, currentLocation);
-        // save data
-        processTrackData(location); // Global process information
-    }
+                .addMarker(MapTabFragment.Marker_Type.POSITION, null, location);
 
-    // Repeat process for catch information
-    public Runnable mStatusChecker = new Runnable() {
-        @Override
-        public void run() {
-            updateStatus(); //this function can change value of mInterval.
-            mHandler.postDelayed(mStatusChecker, intervalCapture);
-        }
-    };
-
-    public void startRepeatingTask() {
-        mStatusChecker.run();
-        runningCaptureData = true;
-    }
-
-    public void stopRepeatingTask() {
-        mHandler.removeCallbacks(mStatusChecker);
-        runningCaptureData = false;
-    }
-
-    private void updateStatus() {
-        if (currentLocation != null) {
-            Log.i("Background", "Collecting data in: " + currentLocation.getLatitude() + ", "
-                    + currentLocation.getLongitude());
-
-            DataCapture dc = new DataCapture();
-            dc.setLatitude(currentLocation.getLatitude());
-            dc.setLongitude(currentLocation.getLongitude());
-//            dc.setAddress(getStreet(currentLocation));
-            dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
-
-            AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
-            receiver.setDataCapture(dc);
-            receiver.setIsInserted(true);
-            startIntentService(receiver);
-//            dbDataCapture.create(dc);
+        if (runningTracking) {
+            // Print marker track point
             ((MapTabFragment) mapFragment)
-                    .addMarker(MapTabFragment.Marker_Type.GPS, null, currentLocation);
+                    .addMarker(MapTabFragment.Marker_Type.GPS, null, location);
+            new SavePointTask().execute(new SavePointInput(visitItinerary, location, cause));
         }
+    }
+
+    /**
+     * Method to save data from external fragments
+     * @param sample data
+     */
+    public void runSaveData(Sample sample) {
+        sample.setSensorAcceleration(speed);
+        sample.setSensorPressure(pressure);
+        sample.setSensorLight(light);
+        sample.setSensorTemperature(temperature);
+        sample.setSensorHumidity(humidity);
+        new SavePointTask2().execute(new SavePointInput2(visitItinerary, sample));
     }
 
     public void setHiddenFragment(){
@@ -604,269 +900,32 @@ public class TrackActivity extends AppCompatActivity implements
         Log.i("Activity","Num of fragments: " + fragments.size());
         for(Fragment fragment : fragments){
             if(fragment != null) {
-                if (fragment instanceof MapTabFragment)//!fragment.isVisible())
+//                Fragment trackFragment;
+                if (fragment instanceof MapTabFragment) {//!fragment.isVisible())
                     mapFragment = fragment;
-                else if (fragment instanceof TrackFragment)//!fragment.isVisible())
-                    trackFragment = fragment;
+//                    ((MapTabFragment) mapFragment).setZoom(10.0f);
+                }
+//                else if (fragment instanceof TrackFragment)//!fragment.isVisible())
+//                    trackFragment = fragment;
             }
         }
     }
 
-
-    public void processTrackData(Location location) {
-        if((startTrackPoint != null) && (startTrackPoint.getAddress() != null)) {
-            DataCapture dc = new DataCapture();
-            dc.setLatitude(location.getLatitude());
-            dc.setLongitude(location.getLongitude());
-            dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
-
-            AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
-            receiver.setDataCapture(dc);
-            receiver.setIsInserted(false);
-            startIntentService(receiver);
-        } else {
-            startTrackPoint = new DataCapture();
-            startTrackPoint.setLatitude(location.getLatitude());
-            startTrackPoint.setLongitude(location.getLongitude());
-//            startTrackPoint.setAddress(getStreet(location));
-            startTrackPoint.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
-            AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
-            receiver.setDataCapture(startTrackPoint);
-            receiver.setIsInserted(true);
-            startIntentService(receiver);
-            currentTrackPoint = startTrackPoint;
-            Log.i("Track","Set start track point in " + startTrackPoint.getLatitude() + " "
-                    + startTrackPoint.getLongitude());
-
-            trackDistance = 0;
-        }
-    }
-
-
     /**
-     * GEOCODER
-     *
+     * Handle preferences changes
      */
-
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        // Gets the best and most recent location currently available,
-        // which may be null in rare cases when a location is not available.
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-
-        if (mLastLocation != null) {
-            // Determine whether a Geocoder is available.
-            if (!Geocoder.isPresent()) {
-                Toast.makeText(this, R.string.no_geocoder_available, Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            if (mAddressRequested) {
-                Toast.makeText(this, R.string.no_geocoder_available, Toast.LENGTH_LONG).show();
-//                AddressResultReceiver mResultReceiver = new AddressResultReceiver(mHandler);
-//                startIntentService(mResultReceiver);
-            }
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-
-    protected Location mLastLocation;
-
-    protected void startIntentService(AddressResultReceiver mResultReceiver) {
-        Intent intent = new Intent(this, FetchAddressIntentService.class);
-        intent.putExtra(Constants.RECEIVER, mResultReceiver);
-        intent.putExtra(Constants.LOCATION_DATA_EXTRA, currentLocation);
-        startService(intent);
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
-
-    public class AddressResultReceiver extends ResultReceiver {
-        private String mAddressOutput;
-        private DataCapture dataCapture;
-        private boolean isInserted;
-
-        public AddressResultReceiver(Handler handler) {
-            super(handler);
-        }
-
+    private class PreferenceChangeListener implements
+            SharedPreferences.OnSharedPreferenceChangeListener {
         @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
-            if (mAddressOutput != null) {
-                mAddressOutput.replace("\n", "");
-            }
-            dataCapture.setAddress(mAddressOutput);
-
-            if(isInserted) {
-                dbDataCapture = new DataCaptureDAO(TrackActivity.this);
-                dbDataCapture.open();
-                dbDataCapture.create(dataCapture);
-                dbDataCapture.close();
-            } else {
-                callbackTrack(dataCapture);
-            }
-        }
-
-        public DataCapture getDataCapture() {
-            return dataCapture;
-        }
-
-        public void setDataCapture(DataCapture dataCapture) {
-            this.dataCapture = dataCapture;
-        }
-
-        public void setIsInserted(boolean isInserted) {
-            this.isInserted = isInserted;
-        }
-    }
-
-    private void callbackTrack(DataCapture dataCapture) {
-        if(dataCapture.getAddress() == null) {
-            Log.e("Geocoder", "Address is null");
-            startTrackPoint = dataCapture;
-//            startTrackPoint.setLatitude(location.getLatitude());
-//            startTrackPoint.setLongitude(location.getLongitude());
-////            startTrackPoint.setAddress(getStreet(location));
-//            startTrackPoint.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
-//            AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
-//            receiver.setDataCapture(startTrackPoint);
-//            receiver.setIsInserted(true);
-//            startIntentService(receiver);
-//            currentTrackPoint = startTrackPoint;
-//            Log.i("Track","Set start track point in " +startTrackPoint.getLatitude() + " " + startTrackPoint.getLongitude());
-            trackDistance = 0;
-        } else {
-//            if(startTrackPoint.getAddress().equals(dataCapture.getAddress())) {
-            Log.i("--------", addressPattern + " " + dataCapture.getAddress());
-            if(dataCapture.getAddress().contains(addressPattern)) {
-                Location start = new Location("");
-                start.setLatitude(currentTrackPoint.getLatitude());
-                start.setLongitude(currentTrackPoint.getLongitude());
-                Location end = new Location("");
-                end.setLatitude(dataCapture.getLatitude());
-                end.setLongitude(dataCapture.getLongitude());
-                Log.i("-TT-------", trackDistance + " " + start.distanceTo(end));
-                Log.i("-TT-------", start.getLatitude() + " " + start.getLongitude());
-                Log.i("-TT-------", end.getLatitude() + " " + end.getLongitude());
-                trackDistance += start.distanceTo(end);
-
-                // set new current
-                currentTrackPoint = dataCapture;
-            } else {
-                // Save track data
-                AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
-                receiver.setDataCapture(dataCapture);
-                receiver.setIsInserted(true);
-                startIntentService(receiver);
-
-                StreetTrack st = new StreetTrack(startTrackPoint.getAddress(),
-                        startTrackPoint.getLatitude(), startTrackPoint.getLongitude(),
-                        currentTrackPoint.getLatitude(), currentTrackPoint.getLongitude(),
-                        startTrackPoint.getDate(), currentTrackPoint.getDate(),
-                        trackDistance);
-
-                StreetTrackDAO dbLocalInstanceST = new StreetTrackDAO(this);
-                dbLocalInstanceST.open();
-                dbLocalInstanceST.create(st);
-                dbLocalInstanceST.close();
-                // Elapsed
-                long time = 0;
-                try {
-                    Date dateStart = DATE_FORMATTER_SAVE.parse(st.getStartDateTime());
-                    Date dateEnd = DATE_FORMATTER_SAVE.parse(st.getEndDateTime());
-                    time = (dateEnd.getTime()-dateStart.getTime())/1000;
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                // Display Information
-                String line = "Dirección: " + st.getAddress() + "\n"
-                        + "\t Distancia recorrida: " + st.getDistance()+ " m.\n"
-                        + "\t Tiempo transcurrido: " + time + " s.\n"
-                        + "\t Punto de entrada: " + st.getStartLatitude() + " "
-                        + st.getStartLongitude() + "\n"
-                        + "\t Punto de salida: " + st.getEndLatitude() + " "
-                        + st.getEndLongitude() + "\n";
-
-                ((TrackFragment) trackFragment).appendLog(line);
-
-                startTrackPoint = dataCapture;
-                int index = startTrackPoint.getAddress().indexOf(",");
-                if(index == -1) {
-                    index = startTrackPoint.getAddress().length();
-                }
-                addressPattern = startTrackPoint.getAddress().substring(0,index);
-                Log.i("addressPattern",addressPattern);
-                currentTrackPoint = dataCapture;
-                trackDistance = 0;
-            }
-        }
-    }
-
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-    }
-
-
-    public void saveData(DataCapture dc) {
-        AddressResultReceiver receiver = new AddressResultReceiver(addressHandler);
-        receiver.setDataCapture(dc);
-        receiver.setIsInserted(true);
-        startIntentService(receiver);
-    }
-
-
-
-
-
-
-
-    /**
-     * Receiving speech input
-     * */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode) {
-            case REQ_CODE_SPEECH_INPUT: {
-                if (resultCode == RESULT_OK && null != data) {
-                    ArrayList<String> result = data
-                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-                    // For debug
-                    System.out.println(result);
-                    String out = "";
-                    for(String s : result) {
-                        out += s + " ";
-                    }
-                    Log.i("Speak",out);
-                    //// Para debug END
-                    if(getStopType(result) == null) {
-                        Log.e("Speak","Not match stop cause");
-                    }
-                    processStopChoice(getStopType(result),null);
-                }
-                break;
-            }
-
+        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+            Log.i("Settings", "Changed settings");
+            loadSettings();
         }
     }
 
     private String getStopType(ArrayList<String> result) {
-        final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
-        final String[] stopChoicesPattern = {"asco", "bra", "ente", "tro"};
+        final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros", "Reanudar"};
+        final String[] stopChoicesPattern = {"asco", "bra", "ente", "tro", "anudar"};
 
         for(String str : result) {
          System.out.println(str);
@@ -882,22 +941,11 @@ public class TrackActivity extends AppCompatActivity implements
         return null;
     }
 
-    public void processStopChoice(String title, String text) {
-        Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-        DataCapture dc = new DataCapture();
-        dc.setLatitude(loc.getLatitude());
-        dc.setLongitude(loc.getLongitude());
-        dc.setStopType(title);
-        dc.setComment(text);
-        dc.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
-        saveData(dc);
-
-        ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.STOP, title, loc);
-    }
+    /*
+     * ITIENRARIES
+     */
 
     public Dialog onCreateDialogSingleChoice(String title, CharSequence[] array, final List data) {
-        int index = -1;
         //Initialize the Alert Dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         // Set the dialog title
@@ -907,28 +955,31 @@ public class TrackActivity extends AppCompatActivity implements
                 .setSingleChoiceItems(array, 1, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        // TODO Auto-generated method stub
-//                        index = which;
                     }
                 })
-                .setPositiveButton(getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
+                .setPositiveButton(getResources().getString(R.string.b_ok),
+                        new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                        int selectedPosition = ((AlertDialog) dialog).getListView()
+                                .getCheckedItemPosition();
                         displayItineraySelected((Itinerary) data.get(selectedPosition));
                     }
                 })
-                .setNegativeButton(getResources().getString(R.string.b_cancel), new DialogInterface.OnClickListener() {
+                .setNegativeButton(getResources().getString(R.string.b_cancel),
+                        new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                     }
                 });
-
         return builder.create();
     }
 
     private void displayItineraySelected(Itinerary itinerary) {
         ((MapTabFragment) mapFragment).clearItineraryMarkers();
+        if(speakerOutReady)
+            speakerOut.speak(getResources().getString(R.string.speak_out_itinerary_added) +
+                    itinerary.getPoints().size() + " puntos", TextToSpeech.QUEUE_ADD, null);
 
         for(Object point : itinerary.getPoints()) {
             Location location = new Location("Test");
@@ -937,5 +988,94 @@ public class TrackActivity extends AppCompatActivity implements
             ((MapTabFragment) mapFragment).addMarker(MapTabFragment.Marker_Type.ITINERARY,
                     ((Point) point).getAddress(), location);
         }
+        visitItinerary = itinerary;
+    }
+
+
+    /*
+     * Background task to save tracking data
+     */
+    public class SavePointTask extends AsyncTask<SavePointInput, Void, Boolean> {
+        private float MIN_DISTANCE = 0.00015f; // 15 meters
+
+        @Override
+        protected Boolean doInBackground(SavePointInput... params) {
+            // Save point
+            savePoint(params[0].getLocation(), params[0].getCause());
+            // Check if a itinerary is loaded
+            if ((params[0].getItinerary() != null) &&
+                    (params[0].getItinerary().getPoints().size() > 0)) {
+                double distance = distance(params[0].getLocation(),
+                        (Point) params[0].getItinerary().getPoints().get(0));
+                if (distance < MIN_DISTANCE) {
+                    params[0].getItinerary().getPoints().remove(0);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void savePoint(Location location, String cause) {
+            Sample sample = new Sample();
+            sample.setLatitude(location.getLatitude());
+            sample.setLongitude(location.getLongitude());
+            sample.setStopType(cause);
+            sample.setDate(DATE_FORMATTER_SAVE.format(Calendar.getInstance().getTime()));
+            sample.setSession(SESSION_ID);
+            sample.setSensorAcceleration(speed);
+            sample.setSensorPressure(pressure);
+            sample.setSensorLight(light);
+            sample.setSensorTemperature(temperature);
+            sample.setSensorHumidity(humidity);
+            dbSample.create(sample);
+        }
+
+        protected void onPostExecute(Boolean wasItineraryPoint) {
+            if (wasItineraryPoint && speakerOutReady) {
+                speakerOut.speak(getResources().getString(R.string.speak_out_visit_itinerary_point),
+                        TextToSpeech.QUEUE_ADD, null);
+            }
+        }
+
+    }
+
+    public class SavePointTask2 extends AsyncTask<SavePointInput2, Void, Boolean> {
+        private float MIN_DISTANCE = 0.00015f; // 15 meters
+
+        @Override
+        protected Boolean doInBackground(SavePointInput2... params) {
+            // Save point
+            savePoint(params[0].getLocation());
+            // Check itinerary
+            if (params[0].getItinerary() != null) {
+                Location loc = new Location("");
+                loc.setLatitude(params[0].getLocation().getLatitude());
+                loc.setLongitude(params[0].getLocation().getLongitude());
+                double distance = distance(loc,(Point) params[0].getItinerary().getPoints().get(0));
+                if (distance < MIN_DISTANCE) {
+                    params[0].getItinerary().getPoints().remove(0);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void savePoint(Sample location) {
+            location.setSession(SESSION_ID);
+            dbSample.create(location);
+        }
+
+        protected void onPostExecute(Boolean wasItineraryPoint) {
+            // Notification speech out
+            speakerOut.speak(getResources().getString(R.string.speak_out_stop_added),
+                    TextToSpeech.QUEUE_ADD, null);
+        }
+
+    }
+
+    // Euclidian distance
+    private static double distance(Location location, Point point) {
+        return Math.sqrt(Math.pow(location.getLatitude() - point.getLatitude(), 2) +
+                Math.pow(location.getLongitude() - point.getLongitude(), 2));
     }
 }

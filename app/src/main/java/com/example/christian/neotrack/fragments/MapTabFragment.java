@@ -17,13 +17,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.christian.neotrack.TrackActivity;
 import com.example.christian.neotrack.R;
-import com.example.christian.neotrack.persistence.DataCapture;
+import com.example.christian.neotrack.persistence.Sample;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -47,7 +48,7 @@ import java.util.Locale;
 public class MapTabFragment extends Fragment implements View.OnClickListener {
 
     private final static int REQ_CODE_SPEECH_INPUT = 100;
-    private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros"};
+    private static final String[] stopChoices = {"Atasco", "Obras", "Accidente", "Otros", "Reanudar"};
 
     public static enum Marker_Type {GPS, STOP, POSITION, ITINERARY}
 
@@ -75,12 +76,13 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
             e.printStackTrace();
         }
 
-        ImageButton bStop = (ImageButton) view.findViewById(R.id.stop_button);
-        ImageButton bStopSpeak = (ImageButton) view.findViewById(R.id.stop_button_speak);
+        Button bStop = (Button) view.findViewById(R.id.stop_button);
+//        ImageButton bStopSpeak = (ImageButton) view.findViewById(R.id.stop_button_speak);
+
 //        Button bStart = (Button) view.findViewById(R.id.start_button);
 //        Button bEnd = (Button) view.findViewById(R.id.end_button);
         bStop.setOnClickListener(this);
-        bStopSpeak.setOnClickListener(this);
+//        bStopSpeak.setOnClickListener(this);
 //        bStart.setOnClickListener(this);
 //        bEnd.setOnClickListener(this);
 
@@ -136,7 +138,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                     editText.getText().clear();
                 }
                 title = stopChoices[item];
-                String text = "Haz elegido la opcion: " + stopChoices[item];
+                String text = "Has elegido la opcion: " + stopChoices[item];
                 Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
                 toast.show();
             }
@@ -154,14 +156,14 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                         text = editText.getText().toString();
                     }
 
-                    DataCapture dc = new DataCapture();
+                    Sample dc = new Sample();
                     dc.setLatitude(loc.getLatitude());
                     dc.setLongitude(loc.getLongitude());
                     dc.setStopType(title);
                     dc.setComment(text);
                     dc.setDate(sdf.format(Calendar.getInstance().getTime()));
 
-                    ((TrackActivity) context).saveData(dc);
+                    ((TrackActivity) context).runSaveData(dc);
                     addMarker(Marker_Type.STOP, title, loc);
                 }
             }
@@ -215,6 +217,7 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                         .icon(BitmapDescriptorFactory
                                 .defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                 ));
+                break;
             default: Log.e("MAP", "Marker type is not valid");
         }
     }
@@ -236,10 +239,11 @@ public class MapTabFragment extends Fragment implements View.OnClickListener {
                 displayStopChoices();
                 break;
 
-            case R.id.stop_button_speak:
-                Log.i("Click", "stop_button_speak");
-                promptSpeechInput();
-                break;
+//            case R.id.stop_button_speak:
+//                Log.i("Click", "stop_button_speak");
+////                promptSpeechInput();
+//                ((TrackActivity) context).restartSpeech();
+//                break;
 
 //            case R.id.start_button:
 //                Log.i("Click", "start_button");

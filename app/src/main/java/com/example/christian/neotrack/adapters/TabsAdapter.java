@@ -1,4 +1,4 @@
-package com.example.christian.neotrack.services;
+package com.example.christian.neotrack.adapters;
 
 import android.app.Activity;
 import android.content.Context;

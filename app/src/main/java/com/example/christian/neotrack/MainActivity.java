@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -19,8 +20,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.christian.neotrack.persistence.DataCapture;
-import com.example.christian.neotrack.persistence.DataCaptureDAO;
+import com.example.christian.neotrack.persistence.Sample;
+import com.example.christian.neotrack.persistence.SampleDAO;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,6 +32,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String BACKUP_DB_NAME = "backup";
@@ -40,7 +42,9 @@ public class MainActivity extends AppCompatActivity {
 
     private SimpleDateFormat sdf;
 
-    private DataCaptureDAO db;
+    private SampleDAO db;
+
+    private TextToSpeech mTts;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setLogo(R.mipmap.ic_launcher_inv);
         }
 
-        db = new DataCaptureDAO(this);
+        db = new SampleDAO(this);
         db.open();
 
         sdf = new SimpleDateFormat(FORMAT_DATE, Locale.US);
@@ -74,6 +78,17 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.i("DB", "Now not need save backup");
         }
+
+        mTts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    mTts.setLanguage(new Locale("es", "ES"));
+//                    mTts.speak( getResources().getString(R.string.speak_out_welcome), TextToSpeech.QUEUE_ADD, null);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -128,14 +143,6 @@ public class MainActivity extends AppCompatActivity {
     public void sendMessagePreferences(View view) {
         startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
     }
-    /** Called when the user clicks the Send button */
-    public void sendMessageConsult(View view) {
-        // Do something in response to button
-        // Activity is a subclass from context
-        Intent intent = new Intent(this, ConsultActivity.class);
-        // Init the activity
-        startActivity(intent);
-    }
 
     public boolean saveFileAndRemove(String fileName, Calendar dateStart, Calendar dateEnd) {
         if(saveFile(fileName, dateStart, dateEnd)) {
@@ -158,10 +165,10 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Saving file...", Toast.LENGTH_SHORT).show();
         Log.i("DB", "Saving file...");
         FileOutputStream out = null;
-        DataCaptureDAO db = new DataCaptureDAO(this);
+        SampleDAO db = new SampleDAO(this);
         db.open();
-        List<DataCapture> data = db.get(dateStart, dateEnd);
-        Log.i("DB","Find " + data.size() + " elements");
+        List<Sample> data = db.get(dateStart, dateEnd);
+        Log.i("DB", "Find " + data.size() + " elements");
         String extension = ".csv";
         String folderName = "/mdaFolder";
         try {
@@ -174,18 +181,18 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 out = openFileOutput(fileName + extension, Context.MODE_PRIVATE);
             }
-            String head = "_id,latitude,longitude,street,stoptype,comment,date\n";
+            String head = "_id,latitude,longitude,session,stoptype,comment,date\n";
             out.write(head.getBytes());
-            for(DataCapture dc : data) {
+            for(Sample dc : data) {
                 System.out.print(dc);
                 out.write((String.valueOf(dc.getId()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
-                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
-                if(dc.getAddress() != null) {
-                    out.write(("\"" + dc.getAddress() + "\",").getBytes());
+                if(dc.getSession() != null) {
+                    out.write(("\"" + dc.getSession() + "\",").getBytes());
                 } else {
                     out.write(("null,").getBytes());
                 }
+                out.write((String.valueOf(dc.getLatitude()) + ",").getBytes());
+                out.write((String.valueOf(dc.getLongitude()) + ",").getBytes());
                 if(dc.getStopType() != null) {
                     out.write(("\"" + dc.getStopType() + "\",").getBytes());
                 } else {
@@ -196,7 +203,11 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     out.write(("null,").getBytes());
                 }
-                out.write(("\"" + dc.getDate() + "\"\n").getBytes());
+                out.write(("\"" + dc.getDate() + "\",").getBytes());
+                out.write((String.valueOf(dc.getSensorAcceleration()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorPressure()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorTemperature()) + ",").getBytes());
+                out.write((String.valueOf(dc.getSensorHumidity()) + "\n").getBytes());
             }
             out.flush();
             out.close();
@@ -221,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
     private Calendar getLastBackup() {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 
-        String lastDate = settings.getString(PREF_LAST_DATE_BACKUP,"");
+        String lastDate = settings.getString(PREF_LAST_DATE_BACKUP, "");
         Calendar cMinDate = Calendar.getInstance();
         try {
             cMinDate.setTime(sdf.parse(lastDate));

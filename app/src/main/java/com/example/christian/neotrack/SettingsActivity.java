@@ -3,7 +3,7 @@ package com.example.christian.neotrack;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
-import java.util.List;
+import com.example.christian.neotrack.fragments.SettingsFragment;
 
 /**
  * Created by Christian Cintrano on 29/04/15.

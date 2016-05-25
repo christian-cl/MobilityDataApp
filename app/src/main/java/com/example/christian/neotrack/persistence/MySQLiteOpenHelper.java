@@ -12,30 +12,22 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class MySQLiteOpenHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "mobilityDB";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 9;
 
-    public static class TableDataCapture{
+    public static class TableSample {
         public static String TABLE_NAME = "datacapture";
         public static String COLUMN_ID = "_id";
+        public static String COLUMN_SESSION = "session";
         public static String COLUMN_LATITUDE = "latitude";
         public static String COLUMN_LONGITUDE = "longitude";
-        public static String COLUMN_ADDRESS = "address";
         public static String COLUMN_STOP_TYPE = "stoptype";
         public static String COLUMN_COMMENT = "comment";
         public static String COLUMN_DATE = "date";
-    }
-
-    public static class TableStreetTrack {
-        public static String TABLE_NAME = "streettrack";
-        public static String COLUMN_ID = "_id";
-        public static String COLUMN_ADDRESS = "address";
-        public static String COLUMN_START_LATITUDE = "startLatitude";
-        public static String COLUMN_START_LONGITUDE = "startLongitude";
-        public static String COLUMN_END_LATITUDE = "endLatitude";
-        public static String COLUMN_END_LONGITUDE = "endLongitude";
-        public static String COLUMN_START_DATETIME = "startDateTime";
-        public static String COLUMN_END_DATETIME = "endDateTime";
-        public static String COLUMN_DISTANCE = "distance";
+        public static String COLUMN_SENSOR_ACCELERATION = "acceleration";
+        public static String COLUMN_SENSOR_PRESSURE = "pressure";
+        public static String COLUMN_SENSOR_LIGHT = "light";
+        public static String COLUMN_SENSOR_TEMPERATURE = "temperature";
+        public static String COLUMN_SENSOR_HUMIDITY = "humidity";
     }
 
     public static class TableItinerary {
@@ -47,28 +39,20 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
         public static String COLUMN_ADDRESS = "address";
     }
 
-    private static final String CREATE_TABLE_DATA_CAPTURE =
-            "create table " + TableDataCapture.TABLE_NAME + "(" +
-            TableDataCapture.COLUMN_ID + " integer primary key autoincrement, " +
-            TableDataCapture.COLUMN_LATITUDE + " real not null, " +
-            TableDataCapture.COLUMN_LONGITUDE + " real not null, " +
-            TableDataCapture.COLUMN_ADDRESS + " text, " +
-            TableDataCapture.COLUMN_STOP_TYPE + " text, " +
-            TableDataCapture.COLUMN_COMMENT + " text, " +
-            TableDataCapture.COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP" +
-            ");";
-
-    private static final String CREATE_TABLE_STREET_TRACK =
-            "create table " + TableStreetTrack.TABLE_NAME + "(" +
-            TableStreetTrack.COLUMN_ID + " integer primary key autoincrement, " +
-            TableStreetTrack.COLUMN_ADDRESS + " text not null, " +
-            TableStreetTrack.COLUMN_START_LATITUDE + " real not null, " +
-            TableStreetTrack.COLUMN_START_LONGITUDE + " real not null, " +
-            TableStreetTrack.COLUMN_END_LATITUDE + " real not null, " +
-            TableStreetTrack.COLUMN_END_LONGITUDE + " real not null, " +
-            TableStreetTrack.COLUMN_START_DATETIME + " DATETIME not null, " +
-            TableStreetTrack.COLUMN_END_DATETIME + " DATETIME not null, " +
-            TableStreetTrack.COLUMN_DISTANCE + " real not null" +
+    private static final String CREATE_TABLE_SAMPLE =
+            "create table " + TableSample.TABLE_NAME + "(" +
+            TableSample.COLUMN_ID + " integer primary key autoincrement, " +
+            TableSample.COLUMN_SESSION + " text, " +
+            TableSample.COLUMN_LATITUDE + " real not null, " +
+            TableSample.COLUMN_LONGITUDE + " real not null, " +
+            TableSample.COLUMN_STOP_TYPE + " text, " +
+            TableSample.COLUMN_COMMENT + " text, " +
+            TableSample.COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+            TableSample.COLUMN_SENSOR_ACCELERATION + " real, " +
+            TableSample.COLUMN_SENSOR_PRESSURE + " real, " +
+            TableSample.COLUMN_SENSOR_LIGHT + " real, " +
+            TableSample.COLUMN_SENSOR_TEMPERATURE + " real, " +
+            TableSample.COLUMN_SENSOR_HUMIDITY + " real" +
             ");";
 
     private static final String CREATE_TABLE_ITINERARY =
@@ -80,10 +64,8 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
             TableItinerary.COLUMN_ADDRESS + " text not null" +
             ");";
 
-    private static final String DROP_TABLE_DATA_CAPTURE =
-            "drop table if exists "+ TableDataCapture.TABLE_NAME + ";";
-    private static final String DROP_CREATE_TABLE_STREET_TRACK =
-            "drop table if exists "+ TableStreetTrack.TABLE_NAME + ";";
+    private static final String DROP_TABLE_SAMPLE =
+            "drop table if exists "+ TableSample.TABLE_NAME + ";";
     private static final String DROP_CREATE_TABLE_ITINERARY =
             "drop table if exists "+ TableItinerary.TABLE_NAME + ";";
 
@@ -96,8 +78,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // TODO Auto-generated method stub
-        db.execSQL(CREATE_TABLE_DATA_CAPTURE);
-        db.execSQL(CREATE_TABLE_STREET_TRACK);
+        db.execSQL(CREATE_TABLE_SAMPLE);
         db.execSQL(CREATE_TABLE_ITINERARY);
     }
 
@@ -105,8 +86,7 @@ public class MySQLiteOpenHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // TODO Auto-generated method stub
         if(newVersion > oldVersion) {
-            db.execSQL(DROP_TABLE_DATA_CAPTURE);
-            db.execSQL(DROP_CREATE_TABLE_STREET_TRACK);
+            db.execSQL(DROP_TABLE_SAMPLE);
             db.execSQL(DROP_CREATE_TABLE_ITINERARY);
             onCreate(db);
         }

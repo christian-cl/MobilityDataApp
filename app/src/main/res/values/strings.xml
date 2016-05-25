@@ -75,7 +75,24 @@
     <string name="map">Mapa</string>
     <string name="data">Datos</string>
     <string name="gps_loading">Iniciando conexión GPS. Por favor, espere.</string>
-    <string name="display_itineraries_title">Elija un itinerario</string>
+    <string name="enabled_provider">Enabled provider</string>
+    <string name="disabled_provider">Disabled provider</string>
+    <string name="select_itinerary_title">Seleccione un itinerario</string>
+    <string name="speak_out_welcome">Bienvenido a neo Track</string>
+    <string name="speak_out_itinerary_added">Se ha añadido un itinerario con</string>
+    <string name="speak_out_visit_itinerary_point">punto del itienerario visitado</string>
+    <string name="b_start_tracking">Start</string>
+    <string name="b_stop_tracking">Stop</string>
+    <string name="tracking_summary">Resumen del trayecto</string>
+    <string name="speak_out_stop_added">Parada</string>
+    <string name="setting_speed_title">Velocidades</string>
+    <string name="setting_min_speed_summary">Velocidad mínima para la detección de paradas</string>
+    <string name="setting_max_speed_summary">Velocidad máxima para la detección de paradas</string>
+    <string name="setting_min_max_speed_title">Máxima</string>
+    <string name="setting_min_speed_title">Mínima</string>
+    <string name="info_track">info_track</string>
+    <string name="dialog_save_file_title">Guardar archivo</string>
+    <string name="itineraries_saved">Itinerarios guardados</string>
 
 
 </resources>
