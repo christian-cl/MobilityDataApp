@@ -751,7 +751,7 @@ public class TrackActivity extends AppCompatActivity {
                 newCalendar.get(Calendar.DAY_OF_MONTH)
         );
         dateInitDialog.setButton(DatePickerDialog.BUTTON_POSITIVE,
-                getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
+                getResources().getString(R.string.button_ok), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dlg2, int which) {
                         dlg2.cancel();
@@ -783,7 +783,7 @@ public class TrackActivity extends AppCompatActivity {
         }, newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH),
                 newCalendar.get(Calendar.DAY_OF_MONTH));
         dateEndDialog.setButton(DatePickerDialog.BUTTON_POSITIVE,
-                getResources().getString(R.string.b_ok), new DialogInterface.OnClickListener() {
+                getResources().getString(R.string.button_ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dlg2, int which) {
                 dlg2.cancel();
@@ -806,7 +806,7 @@ public class TrackActivity extends AppCompatActivity {
         AlertDialog.Builder saveFileDialogBuilder = new AlertDialog.Builder(this)
                 .setCancelable(true)
                 .setMessage(getResources().getString(R.string.save_file))
-                .setPositiveButton(getResources().getString(R.string.b_ok),
+                .setPositiveButton(getResources().getString(R.string.button_ok),
                         new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -814,7 +814,7 @@ public class TrackActivity extends AppCompatActivity {
                         saveFile(etNameSaveFile.getText().toString());
                     }
                 })
-                .setNegativeButton(getResources().getString(R.string.b_cancel),
+                .setNegativeButton(getResources().getString(R.string.button_cancel),
                         new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -957,7 +957,7 @@ public class TrackActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 })
-                .setPositiveButton(getResources().getString(R.string.b_ok),
+                .setPositiveButton(getResources().getString(R.string.button_ok),
                         new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
@@ -966,7 +966,7 @@ public class TrackActivity extends AppCompatActivity {
                         displayItinerarySelected((Itinerary) data.get(selectedPosition));
                     }
                 })
-                .setNegativeButton(getResources().getString(R.string.b_cancel),
+                .setNegativeButton(getResources().getString(R.string.button_cancel),
                         new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {

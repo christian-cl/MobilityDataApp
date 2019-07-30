@@ -3,7 +3,7 @@
     xmlns:yourapp="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
-        android:icon="@drawable/ic_settings_white"
+        android:icon="@drawable/ic_settings_white_48dp"
         yourapp:showAsAction="ifRoom" />
     <item android:id="@+id/action_save_file"
         android:title="@string/save_file"
